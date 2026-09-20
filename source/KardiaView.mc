@@ -22,6 +22,9 @@ class KardiaView extends WatchUi.WatchFace {
     //! The seconds hand sweeping the rim
     private var _hand as SecondsHand;
 
+    //! The row of status icons above the time
+    private var _statusBar as StatusBar;
+
     //! Whether the selected style is dark on light rather than light on dark
     private var _isLight as Boolean = false;
 
@@ -39,6 +42,7 @@ class KardiaView extends WatchUi.WatchFace {
         _time = new TimeDisplay();
         _rimMarks = new RimMarks();
         _hand = new SecondsHand();
+        _statusBar = new StatusBar();
         _partialUpdatesAllowed = (WatchUi.WatchFace has :onPartialUpdate);
     }
 
@@ -89,6 +93,7 @@ class KardiaView extends WatchUi.WatchFace {
         dc.clear();
 
         _rimMarks.draw(dc);
+        _statusBar.draw(dc);
         _time.draw(dc);
 
         if (handIsVisible()) {
@@ -119,6 +124,7 @@ class KardiaView extends WatchUi.WatchFace {
         dc.clear();
 
         _rimMarks.redraw(dc);
+        _statusBar.redraw(dc);
     }
 
     //! Stop moving the hand every second.
@@ -170,6 +176,7 @@ class KardiaView extends WatchUi.WatchFace {
 
         _time.setColor(color);
         _rimMarks.setColor(color);
+        _statusBar.setColor(color);
     }
 
     //! Apply the chosen data color to the seconds hand, so it can be set

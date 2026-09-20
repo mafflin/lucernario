@@ -118,4 +118,18 @@ module ClipRegion {
 
         return gap <= (SLOP_DEGREES + (angularWidthDegrees / 2.0));
     }
+
+    //! Whether the last box overlaps the given rectangle. Lets anything drawn
+    //! inside the rim ask once whether a partial update has cut into it.
+    //! @param x The left edge
+    //! @param y The top edge
+    //! @param width The width
+    //! @param height The height
+    //! @return true when the two overlap
+    function covers(x as Number, y as Number, width as Number, height as Number) as Boolean {
+        return (x < (boxX + boxWidth))
+            && ((x + width) > boxX)
+            && (y < (boxY + boxHeight))
+            && ((y + height) > boxY);
+    }
 }

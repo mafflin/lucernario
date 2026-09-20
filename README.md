@@ -19,6 +19,8 @@ screen allows.
 | `source/KardiaApp.mc` | App entry point; detects the watch face editor at startup |
 | `source/KardiaView.mc` | Owns the elements, applies configuration, clears the screen |
 | `source/TimeDisplay.mc` | Formats and draws the time |
+| `source/StatusBar.mc` | The row of status icons above the time |
+| `source/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Meridiem` extend it |
 | `source/RimMarks.mc` | The twelve hour marks around the rim |
 | `source/SecondsHand.mc` | The seconds hand sweeping the rim |
 | `source/Dial.mc` | Ring geometry: where a value lands on the glass |
@@ -52,8 +54,20 @@ costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
 
-The rim marks and the hand are lifted from the electric watch face, cut down
-to hour marks only and one size for each.
+The rim marks, the hand and the status bar are lifted from the electric watch
+face. The marks are hour marks only at one size, the hand is one size, and the
+row carries battery, phone, alarm and AM/PM with the cat, notifications, do
+not disturb and GPS icons left behind. None of them have a setting: each icon
+shows whenever the thing it reports is worth reporting.
+
+The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
+and tinted to the accent color; untinted it would be invisible on the light
+style. The battery overrides that for its two lowest levels, which stay red
+and orange.
+
+Icons come in two sizes, 24px in `resources/` and 36px in
+`resources-large-icons/`, selected by the `resourcePath` lines in
+`monkey.jungle`.
 
 `resources/configs/watchface.xml` declares what the editor shows.
 `KardiaView.updateConfiguration()` applies it, and is called both at startup

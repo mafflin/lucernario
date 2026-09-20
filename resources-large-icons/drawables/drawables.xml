@@ -1,6 +1,15 @@
-<drawables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
-    <bitmap id="LauncherIcon" filename="launcher_icon.png" />
+<!--
+    The 36px status bar icons, for the larger screens.
 
+    These ids deliberately repeat resources/drawables/drawables.xml: monkey.jungle
+    puts this directory after the base one on the resourcePath of every device
+    with a screen of 360x360 or larger, and a repeated id overrides the earlier
+    one. LauncherIcon is not listed, so it keeps the base declaration.
+
+    "large-icons" is not a device qualifier, so nothing picks this directory up
+    on its own - only the resourcePath lines in monkey.jungle do.
+-->
+<drawables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <bitmap id="Alarm" filename="alarm/alarm.png" />
     <bitmap id="Phone" filename="phone/phone.png" />
 
