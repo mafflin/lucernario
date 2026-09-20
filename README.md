@@ -19,6 +19,8 @@ screen allows.
 | `source/KardiaApp.mc` | App entry point; detects the watch face editor at startup |
 | `source/KardiaView.mc` | Owns the elements, applies configuration, clears the screen |
 | `source/TimeDisplay.mc` | Formats and draws the time |
+| `source/SecondsDisplay.mc` | Draws the seconds at the bottom of the screen |
+| `source/Styles.mc` | Style ids, mirroring `watchface.xml` |
 | `source/FontFitter.mc` | Picks the largest font a screen can carry |
 | `source/KardiaDelegate.mc` | Receives live edits from the native watch face editor |
 | `resources/configs/watchface.xml` | Declares which settings the editor offers |
@@ -28,7 +30,15 @@ screen allows.
 Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
-- **Accent color** — the color of the time. Defaults to white.
+- **Accent color** — the color of the time and seconds. Defaults to white.
+- **Style** — `Time` (default) or `Time and Seconds`. Style ids live in
+  `source/Styles.mc` and must stay in step with `watchface.xml`.
+
+Seconds keep ticking in low power mode through `KardiaView.onPartialUpdate()`,
+which clips to the seconds region and repaints only that part of the screen.
+If it costs more than the system allows, `onPowerBudgetExceeded` fires on the
+delegate, partial updates are switched off, and the seconds hide while asleep
+rather than sit there stale.
 
 `resources/configs/watchface.xml` declares what the editor shows.
 `KardiaView.updateConfiguration()` applies it, and is called both at startup

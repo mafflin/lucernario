@@ -1,5 +1,10 @@
 <resources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <watchface-config>
+        <!-- Ids must match the Styles module in source/Styles.mc -->
+        <styles>
+            <style id="1" label="@Strings.styleTimeOnly" default="true"/>
+            <style id="2" label="@Strings.styleTimeWithSeconds"/>
+        </styles>
         <!-- Let the native editor offer the full color picker for the time -->
         <accentColors allowAny="true"/>
     </watchface-config>

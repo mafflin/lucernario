@@ -55,6 +55,16 @@ class TimeDisplay {
         );
     }
 
+    //! How far down the screen the time reaches. The text is centered, so
+    //! this is half a font height below the middle.
+    //! @param dc The drawing context
+    //! @return The y coordinate of the bottom of the time
+    function bottomEdgeIn(dc as Dc) as Number {
+        var halfHeight = dc.getFontHeight(_font) / 2;
+
+        return ((dc.getHeight() / 2) + halfHeight).toNumber();
+    }
+
     //! The time as it is drawn right now
     //! @return The formatted time
     private function currentTime() as String {

@@ -5,9 +5,6 @@ import Toybox.WatchUi;
 //! Digital watch face that shows the time, as large as the screen allows.
 class KardiaApp extends Application.AppBase {
 
-    //! Whether the watch face was started by the native watch face editor
-    private var _editMode as Boolean = false;
-
     //! Constructor
     function initialize() {
         AppBase.initialize();
@@ -16,12 +13,6 @@ class KardiaApp extends Application.AppBase {
     //! Handle app startup
     //! @param state Startup arguments
     function onStart(state as Dictionary?) as Void {
-        if (state != null) {
-            var editorActive = state[:launchedFromWatchFaceSettingsEditor] as Boolean?;
-            if (editorActive) {
-                _editMode = true;
-            }
-        }
     }
 
     //! Handle app shutdown
@@ -29,13 +20,16 @@ class KardiaApp extends Application.AppBase {
     function onStop(state as Dictionary?) as Void {
     }
 
-    //! Return the initial view for the app. The delegate is only needed while
-    //! the native watch face editor is running.
+    //! Return the initial view for the app.
+    //!
+    //! The delegate is always attached: it carries both the edits made in the
+    //! native watch face editor and the power budget notice for partial
+    //! updates, and the latter can arrive at any time.
     //! @return Array [KardiaView] or [KardiaView, KardiaDelegate]
     function getInitialView() as [Views] or [Views, InputDelegates] {
         var view = new KardiaView();
 
-        if (_editMode) {
+        if (WatchUi has :WatchFaceDelegate) {
             return [ view, new KardiaDelegate(view) ];
         }
 
