@@ -1,4 +1,5 @@
 import Toybox.Application.WatchFaceConfig;
+import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
@@ -25,6 +26,16 @@ class KardiaView extends WatchUi.WatchFace {
     //! The row of status icons above the time
     private var _statusBar as StatusBar;
 
+    //! The data container below the time, indexed by FieldLocation - 1
+    private var _fields as Array<ComplicationField>;
+
+    //! Whether the view was started by the native watch face editor
+    private var _editMode as Boolean;
+
+    //! The container the editor is currently letting the user pick, if any.
+    //! It is hidden on the face while the editor pulses it in place.
+    private var _editedField as ComplicationField?;
+
     //! Whether the selected style is dark on light rather than light on dark
     private var _isLight as Boolean = false;
 
@@ -35,14 +46,25 @@ class KardiaView extends WatchUi.WatchFace {
     //! low power mode. Turned off if we exceed the power budget.
     private var _partialUpdatesAllowed as Boolean;
 
+    //! How far below the digits the data container sits, as a fraction of
+    //! the screen height
+    private const _FIELD_GAP_RATIO = 0.02;
+
     //! Constructor
-    function initialize() {
+    //! @param editMode Whether the native watch face editor started this view
+    function initialize(editMode as Boolean) {
         WatchFace.initialize();
+
+        _editMode = editMode;
 
         _time = new TimeDisplay();
         _rimMarks = new RimMarks();
         _hand = new SecondsHand();
         _statusBar = new StatusBar();
+
+        _fields = [
+            new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_STEPS)
+        ];
         _partialUpdatesAllowed = (WatchUi.WatchFace has :onPartialUpdate);
     }
 
@@ -60,11 +82,19 @@ class KardiaView extends WatchUi.WatchFace {
         // The rim is always drawn, so the time is always fitted inside it.
         _time.prepare(dc, Dial.ringDepth);
 
+        placeFields(dc);
+
         // Null on devices without watch face configuration support, in which
         // case the defaults stand.
         var settings = WatchFaceConfig.getSettings(null);
         if (settings != null) {
             updateConfiguration(settings, null);
+        }
+
+        // The editor shows a snapshot, so live updates are only worth the
+        // power while the face is actually being worn.
+        if (!_editMode) {
+            subscribeToComplications();
         }
     }
 
@@ -75,6 +105,13 @@ class KardiaView extends WatchUi.WatchFace {
         applyStyle(config.styleId);
         applyAccentColor(config.accentColor);
         applyDataColor(config.complicationColor);
+        applyComplications(config.complicationSettings);
+
+        // Once the user moves on to another setting, the container being
+        // picked is no longer pulsing and can be drawn normally again.
+        if (editedType != WatchUi.WATCH_FACE_CONFIG_TYPE_COMPLICATION) {
+            _editedField = null;
+        }
 
         WatchUi.requestUpdate();
     }
@@ -95,6 +132,7 @@ class KardiaView extends WatchUi.WatchFace {
         _rimMarks.draw(dc);
         _statusBar.draw(dc);
         _time.draw(dc);
+        drawFields(dc);
 
         if (handIsVisible()) {
             _hand.draw(dc);
@@ -127,6 +165,53 @@ class KardiaView extends WatchUi.WatchFace {
         _statusBar.redraw(dc);
     }
 
+    //! Hand the editor the drawable for the container it is about to let the
+    //! user pick, so it can pulse it in place
+    //! @param complication The slot the editor is working on
+    //! @return A reference to that container's drawable
+    function getComplication(complication as ComplicationRef) as ComplicationDrawableRef? {
+        var field = fieldAt(complication.uniqueIdentifier);
+
+        if (field == null) {
+            return null;
+        }
+
+        _editedField = field;
+        WatchUi.requestUpdate();
+
+        return new WatchUi.ComplicationDrawableRef({
+            :drawable => field,
+            :boundingBox => field.getBoundingBox()
+        });
+    }
+
+    //! Which container, if any, sits under the given point
+    //! @param x The x coordinate of the tap
+    //! @param y The y coordinate of the tap
+    //! @return The slot that was tapped, or null
+    function getTappedComplication(x as Number, y as Number) as Number? {
+        for (var i = 0; i < _fields.size(); i++) {
+            if (_fields[i].containsPoint(x, y)) {
+                return _fields[i].getLocation();
+            }
+        }
+
+        return null;
+    }
+
+    //! Called by the system when a subscribed complication has new data
+    //! @param complicationId The complication that changed
+    function onComplicationChange(complicationId as Complications.Id) as Void {
+        var field = fieldShowing(complicationId);
+
+        if (field == null) {
+            return;
+        }
+
+        field.refresh();
+        WatchUi.requestUpdate();
+    }
+
     //! Stop moving the hand every second.
     //!
     //! Called when onPartialUpdate costs more than the system allows. Once the
@@ -149,6 +234,100 @@ class KardiaView extends WatchUi.WatchFace {
         WatchUi.requestUpdate();
     }
 
+    //! Put the container on the centerline below the digits
+    //! @param dc The drawing context
+    private function placeFields(dc as Dc) as Void {
+        var gap = (dc.getHeight() * _FIELD_GAP_RATIO).toNumber();
+
+        // Sit it just under the time rather than at a fixed height: the time
+        // is sized to the device, so where it ends moves with it.
+        var rowCenterY = _time.inkBottomIn(dc) + gap + (_fields[0].heightIn(dc) / 2);
+
+        _fields[FieldLocation.CENTER - 1].prepare(dc, dc.getWidth() / 2, rowCenterY);
+    }
+
+    //! Draw the containers, leaving out the one the editor is pulsing
+    //! @param dc The drawing context
+    private function drawFields(dc as Dc) as Void {
+        var edited = _editedField;
+
+        if (edited != null) {
+            edited.setVisible(false);
+        }
+
+        for (var i = 0; i < _fields.size(); i++) {
+            _fields[i].draw(dc);
+        }
+
+        // Put it back so the editor can still draw it when it asks.
+        if (edited != null) {
+            edited.setVisible(true);
+        }
+    }
+
+    //! Ask the system to tell us when either complication changes
+    private function subscribeToComplications() as Void {
+        for (var i = 0; i < _fields.size(); i++) {
+            Complications.subscribeToUpdates(_fields[i].getComplicationId());
+        }
+
+        Complications.registerComplicationChangeCallback(method(:onComplicationChange));
+    }
+
+    //! The container in the given slot
+    //! @param location The slot, from FieldLocation
+    //! @return The container, or null if the slot is not one of ours
+    private function fieldAt(location as Object?) as ComplicationField? {
+        if (!(location instanceof Lang.Number)) {
+            return null;
+        }
+
+        var index = location - 1;
+
+        if ((index < 0) || (index >= _fields.size())) {
+            return null;
+        }
+
+        return _fields[index];
+    }
+
+    //! The container currently showing the given complication
+    //! @param complicationId The complication to look for
+    //! @return The container, or null if neither shows it
+    private function fieldShowing(complicationId as Complications.Id) as ComplicationField? {
+        for (var i = 0; i < _fields.size(); i++) {
+            if (_fields[i].shows(complicationId)) {
+                return _fields[i];
+            }
+        }
+
+        return null;
+    }
+
+    //! Assign the chosen complications to their slots
+    //! @param complicationSettings The slots as the editor has them, null if unset
+    private function applyComplications(complicationSettings as Array<WatchFaceConfig.ComplicationRef>?) as Void {
+        if (complicationSettings == null) {
+            return;
+        }
+
+        for (var i = 0; i < complicationSettings.size(); i++) {
+            var slot = complicationSettings[i];
+            var field = fieldAt(slot.uniqueIdentifier);
+
+            if (field == null) {
+                continue;
+            }
+
+            var complicationId = slot.complicationId;
+            if (complicationId != null) {
+                field.setComplicationId(complicationId);
+            }
+
+            field.refresh();
+        }
+    }
+
     //! Whether the hand should be on screen right now. In low power mode that
     //! depends on being able to keep it moving.
     //! @return true when the hand should be drawn
@@ -169,21 +348,26 @@ class KardiaView extends WatchUi.WatchFace {
         _background = _isLight ? Graphics.COLOR_WHITE : Graphics.COLOR_BLACK;
     }
 
-    //! Apply the chosen accent color to the time and the hour marks
+    //! Apply the chosen accent color to the seconds hand, the one thing on
+    //! the face that is meant to stand apart from the rest
     //! @param accentColor The color chosen in the editor, null if unset
     private function applyAccentColor(accentColor as WatchFaceConfig.Color?) as Void {
-        var color = colorOf(accentColor, defaultForeground());
+        _hand.setColor(colorOf(accentColor, defaultForeground()));
+    }
+
+    //! Apply the chosen data color to everything the hand sweeps over: the
+    //! time, the hour marks, the status icons and the data containers
+    //! @param dataColor The color chosen in the editor, null if unset
+    private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
+        var color = colorOf(dataColor, defaultForeground());
 
         _time.setColor(color);
         _rimMarks.setColor(color);
         _statusBar.setColor(color);
-    }
 
-    //! Apply the chosen data color to the seconds hand, so it can be set
-    //! apart from the marks it sweeps over
-    //! @param dataColor The color chosen in the editor, null if unset
-    private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
-        _hand.setColor(colorOf(dataColor, defaultForeground()));
+        for (var i = 0; i < _fields.size(); i++) {
+            _fields[i].setColor(color);
+        }
     }
 
     //! The color to draw with when the editor has not chosen one: whatever

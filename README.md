@@ -19,6 +19,9 @@ screen allows.
 | `source/KardiaApp.mc` | App entry point; detects the watch face editor at startup |
 | `source/KardiaView.mc` | Owns the elements, applies configuration, clears the screen |
 | `source/TimeDisplay.mc` | Formats and draws the time |
+| `source/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
+| `source/FieldLocation.mc` | The container slot id, mirroring `watchface.xml` |
+| `source/ComplicationFormat.mc` | Turns a complication's raw value into readable text |
 | `source/StatusBar.mc` | The row of status icons above the time |
 | `source/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Meridiem` extend it |
 | `source/RimMarks.mc` | The twelve hour marks around the rim |
@@ -39,9 +42,31 @@ not Connect IQ app settings. Currently configurable:
 - **Style** — `Dark` (default) or `Light`. The editor has no background
   setting, so the style id is what carries it; `source/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
-- **Accent color** — the time and the hour marks.
-- **Data color** — the seconds hand, so it can be set apart from the marks it
-  sweeps over.
+- **Accent color** — the seconds hand, the one thing meant to stand apart.
+- **Data color** — everything else: the time, the hour marks, the status
+  icons and the data container.
+- **Data container** — one complication slot centered below the time,
+  accepting any complication the device offers. Its slot id lives in
+  `source/FieldLocation.mc` and must stay in step with `watchface.xml`. It
+  defaults to steps. Requires the `ComplicationSubscriber` permission.
+
+The container is placed off `TimeDisplay.inkBottomIn()` rather than a fixed
+height, so it follows the time wherever it ends up on a given screen.
+
+The system hands over a raw value and never formats it, so
+`ComplicationFormat` does. Most types are a count that `Complication.unit`
+finishes off, but a few carry seconds: sunrise and sunset are a time of day
+(19:13, not 69238), and recovery time and the race predictors are a duration.
+Anything else falls through to value plus unit.
+
+The container draws a short label in front of the value. The system's own
+`shortLabel` and `longLabel` run long enough to overflow the slot, so
+`source/ComplicationLabel.mc` carries a four character name per type instead;
+the types whose value already reads as what it is, like the date, get none.
+
+There are no pictograms to use instead: `Complication.getIcon()` is documented
+as working only for user complications, meaning ones published by other
+Connect IQ apps, and returns null for the built-in types.
 
 Both colors are full pickers. Left unset they fall back to whatever reads
 against the style's background: white on the dark styles, black on the light

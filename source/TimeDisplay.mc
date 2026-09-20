@@ -57,6 +57,19 @@ class TimeDisplay {
         );
     }
 
+    //! How far down the screen the digits reach.
+    //!
+    //! The glyphs, not the font box: the descent the font reserves below the
+    //! baseline is empty space, and anything placed under the time would sit
+    //! needlessly low if it allowed for it.
+    //! @param dc The drawing context
+    //! @return The y coordinate of the bottom of the digits
+    function inkBottomIn(dc as Dc) as Number {
+        var halfInk = FontFitter.inkHeightOf(dc, _font) / 2;
+
+        return ((dc.getHeight() / 2) + halfInk).toNumber();
+    }
+
     //! The time as it is drawn right now
     //! @return The formatted time
     private function currentTime() as String {

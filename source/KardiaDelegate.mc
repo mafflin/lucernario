@@ -33,6 +33,30 @@ class KardiaDelegate extends WatchUi.WatchFaceDelegate {
         }
     }
 
+    //! Hand the system the drawable for the complication slot the editor is
+    //! working on, so it can pulse that container in place
+    //! @param complication The slot the editor is working on
+    //! @return A reference to that container's drawable
+    function getComplicationDrawable(complication as ComplicationRef) as Drawable or ComplicationDrawableRef or Null {
+        return _view.getComplication(complication);
+    }
+
+    //! Tell the system which complication slot was tapped, so it can open the
+    //! picker for it
+    //! @param clickEvent The tap
+    //! @return true when a container was tapped
+    function onTap(clickEvent as ClickEvent) as Boolean {
+        var coordinates = clickEvent.getCoordinates();
+        var location = _view.getTappedComplication(coordinates[0], coordinates[1]);
+
+        if (location == null) {
+            return false;
+        }
+
+        setSelectedComplication(location);
+        return true;
+    }
+
     //! Called when onPartialUpdate exceeds the power budget. The system stops
     //! calling it after this, so the view has to stop relying on it.
     //! @param powerInfo How much time was used against the limit

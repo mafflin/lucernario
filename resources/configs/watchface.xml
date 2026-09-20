@@ -6,8 +6,12 @@
             <style id="2" label="@Strings.styleLight"/>
         </styles>
         <!-- Let the native editor offer the full color picker for both.
-             Accent colors the time and the hour marks, data the hand. -->
+             Accent colors the seconds hand, data everything else. -->
         <accentColors allowAny="true"/>
         <dataColors allowAny="true"/>
+        <!-- Ids must match the FieldLocation module in source/FieldLocation.mc -->
+        <data>
+            <complication id="1" allowAny="true"/>
+        </data>
     </watchface-config>
 </resources>
