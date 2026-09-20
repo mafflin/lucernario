@@ -19,7 +19,11 @@ screen allows.
 | `source/KardiaApp.mc` | App entry point; detects the watch face editor at startup |
 | `source/KardiaView.mc` | Owns the elements, applies configuration, clears the screen |
 | `source/TimeDisplay.mc` | Formats and draws the time |
-| `source/SecondsDisplay.mc` | Draws the seconds at the bottom of the screen |
+| `source/RimMarks.mc` | The twelve hour marks around the rim |
+| `source/SecondsHand.mc` | The seconds hand sweeping the rim |
+| `source/Dial.mc` | Ring geometry: where a value lands on the glass |
+| `source/HandDrawer.mc` | Draws the arc shapes on the rim |
+| `source/ClipRegion.mc` | The box a partial update may touch |
 | `source/Styles.mc` | Style ids, mirroring `watchface.xml` |
 | `source/FontFitter.mc` | Picks the largest font a screen can carry |
 | `source/KardiaDelegate.mc` | Receives live edits from the native watch face editor |
@@ -31,14 +35,20 @@ Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
 - **Accent color** — the color of the time and seconds. Defaults to white.
-- **Style** — `Time` (default) or `Time and Seconds`. Style ids live in
-  `source/Styles.mc` and must stay in step with `watchface.xml`.
+- **Style** — `Time` (default) or `Time and Seconds`. The second style adds
+  the hour marks and the seconds hand on the rim; they have no setting of
+  their own. Style ids live in `source/Styles.mc` and must stay in step with
+  `watchface.xml`.
 
-Seconds keep ticking in low power mode through `KardiaView.onPartialUpdate()`,
-which clips to the seconds region and repaints only that part of the screen.
-If it costs more than the system allows, `onPowerBudgetExceeded` fires on the
-delegate, partial updates are switched off, and the seconds hide while asleep
-rather than sit there stale.
+The hand keeps sweeping in low power mode through
+`KardiaView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
+puts the rim back there, then clips to where it is going and draws it. If that
+costs more than the system allows, `onPowerBudgetExceeded` fires on the
+delegate, partial updates are switched off, and the hand comes off the screen
+while asleep rather than standing still.
+
+The rim marks and the hand are lifted from the electric watch face, cut down
+to hour marks only and one size for each.
 
 `resources/configs/watchface.xml` declares what the editor shows.
 `KardiaView.updateConfiguration()` applies it, and is called both at startup
@@ -89,3 +99,7 @@ for.
 the layout never jumps between minutes. Both that string and the rendered time
 come from `_TIME_FORMAT`, so changing the format automatically resizes the
 font.
+
+When the rim is shown the time is fitted with an inset of `Dial.ringDepth`,
+keeping it clear of the marks and the hand. It is therefore sized again
+whenever the style changes, which `onUpdate` does on the next draw.

@@ -26,23 +26,25 @@ module FontFitter {
     //! The largest font that can draw the given text within the screen bounds
     //! @param dc The drawing context
     //! @param text The string that has to fit
+    //! @param inset Pixels to keep clear around the edge of the screen, for
+    //!        whatever else is drawn out there
     //! @return The font to draw with
-    function largestFor(dc as Dc, text as String) as FontType {
+    function largestFor(dc as Dc, text as String, inset as Number) as FontType {
         if (Graphics has :getVectorFont) {
-            var font = largestVectorFor(dc, text);
+            var font = largestVectorFor(dc, text, inset);
             if (font != null) {
                 return font;
             }
         }
 
-        return largestSystemFor(dc, text);
+        return largestSystemFor(dc, text, inset);
     }
 
     //! Binary search the largest vector font size that still fits
     //! @param dc The drawing context
     //! @param text The string that has to fit
     //! @return The vector font, or null if the device has none of our faces
-    function largestVectorFor(dc as Dc, text as String) as VectorFont? {
+    function largestVectorFor(dc as Dc, text as String, inset as Number) as VectorFont? {
         var bestSize = NO_SIZE;
         var smallest = MIN_VECTOR_SIZE;
 
@@ -52,7 +54,7 @@ module FontFitter {
         while (smallest <= largest) {
             var size = (smallest + largest) / 2;
 
-            if (vectorFits(dc, size, text)) {
+            if (vectorFits(dc, size, text, inset)) {
                 bestSize = size;
                 smallest = size + 1;
             } else {
@@ -71,7 +73,7 @@ module FontFitter {
     //! @param dc The drawing context
     //! @param text The string that has to fit
     //! @return The font to draw with
-    function largestSystemFor(dc as Dc, text as String) as FontType {
+    function largestSystemFor(dc as Dc, text as String, inset as Number) as FontType {
         var ladder = [
             Graphics.FONT_NUMBER_THAI_HOT,
             Graphics.FONT_NUMBER_HOT,
@@ -83,7 +85,7 @@ module FontFitter {
         ] as Array<FontType>;
 
         for (var i = 0; i < ladder.size(); i++) {
-            if (fits(dc, ladder[i], text)) {
+            if (fits(dc, ladder[i], text, inset)) {
                 return ladder[i];
             }
         }
@@ -96,14 +98,14 @@ module FontFitter {
     //! @param size The vector font size to test, in pixels
     //! @param text The string that has to fit
     //! @return true when a font of that size exists and fits
-    function vectorFits(dc as Dc, size as Number, text as String) as Boolean {
+    function vectorFits(dc as Dc, size as Number, text as String, inset as Number) as Boolean {
         var font = vectorFontOf(size);
 
         if (font == null) {
             return false;
         }
 
-        return fits(dc, font, text);
+        return fits(dc, font, text, inset);
     }
 
     //! Ask the device for a vector font of the given size
@@ -118,18 +120,20 @@ module FontFitter {
     //! @param font The font to measure with
     //! @param text The string that has to fit
     //! @return true when the text fits both ways
-    function fits(dc as Dc, font as FontType, text as String) as Boolean {
+    function fits(dc as Dc, font as FontType, text as String, inset as Number) as Boolean {
         var textHeight = dc.getFontHeight(font);
         var textWidth = dc.getTextWidthInPixels(text, font);
 
-        return (textHeight <= usableHeight(dc)) && (textWidth <= usableWidthAt(dc, textHeight));
+        return (textHeight <= usableHeight(dc, inset))
+            && (textWidth <= usableWidthAt(dc, textHeight, inset));
     }
 
     //! The vertical space text may occupy
     //! @param dc The drawing context
+    //! @param inset Pixels kept clear around the edge of the screen
     //! @return The usable height in pixels
-    function usableHeight(dc as Dc) as Float {
-        return dc.getHeight() * FILL_RATIO;
+    function usableHeight(dc as Dc, inset as Number) as Float {
+        return (dc.getHeight() - (2 * inset)) * FILL_RATIO;
     }
 
     //! The horizontal space a centered box of the given height may occupy.
@@ -137,9 +141,10 @@ module FontFitter {
     //! the circle at the box's corners, which is shorter.
     //! @param dc The drawing context
     //! @param boxHeight The height of the text box
+    //! @param inset Pixels kept clear around the edge of the screen
     //! @return The usable width in pixels
-    function usableWidthAt(dc as Dc, boxHeight as Number) as Float {
-        var width = dc.getWidth();
+    function usableWidthAt(dc as Dc, boxHeight as Number, inset as Number) as Float {
+        var width = dc.getWidth() - (2 * inset);
 
         if (System.getDeviceSettings().screenShape == System.SCREEN_SHAPE_RECTANGLE) {
             return width * FILL_RATIO;

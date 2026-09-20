@@ -30,10 +30,12 @@ class TimeDisplay {
     function initialize() {
     }
 
-    //! Resolve the largest font this screen can carry. Call once per layout.
+    //! Resolve the largest font this screen can carry. Call once per layout,
+    //! and again whenever the space left for the time changes.
     //! @param dc The drawing context
-    function prepare(dc as Dc) as Void {
-        _font = FontFitter.largestFor(dc, widestTime());
+    //! @param inset Pixels to keep clear around the edge of the screen
+    function prepare(dc as Dc, inset as Number) as Void {
+        _font = FontFitter.largestFor(dc, widestTime(), inset);
     }
 
     //! Set the color the time is drawn in
@@ -53,16 +55,6 @@ class TimeDisplay {
             currentTime(),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
-    }
-
-    //! How far down the screen the time reaches. The text is centered, so
-    //! this is half a font height below the middle.
-    //! @param dc The drawing context
-    //! @return The y coordinate of the bottom of the time
-    function bottomEdgeIn(dc as Dc) as Number {
-        var halfHeight = dc.getFontHeight(_font) / 2;
-
-        return ((dc.getHeight() / 2) + halfHeight).toNumber();
     }
 
     //! The time as it is drawn right now

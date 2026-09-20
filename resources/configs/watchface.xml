@@ -5,7 +5,9 @@
             <style id="1" label="@Strings.styleTimeOnly" default="true"/>
             <style id="2" label="@Strings.styleTimeWithSeconds"/>
         </styles>
-        <!-- Let the native editor offer the full color picker for the time -->
+        <!-- Let the native editor offer the full color picker for both.
+             Accent colors the time and the hour marks, data the hand. -->
         <accentColors allowAny="true"/>
+        <dataColors allowAny="true"/>
     </watchface-config>
 </resources>
