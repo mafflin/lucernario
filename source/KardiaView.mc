@@ -7,14 +7,11 @@ import Toybox.WatchUi;
 //! that styles them.
 class KardiaView extends WatchUi.WatchFace {
 
-    //! Color of the time and the hour marks when the editor has not set one
-    private const _DEFAULT_ACCENT_COLOR = Graphics.COLOR_WHITE;
-
-    //! Color of the seconds hand when the editor has not set one
-    private const _DEFAULT_DATA_COLOR = Graphics.COLOR_WHITE;
+    //! The background the face is drawn on, which the style chooses
+    private var _background as Number = Graphics.COLOR_BLACK;
 
     //! Style used when the editor has not set one
-    private const _DEFAULT_STYLE = Styles.TIME_ONLY;
+    private const _DEFAULT_STYLE = Styles.DARK;
 
     //! The time in the center of the screen
     private var _time as TimeDisplay;
@@ -25,8 +22,8 @@ class KardiaView extends WatchUi.WatchFace {
     //! The seconds hand sweeping the rim
     private var _hand as SecondsHand;
 
-    //! Whether the selected style shows the rim: the marks and the hand
-    private var _showRim as Boolean = false;
+    //! Whether the selected style is dark on light rather than light on dark
+    private var _isLight as Boolean = false;
 
     //! Whether the watch face is in high power mode
     private var _isAwake as Boolean = true;
@@ -34,9 +31,6 @@ class KardiaView extends WatchUi.WatchFace {
     //! Whether the system will let us move the hand once per second while in
     //! low power mode. Turned off if we exceed the power budget.
     private var _partialUpdatesAllowed as Boolean;
-
-    //! Whether the time still has to be sized to the space left for it
-    private var _timeNeedsLayout as Boolean = true;
 
     //! Constructor
     function initialize() {
@@ -59,14 +53,15 @@ class KardiaView extends WatchUi.WatchFace {
         _rimMarks.prepare();
         _hand.prepare();
 
+        // The rim is always drawn, so the time is always fitted inside it.
+        _time.prepare(dc, Dial.ringDepth);
+
         // Null on devices without watch face configuration support, in which
         // case the defaults stand.
         var settings = WatchFaceConfig.getSettings(null);
         if (settings != null) {
             updateConfiguration(settings, null);
         }
-
-        layOutTime(dc);
     }
 
     //! Apply the settings coming from the native watch face editor
@@ -88,19 +83,12 @@ class KardiaView extends WatchUi.WatchFace {
             dc.clearClip();
         }
 
-        if (_timeNeedsLayout) {
-            layOutTime(dc);
-        }
-
         HandDrawer.smooth(dc);
 
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.setColor(_background, _background);
         dc.clear();
 
-        if (_showRim) {
-            _rimMarks.draw(dc);
-        }
-
+        _rimMarks.draw(dc);
         _time.draw(dc);
 
         if (handIsVisible()) {
@@ -127,7 +115,7 @@ class KardiaView extends WatchUi.WatchFace {
     //! the old position already clipped, so this only touches those pixels.
     //! @param dc The drawing context
     function restoreRim(dc as Dc) as Void {
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.setColor(_background, _background);
         dc.clear();
 
         _rimMarks.redraw(dc);
@@ -155,25 +143,14 @@ class KardiaView extends WatchUi.WatchFace {
         WatchUi.requestUpdate();
     }
 
-    //! Size the time to whatever the rim leaves it
-    //! @param dc The drawing context
-    private function layOutTime(dc as Dc) as Void {
-        _time.prepare(dc, _showRim ? Dial.ringDepth : 0);
-        _timeNeedsLayout = false;
-    }
-
     //! Whether the hand should be on screen right now. In low power mode that
     //! depends on being able to keep it moving.
     //! @return true when the hand should be drawn
     private function handIsVisible() as Boolean {
-        if (!_showRim) {
-            return false;
-        }
-
         return _isAwake || _partialUpdatesAllowed;
     }
 
-    //! Turn the selected style into the elements it shows
+    //! Turn the selected style into the way round the colors go
     //! @param styleId The style chosen in the editor, null if unset
     private function applyStyle(styleId as Number?) as Void {
         var style = _DEFAULT_STYLE;
@@ -182,20 +159,14 @@ class KardiaView extends WatchUi.WatchFace {
             style = styleId;
         }
 
-        var showRim = (style == Styles.TIME_WITH_SECONDS);
-
-        // The rim takes its space out of the time, so the time has to be
-        // sized again whenever it comes or goes.
-        if (showRim != _showRim) {
-            _showRim = showRim;
-            _timeNeedsLayout = true;
-        }
+        _isLight = Styles.isLight(style);
+        _background = _isLight ? Graphics.COLOR_WHITE : Graphics.COLOR_BLACK;
     }
 
     //! Apply the chosen accent color to the time and the hour marks
     //! @param accentColor The color chosen in the editor, null if unset
     private function applyAccentColor(accentColor as WatchFaceConfig.Color?) as Void {
-        var color = colorOf(accentColor, _DEFAULT_ACCENT_COLOR);
+        var color = colorOf(accentColor, defaultForeground());
 
         _time.setColor(color);
         _rimMarks.setColor(color);
@@ -205,7 +176,14 @@ class KardiaView extends WatchUi.WatchFace {
     //! apart from the marks it sweeps over
     //! @param dataColor The color chosen in the editor, null if unset
     private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
-        _hand.setColor(colorOf(dataColor, _DEFAULT_DATA_COLOR));
+        _hand.setColor(colorOf(dataColor, defaultForeground()));
+    }
+
+    //! The color to draw with when the editor has not chosen one: whatever
+    //! reads against the background this style picked
+    //! @return The default foreground color
+    private function defaultForeground() as Number {
+        return _isLight ? Graphics.COLOR_BLACK : Graphics.COLOR_WHITE;
     }
 
     //! Unwrap a color from the editor, falling back when it has not set one

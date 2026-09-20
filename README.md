@@ -34,11 +34,16 @@ screen allows.
 Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
-- **Accent color** — the color of the time and seconds. Defaults to white.
-- **Style** — `Time` (default) or `Time and Seconds`. The second style adds
-  the hour marks and the seconds hand on the rim; they have no setting of
-  their own. Style ids live in `source/Styles.mc` and must stay in step with
-  `watchface.xml`.
+- **Style** — `Dark` (default) or `Light`. The editor has no background
+  setting, so the style id is what carries it; `source/Styles.mc` decodes it.
+  Ids must stay in step with `watchface.xml`.
+- **Accent color** — the time and the hour marks.
+- **Data color** — the seconds hand, so it can be set apart from the marks it
+  sweeps over.
+
+Both colors are full pickers. Left unset they fall back to whatever reads
+against the style's background: white on the dark styles, black on the light
+ones. A color the user has chosen is kept as it is when the style changes.
 
 The hand keeps sweeping in low power mode through
 `KardiaView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
@@ -100,6 +105,5 @@ the layout never jumps between minutes. Both that string and the rendered time
 come from `_TIME_FORMAT`, so changing the format automatically resizes the
 font.
 
-When the rim is shown the time is fitted with an inset of `Dial.ringDepth`,
-keeping it clear of the marks and the hand. It is therefore sized again
-whenever the style changes, which `onUpdate` does on the next draw.
+The time is fitted with an inset of `Dial.ringDepth`, keeping it clear of the
+marks and the hand on the rim.

@@ -2,8 +2,8 @@
     <watchface-config>
         <!-- Ids must match the Styles module in source/Styles.mc -->
         <styles>
-            <style id="1" label="@Strings.styleTimeOnly" default="true"/>
-            <style id="2" label="@Strings.styleTimeWithSeconds"/>
+            <style id="1" label="@Strings.styleDark" default="true"/>
+            <style id="2" label="@Strings.styleLight"/>
         </styles>
         <!-- Let the native editor offer the full color picker for both.
              Accent colors the time and the hour marks, data the hand. -->

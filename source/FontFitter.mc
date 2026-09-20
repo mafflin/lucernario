@@ -19,9 +19,11 @@ module FontFitter {
     //! Returned by the search when no size fit at all
     const NO_SIZE = 0;
 
-    //! Portion of the screen the text may occupy, leaving a margin so glyphs
-    //! never run into the bezel
-    const FILL_RATIO = 0.96;
+    //! Portion of the space the text may occupy. Callers pass an inset for
+    //! whatever is drawn around the edge, so this is only the slack that
+    //! covers what measuring cannot: side bearings, rounding, a font whose
+    //! metrics run large.
+    const FILL_RATIO = 0.98;
 
     //! The largest font that can draw the given text within the screen bounds
     //! @param dc The drawing context
@@ -121,11 +123,29 @@ module FontFitter {
     //! @param text The string that has to fit
     //! @return true when the text fits both ways
     function fits(dc as Dc, font as FontType, text as String, inset as Number) as Boolean {
-        var textHeight = dc.getFontHeight(font);
+        var boxHeight = dc.getFontHeight(font);
         var textWidth = dc.getTextWidthInPixels(text, font);
 
-        return (textHeight <= usableHeight(dc, inset))
-            && (textWidth <= usableWidthAt(dc, textHeight, inset));
+        // The box has to sit on the screen, but only the glyphs themselves
+        // have to clear the sides of a round one.
+        return (boxHeight <= usableHeight(dc, inset))
+            && (textWidth <= usableWidthAt(dc, inkHeightOf(dc, font), inset));
+    }
+
+    //! How tall the drawn glyphs actually are.
+    //!
+    //! Digits stand on the baseline and never reach below it, so the descent
+    //! the font reserves is empty space. Measuring the round screen at the
+    //! full font height would give away the width that empty space costs.
+    //! @param dc The drawing context
+    //! @param font The font to measure
+    //! @return The height of the glyphs in pixels
+    function inkHeightOf(dc as Dc, font as FontType) as Number {
+        if (Graphics has :getFontAscent) {
+            return Graphics.getFontAscent(font);
+        }
+
+        return dc.getFontHeight(font);
     }
 
     //! The vertical space text may occupy
@@ -140,10 +160,10 @@ module FontFitter {
     //! On a round display that is not the screen width but the chord across
     //! the circle at the box's corners, which is shorter.
     //! @param dc The drawing context
-    //! @param boxHeight The height of the text box
+    //! @param textHeight The height of the glyphs to fit
     //! @param inset Pixels kept clear around the edge of the screen
     //! @return The usable width in pixels
-    function usableWidthAt(dc as Dc, boxHeight as Number, inset as Number) as Float {
+    function usableWidthAt(dc as Dc, textHeight as Number, inset as Number) as Float {
         var width = dc.getWidth() - (2 * inset);
 
         if (System.getDeviceSettings().screenShape == System.SCREEN_SHAPE_RECTANGLE) {
@@ -151,7 +171,7 @@ module FontFitter {
         }
 
         var radius = width / 2.0;
-        var halfHeight = boxHeight / 2.0;
+        var halfHeight = textHeight / 2.0;
 
         if (halfHeight >= radius) {
             return 0.0;

@@ -1,6 +1,6 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <string id="AppName">Kardia</string>
 
-    <string id="styleTimeOnly">Time</string>
-    <string id="styleTimeWithSeconds">Time and Seconds</string>
+    <string id="styleDark">Dark</string>
+    <string id="styleLight">Light</string>
 </strings>
