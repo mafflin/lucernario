@@ -14,12 +14,14 @@ class RimMarks {
     //! A full circle is half a day round, so an hour is 30 degrees of it
     private const _DEGREES_PER_MARK = 30;
 
-    //! How wide a mark is. The widest anything on the ring is drawn.
-    private const _WIDTH_DEGREES = 2;
+    //! How wide a mark is, in degrees of arc rather than pixels, so it holds
+    //! its proportions on every screen. Narrower than the hand that sweeps
+    //! over them, which is what tells the two apart at a glance.
+    private const _WIDTH_DEGREES = 1.5;
 
     //! How far in from the rim a mark reaches, as a share of the ring
     private const _LENGTH_NUMERATOR = 3;
-    private const _LENGTH_DIVISOR = 5;
+    private const _LENGTH_DIVISOR = 4;
 
     //! The color the marks are drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
