@@ -1,0 +1,6 @@
+<resources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <watchface-config>
+        <!-- Let the native editor offer the full color picker for the time -->
+        <accentColors allowAny="true"/>
+    </watchface-config>
+</resources>

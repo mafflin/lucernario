@@ -1,0 +1,158 @@
+import Toybox.Graphics;
+import Toybox.Lang;
+import Toybox.Math;
+import Toybox.System;
+
+//! Picks the largest font a screen can carry for a given string.
+//!
+//! Vector fonts scale freely, so the best size is found by binary search.
+//! Devices without them fall back to the largest system font that fits.
+module FontFitter {
+
+    //! Vector font faces to try, most condensed (and therefore largest) first
+    const VECTOR_FACES = ["RobotoCondensedBold", "RobotoBold", "RobotoRegular"];
+
+    //! Smallest vector font worth considering, in pixels. Below this the text
+    //! would be unreadable anyway.
+    const MIN_VECTOR_SIZE = 8;
+
+    //! Returned by the search when no size fit at all
+    const NO_SIZE = 0;
+
+    //! Portion of the screen the text may occupy, leaving a margin so glyphs
+    //! never run into the bezel
+    const FILL_RATIO = 0.96;
+
+    //! The largest font that can draw the given text within the screen bounds
+    //! @param dc The drawing context
+    //! @param text The string that has to fit
+    //! @return The font to draw with
+    function largestFor(dc as Dc, text as String) as FontType {
+        if (Graphics has :getVectorFont) {
+            var font = largestVectorFor(dc, text);
+            if (font != null) {
+                return font;
+            }
+        }
+
+        return largestSystemFor(dc, text);
+    }
+
+    //! Binary search the largest vector font size that still fits
+    //! @param dc The drawing context
+    //! @param text The string that has to fit
+    //! @return The vector font, or null if the device has none of our faces
+    function largestVectorFor(dc as Dc, text as String) as VectorFont? {
+        var bestSize = NO_SIZE;
+        var smallest = MIN_VECTOR_SIZE;
+
+        // A glyph can never be taller than the screen, so that is the ceiling.
+        var largest = dc.getHeight();
+
+        while (smallest <= largest) {
+            var size = (smallest + largest) / 2;
+
+            if (vectorFits(dc, size, text)) {
+                bestSize = size;
+                smallest = size + 1;
+            } else {
+                largest = size - 1;
+            }
+        }
+
+        if (bestSize == NO_SIZE) {
+            return null;
+        }
+
+        return vectorFontOf(bestSize);
+    }
+
+    //! Pick the largest system font that fits, from biggest to smallest
+    //! @param dc The drawing context
+    //! @param text The string that has to fit
+    //! @return The font to draw with
+    function largestSystemFor(dc as Dc, text as String) as FontType {
+        var ladder = [
+            Graphics.FONT_NUMBER_THAI_HOT,
+            Graphics.FONT_NUMBER_HOT,
+            Graphics.FONT_NUMBER_MEDIUM,
+            Graphics.FONT_NUMBER_MILD,
+            Graphics.FONT_LARGE,
+            Graphics.FONT_MEDIUM,
+            Graphics.FONT_SMALL
+        ] as Array<FontType>;
+
+        for (var i = 0; i < ladder.size(); i++) {
+            if (fits(dc, ladder[i], text)) {
+                return ladder[i];
+            }
+        }
+
+        return Graphics.FONT_TINY;
+    }
+
+    //! Whether a vector font of the given size can draw the text
+    //! @param dc The drawing context
+    //! @param size The vector font size to test, in pixels
+    //! @param text The string that has to fit
+    //! @return true when a font of that size exists and fits
+    function vectorFits(dc as Dc, size as Number, text as String) as Boolean {
+        var font = vectorFontOf(size);
+
+        if (font == null) {
+            return false;
+        }
+
+        return fits(dc, font, text);
+    }
+
+    //! Ask the device for a vector font of the given size
+    //! @param size The font size in pixels
+    //! @return The font, or null if no face is available at that size
+    function vectorFontOf(size as Number) as VectorFont? {
+        return Graphics.getVectorFont({ :face => VECTOR_FACES, :size => size });
+    }
+
+    //! Whether the text stays inside the display in the given font
+    //! @param dc The drawing context
+    //! @param font The font to measure with
+    //! @param text The string that has to fit
+    //! @return true when the text fits both ways
+    function fits(dc as Dc, font as FontType, text as String) as Boolean {
+        var textHeight = dc.getFontHeight(font);
+        var textWidth = dc.getTextWidthInPixels(text, font);
+
+        return (textHeight <= usableHeight(dc)) && (textWidth <= usableWidthAt(dc, textHeight));
+    }
+
+    //! The vertical space text may occupy
+    //! @param dc The drawing context
+    //! @return The usable height in pixels
+    function usableHeight(dc as Dc) as Float {
+        return dc.getHeight() * FILL_RATIO;
+    }
+
+    //! The horizontal space a centered box of the given height may occupy.
+    //! On a round display that is not the screen width but the chord across
+    //! the circle at the box's corners, which is shorter.
+    //! @param dc The drawing context
+    //! @param boxHeight The height of the text box
+    //! @return The usable width in pixels
+    function usableWidthAt(dc as Dc, boxHeight as Number) as Float {
+        var width = dc.getWidth();
+
+        if (System.getDeviceSettings().screenShape == System.SCREEN_SHAPE_RECTANGLE) {
+            return width * FILL_RATIO;
+        }
+
+        var radius = width / 2.0;
+        var halfHeight = boxHeight / 2.0;
+
+        if (halfHeight >= radius) {
+            return 0.0;
+        }
+
+        var chord = 2.0 * Math.sqrt(radius * radius - halfHeight * halfHeight);
+        return (chord * FILL_RATIO).toFloat();
+    }
+}
