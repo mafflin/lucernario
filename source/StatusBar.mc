@@ -8,7 +8,8 @@ import Toybox.System;
 //! Lifted from the electric watch face without the cat, the notifications,
 //! the do not disturb and the GPS icons, and without the setting that turned
 //! the row off: every icon this face carries is on, and shows whenever the
-//! thing it reports is worth reporting.
+//! thing it reports is worth reporting. The wind joins it here, which on
+//! electric is a triangle on the rim rather than a row item.
 class StatusBar {
 
     //! Where the row sits, as a fraction of the screen height. Electric
@@ -38,6 +39,7 @@ class StatusBar {
             new Battery(),
             new Phone(),
             new Alarm(),
+            new Wind(),
             new Meridiem()
         ] as Array<Icon>;
     }

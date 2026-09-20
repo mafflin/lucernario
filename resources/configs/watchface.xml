@@ -5,10 +5,80 @@
             <style id="1" label="@Strings.styleDark" default="true"/>
             <style id="2" label="@Strings.styleLight"/>
         </styles>
-        <!-- Let the native editor offer the full color picker for both.
+        <!-- An explicit palette rather than allowAny: the editor wants a
+             label per color, and with allowAny the fenix 8 Solar filled its
+             picker with garbled entries.
+
+             The list is the electric watch face's. Every channel is 00, 55,
+             AA or FF - the 64 color MIP palette - so none of these dither on
+             those screens. Black is added for the light style, which
+             electric has no need of.
+
              Accent colors the seconds hand, data everything else. -->
-        <accentColors allowAny="true"/>
-        <dataColors allowAny="true"/>
+        <accentColors>
+            <color label="@Strings.ColorWhite" default="true">0xFFFFFF</color>
+            <color label="@Strings.ColorGray">0xAAAAAA</color>
+            <color label="@Strings.ColorDarkGray">0x555555</color>
+            <color label="@Strings.ColorBlack">0x000000</color>
+            <color label="@Strings.ColorLightRed">0xFF5555</color>
+            <color label="@Strings.ColorRed">0xFF0000</color>
+            <color label="@Strings.ColorDarkRed">0xAA0000</color>
+            <color label="@Strings.ColorOrange">0xFF5500</color>
+            <color label="@Strings.ColorLightAmber">0xFFAA55</color>
+            <color label="@Strings.ColorAmber">0xFFAA00</color>
+            <color label="@Strings.ColorDarkAmber">0xAA5500</color>
+            <color label="@Strings.ColorLightYellow">0xFFFF55</color>
+            <color label="@Strings.ColorYellow">0xFFFF00</color>
+            <color label="@Strings.ColorDarkYellow">0xAAAA00</color>
+            <color label="@Strings.ColorLightGreen">0x55FF55</color>
+            <color label="@Strings.ColorGreen">0x00FF00</color>
+            <color label="@Strings.ColorDarkGreen">0x00AA00</color>
+            <color label="@Strings.ColorMint">0x00FFAA</color>
+            <color label="@Strings.ColorCyan">0x00FFFF</color>
+            <color label="@Strings.ColorDarkCyan">0x00AAAA</color>
+            <color label="@Strings.ColorSky">0x00AAFF</color>
+            <color label="@Strings.ColorDarkSky">0x0055AA</color>
+            <color label="@Strings.ColorLightBlue">0x5555FF</color>
+            <color label="@Strings.ColorBlue">0x0000FF</color>
+            <color label="@Strings.ColorDarkBlue">0x0000AA</color>
+            <color label="@Strings.ColorViolet">0xAA00FF</color>
+            <color label="@Strings.ColorLightMagenta">0xFF55FF</color>
+            <color label="@Strings.ColorMagenta">0xFF00FF</color>
+            <color label="@Strings.ColorDarkMagenta">0xAA00AA</color>
+            <color label="@Strings.ColorPink">0xFF00AA</color>
+        </accentColors>
+        <dataColors>
+            <color label="@Strings.ColorWhite" default="true">0xFFFFFF</color>
+            <color label="@Strings.ColorGray">0xAAAAAA</color>
+            <color label="@Strings.ColorDarkGray">0x555555</color>
+            <color label="@Strings.ColorBlack">0x000000</color>
+            <color label="@Strings.ColorLightRed">0xFF5555</color>
+            <color label="@Strings.ColorRed">0xFF0000</color>
+            <color label="@Strings.ColorDarkRed">0xAA0000</color>
+            <color label="@Strings.ColorOrange">0xFF5500</color>
+            <color label="@Strings.ColorLightAmber">0xFFAA55</color>
+            <color label="@Strings.ColorAmber">0xFFAA00</color>
+            <color label="@Strings.ColorDarkAmber">0xAA5500</color>
+            <color label="@Strings.ColorLightYellow">0xFFFF55</color>
+            <color label="@Strings.ColorYellow">0xFFFF00</color>
+            <color label="@Strings.ColorDarkYellow">0xAAAA00</color>
+            <color label="@Strings.ColorLightGreen">0x55FF55</color>
+            <color label="@Strings.ColorGreen">0x00FF00</color>
+            <color label="@Strings.ColorDarkGreen">0x00AA00</color>
+            <color label="@Strings.ColorMint">0x00FFAA</color>
+            <color label="@Strings.ColorCyan">0x00FFFF</color>
+            <color label="@Strings.ColorDarkCyan">0x00AAAA</color>
+            <color label="@Strings.ColorSky">0x00AAFF</color>
+            <color label="@Strings.ColorDarkSky">0x0055AA</color>
+            <color label="@Strings.ColorLightBlue">0x5555FF</color>
+            <color label="@Strings.ColorBlue">0x0000FF</color>
+            <color label="@Strings.ColorDarkBlue">0x0000AA</color>
+            <color label="@Strings.ColorViolet">0xAA00FF</color>
+            <color label="@Strings.ColorLightMagenta">0xFF55FF</color>
+            <color label="@Strings.ColorMagenta">0xFF00FF</color>
+            <color label="@Strings.ColorDarkMagenta">0xAA00AA</color>
+            <color label="@Strings.ColorPink">0xFF00AA</color>
+        </dataColors>
         <!-- Ids must match the FieldLocation module in source/FieldLocation.mc -->
         <data>
             <complication id="1" allowAny="true"/>

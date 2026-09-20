@@ -11,6 +11,12 @@ screen allows.
   Connect IQ SDK Manager, not in this project.
 - Target API level is `5.1.0` (Connect IQ System 8), set in `manifest.xml`.
   This is separate from the SDK version above.
+- The product list is exactly the devices that support
+  `Application.WatchFaceConfig`, which is the whole configuration model and is
+  itself API 5.1.0. Anything older cannot run this face at all: adding a
+  pre-System-8 device to the list makes it fail to load rather than fall back.
+  The authoritative list is the Supported Devices section of the
+  [WatchFaceConfig docs](https://developer.garmin.com/connect-iq/api-docs/Toybox/Application/WatchFaceConfig.html).
 
 ## Layout
 
@@ -23,7 +29,7 @@ screen allows.
 | `source/FieldLocation.mc` | The container slot id, mirroring `watchface.xml` |
 | `source/ComplicationFormat.mc` | Turns a complication's raw value into readable text |
 | `source/StatusBar.mc` | The row of status icons above the time |
-| `source/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Meridiem` extend it |
+| `source/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
 | `source/RimMarks.mc` | The twelve hour marks around the rim |
 | `source/SecondsHand.mc` | The seconds hand sweeping the rim |
 | `source/Dial.mc` | Ring geometry: where a value lands on the glass |
@@ -45,6 +51,13 @@ not Connect IQ app settings. Currently configurable:
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
 - **Data color** — everything else: the time, the hour marks, the status
   icons and the data container.
+
+Both offer the same thirty named colors, declared explicitly in
+`watchface.xml` rather than with `allowAny`: the editor wants a label per
+color, and with `allowAny` the fēnix 8 Solar filled its picker with garbled
+entries. The list is the electric watch face's, where every channel is 00,
+55, AA or FF — the 64 color MIP palette — so none of them dither on those
+screens. Black is added for the light style.
 - **Data container** — one complication slot centered below the time,
   accepting any complication the device offers. Its slot id lives in
   `source/FieldLocation.mc` and must stay in step with `watchface.xml`. It
@@ -68,9 +81,9 @@ There are no pictograms to use instead: `Complication.getIcon()` is documented
 as working only for user complications, meaning ones published by other
 Connect IQ apps, and returns null for the built-in types.
 
-Both colors are full pickers. Left unset they fall back to whatever reads
-against the style's background: white on the dark styles, black on the light
-ones. A color the user has chosen is kept as it is when the style changes.
+Left unset, both fall back to whatever reads against the style's background:
+white on the dark style, black on the light one. A color the user has chosen
+is kept as it is when the style changes.
 
 The hand keeps sweeping in low power mode through
 `KardiaView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
@@ -81,8 +94,12 @@ while asleep rather than standing still.
 
 The rim marks, the hand and the status bar are lifted from the electric watch
 face. The marks are hour marks only at one size, the hand is one size, and the
-row carries battery, phone, alarm and AM/PM with the cat, notifications, do
-not disturb and GPS icons left behind. None of them have a setting: each icon
+row carries battery, phone, alarm, wind and AM/PM with the cat,
+notifications, do not disturb and GPS icons left behind. The wind is
+electric's too, where it is a triangle standing on the rim; here it is one
+arrow in the row, turned to the bearing with an `AffineTransform` passed to
+`drawBitmap2`, with the strength said in color: the data color up to 20 km/h,
+orange above that, red above 40. None of them have a setting: each icon
 shows whenever the thing it reports is worth reporting.
 
 The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
