@@ -123,6 +123,14 @@ costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
 
+The rim marks are drawn as lines running inward from the rim, with the width
+as a pen width in pixels, while the hand stays the arc it was lifted as. An
+arc cannot be made narrow enough: `drawArc` takes its span in degrees and the
+renderer works in whole ones, so every width from one degree to two came out
+as the same mark. A pixel at the rim is roughly a quarter of a degree, which
+is a useful step on a shape this small. `ClipRegion.reaches()` still wants an
+angle, so `RimMarks` keeps the width in both units.
+
 The rim marks, the hand and the status bar are lifted from the electric watch
 face. The marks are hour marks only at one size, the hand is one size, and the
 row carries battery, phone, alarm, wind and AM/PM with the cat,
@@ -140,7 +148,8 @@ and orange.
 
 Icons come in two sizes, 24px in `resources/` and 36px in
 `resources-large-icons/`, selected by the `resourcePath` lines in
-`monkey.jungle`.
+`monkey.jungle`. Both are generated from `assets/icons/`; see Icon artwork
+below.
 
 `resources/configs/watchface.xml` declares what the editor shows.
 `KardiaView.updateConfiguration()` applies it, and is called both at startup
@@ -158,18 +167,51 @@ For the native editor, use the **Run Native Pairing** launch configuration in
 Settings can also be driven directly from code with
 `WatchFaceConfig.setSettings()`, which is useful for automated checks.
 
-## Launcher icon
+## Icon artwork
 
-`assets/launcher_icon.svg` is the source of truth. The PNG the build consumes
-is generated from it, recolored white (the SVG's own fill is black, which
-would disappear against the device's dark app list):
+`assets/icons/*.svg` is the source of truth for every icon, the launcher
+included. The PNGs the build consumes are generated from them by
 
 ```sh
-sed 's|<path |<path fill="#FFFFFF" |' assets/launcher_icon.svg \
-  | rsvg-convert -w 65 -h 65 -b none -o resources/drawables/launcher_icon.png
+sh assets/generate-icons.sh
 ```
 
-65x65 is what fenix847mm asks for. Devices that want another size scale the
+which needs `rsvg-convert` (librsvg) and `python3`. Each path is refilled
+white on the way through, because the SVGs are black on transparent: the
+status icons are
+tinted at draw time and would be invisible untinted on the dark style, and the
+launcher icon sits in the device's dark app list.
+
+The status icons render at 24px into `resources/` and 36px into
+`resources-large-icons/`. AM and PM are the exception: their art is 18 units
+by 10 inside the same 24 unit box, so rendering it square would leave two
+small letters in a lot of space. The script crops the box to the letters and
+pads it back out, which is where their 33x21 and 49x30 come from.
+
+The 24px set is also flattened, by `assets/flatten-alpha.py`: every pixel
+comes out either opaque or clear, with nothing in between. That set is what
+the MIP devices get, and a MIP panel holds 64 colours and cannot composite,
+so the eight bit alpha channel `packingFormat="png"` preserves is no use to
+it - the watch reduces the edges to on or off as it draws them, and it does a
+poor job. The alarm's ring broke apart and the AM/PM stems came out 3px and
+4px alternately. Deciding at generation time instead means the artwork that
+ships is the artwork that appears. The cutoff and the reasoning behind it are
+at the top of the script.
+
+Flattening is why the small AM/PM box is `1 5 22 14` at scale 1.5 rather than
+a box cropped tight to the letters. Every edge in those two glyphs sits on an
+odd unit, so from an odd origin at that scale all five stems land on whole
+pixels and come out 3px. The 36px set is not flattened - AMOLED screens do
+composite, and their soft edges are the reason they look right - so its box is
+left cropped to the ratio.
+
+One icon this does not reach: the wind arrow is turned to its bearing by
+`drawBitmap2` at draw time, and the bilinear filter that turn needs
+manufactures a fresh set of part-opaque pixels for the panel to mishandle. On
+MIP it stays ragged whatever the source looks like. Drawing it as a polygon
+would fix it, which is what the electric face did with its own wind triangle.
+
+The launcher icon is 65x65, which is what fenix847mm asks for. Devices that want another size scale the
 image and emit a build warning; to silence one, drop a correctly sized copy in
 `resources-<device>/drawables/`. Each device's required size is in the SDK at
 `~/Library/Application Support/Garmin/ConnectIQ/Devices/<device>/compiler.json`
