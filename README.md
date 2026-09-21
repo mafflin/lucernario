@@ -181,6 +181,8 @@ under `launcherIcon`.
 `text` within the screen:
 
 1. If the device supports vector fonts, binary search the largest size.
+   `FontFitter.VECTOR_FACES` is the face preference, `RobotoRegular` first;
+   `getVectorFont` answers with the first of them the device carries.
 2. Otherwise walk a ladder of system fonts down from `FONT_NUMBER_THAI_HOT`.
 
 On round displays the usable width is not the screen width but the chord

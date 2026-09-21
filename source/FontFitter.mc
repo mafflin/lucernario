@@ -9,8 +9,14 @@ import Toybox.System;
 //! Devices without them fall back to the largest system font that fits.
 module FontFitter {
 
-    //! Vector font faces to try, most condensed (and therefore largest) first
-    const VECTOR_FACES = ["RobotoCondensedBold", "RobotoBold", "RobotoRegular"];
+    //! Vector font faces to try, in order of preference. getVectorFont takes
+    //! the list and answers with the first face the device carries, so the
+    //! ones behind are the fallback for a device without the first.
+    //!
+    //! Regular leads: a lighter, wider face than the condensed bold that used
+    //! to. It will be fitted at a smaller size, because on a round screen the
+    //! fit is bound by width.
+    const VECTOR_FACES = ["RobotoRegular", "RobotoCondensedBold", "RobotoBold"];
 
     //! Smallest vector font worth considering, in pixels. Below this the text
     //! would be unreadable anyway.
