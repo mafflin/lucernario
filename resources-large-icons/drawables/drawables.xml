@@ -6,27 +6,30 @@
     with a screen of 360x360 or larger, and a repeated id overrides the earlier
     one. LauncherIcon is not listed, so it keeps the base declaration.
 
+    packingFormat is on each of them for the same reason as in the base file:
+    a tinted bitmap may not carry a palette.
+
     "large-icons" is not a device qualifier, so nothing picks this directory up
     on its own - only the resourcePath lines in monkey.jungle do.
 -->
 <drawables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
-    <bitmap id="Alarm" filename="alarm/alarm.png" />
-    <bitmap id="Phone" filename="phone/phone.png" />
+    <bitmap id="Alarm" filename="alarm/alarm.png" packingFormat="png" />
+    <bitmap id="Phone" filename="phone/phone.png" packingFormat="png" />
 
-    <bitmap id="Battery0" filename="battery/battery_0.png" />
-    <bitmap id="Battery10" filename="battery/battery_10.png" />
-    <bitmap id="Battery20" filename="battery/battery_20.png" />
-    <bitmap id="Battery30" filename="battery/battery_30.png" />
-    <bitmap id="Battery40" filename="battery/battery_40.png" />
-    <bitmap id="Battery50" filename="battery/battery_50.png" />
-    <bitmap id="Battery60" filename="battery/battery_60.png" />
-    <bitmap id="Battery70" filename="battery/battery_70.png" />
-    <bitmap id="Battery80" filename="battery/battery_80.png" />
-    <bitmap id="Battery90" filename="battery/battery_90.png" />
-    <bitmap id="Battery100" filename="battery/battery_100.png" />
+    <bitmap id="Battery0" filename="battery/battery_0.png" packingFormat="png" />
+    <bitmap id="Battery10" filename="battery/battery_10.png" packingFormat="png" />
+    <bitmap id="Battery20" filename="battery/battery_20.png" packingFormat="png" />
+    <bitmap id="Battery30" filename="battery/battery_30.png" packingFormat="png" />
+    <bitmap id="Battery40" filename="battery/battery_40.png" packingFormat="png" />
+    <bitmap id="Battery50" filename="battery/battery_50.png" packingFormat="png" />
+    <bitmap id="Battery60" filename="battery/battery_60.png" packingFormat="png" />
+    <bitmap id="Battery70" filename="battery/battery_70.png" packingFormat="png" />
+    <bitmap id="Battery80" filename="battery/battery_80.png" packingFormat="png" />
+    <bitmap id="Battery90" filename="battery/battery_90.png" packingFormat="png" />
+    <bitmap id="Battery100" filename="battery/battery_100.png" packingFormat="png" />
 
-    <bitmap id="Wind" filename="wind/direction.png" />
+    <bitmap id="Wind" filename="wind/direction.png" packingFormat="png" />
 
-    <bitmap id="Am" filename="meridiem/am.png" />
-    <bitmap id="Pm" filename="meridiem/pm.png" />
+    <bitmap id="Am" filename="meridiem/am.png" packingFormat="png" />
+    <bitmap id="Pm" filename="meridiem/pm.png" packingFormat="png" />
 </drawables>

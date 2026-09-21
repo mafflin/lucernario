@@ -63,7 +63,7 @@ class KardiaView extends WatchUi.WatchFace {
         _statusBar = new StatusBar();
 
         _fields = [
-            new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_STEPS)
+            new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY)
         ];
         _partialUpdatesAllowed = (WatchUi.WatchFace has :onPartialUpdate);
     }

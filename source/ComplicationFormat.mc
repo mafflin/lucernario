@@ -1,13 +1,22 @@
 import Toybox.Complications;
 import Toybox.Lang;
+import Toybox.Math;
 import Toybox.System;
 
 //! Turns a complication's raw value into something a person can read.
 //!
-//! The system hands over a number and, sometimes, a unit; it never formats
-//! anything. Most types are a plain count that the unit finishes off, but a
-//! few carry a time in seconds, which is meaningless on its own: sunset comes
-//! back as 69238 rather than 19:13.
+//! The system hands over a number and, sometimes, a unit; it almost never
+//! formats anything. Most types are a plain count that the unit finishes off,
+//! but a few carry a time in seconds, which is meaningless on its own: sunset
+//! comes back as 69238 rather than 19:13.
+//!
+//! The temperatures need more than that. The current one is Celsius however
+//! the watch is set, and the high and low is the one type the system formats
+//! itself - a string with no degree mark on either number. The pressure comes
+//! in pascals, which is six figures for a number read either side of one bar,
+//! and the altitude in meters whatever the watch is set to. The weekly
+//! distances are in meters as well, and the percentages arrive as a bare
+//! number with nothing to say they are one.
 module ComplicationFormat {
 
     const SECONDS_PER_MINUTE = 60;
@@ -16,8 +25,49 @@ module ComplicationFormat {
     //! Hours on a 12 hour clock face
     const HOURS_PER_HALF_DAY = 12;
 
+    //! Meters to a kilometer and to a mile
+    const METERS_PER_KILOMETER = 1000.0;
+    const METERS_PER_MILE = 1609.344;
+
+    //! The units a distance is shown in
+    const KILOMETER = "km";
+    const MILE = "mi";
+
+    //! How finely a distance is shown. A week's running moves by more than a
+    //! tenth of a unit, and whole kilometers would hide a short run.
+    const DISTANCE_FORMAT = "%.1f";
+
+    //! The unit a percentage is shown in
+    const PERCENT = "%";
+
+    //! Feet to a meter
+    const FEET_PER_METER = 3.28084;
+
+    //! The units an altitude is shown in
+    const METER = "m";
+    const FOOT = "ft";
+
+    //! Pascals to a bar. The system reports pressure in pascals, which runs
+    //! to six figures for a number that sits either side of one bar.
+    const PASCALS_PER_BAR = 100000.0;
+
+    //! How finely the pressure is shown. A bar is a coarse unit for weather -
+    //! the swing from a storm to a clear sky is about a twentieth of one - so
+    //! it takes three decimals to show any movement at all.
+    const BAR_FORMAT = "%.3f";
+
+    //! Degrees Fahrenheit to a degree Celsius
+    const FAHRENHEIT_PER_CELSIUS = 1.8;
+
+    //! Where the Fahrenheit scale has zero Celsius
+    const FAHRENHEIT_AT_ZERO = 32.0;
+
     //! What to show when there is nothing to show
     const NOTHING = "";
+
+    //! The degree mark. The high/low string arrives without one and there is
+    //! no unit alongside it to supply it.
+    const DEGREE = "°";
 
     //! The complication's value, formatted for its type
     //! @param complication The complication to read
@@ -39,6 +89,30 @@ module ComplicationFormat {
             return duration(seconds(value));
         }
 
+        if (type == Complications.COMPLICATION_TYPE_HIGH_LOW_TEMPERATURE) {
+            return marked(value);
+        }
+
+        if (type == Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE) {
+            return temperature(value);
+        }
+
+        if (type == Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE) {
+            return pressure(value);
+        }
+
+        if (type == Complications.COMPLICATION_TYPE_ALTITUDE) {
+            return altitude(value);
+        }
+
+        if (isPercent(type)) {
+            return percent(value);
+        }
+
+        if (isDistance(type)) {
+            return distance(value);
+        }
+
         return withUnit(value, complication.unit);
     }
 
@@ -54,11 +128,165 @@ module ComplicationFormat {
     //! @param type The complication type, null if the system did not say
     //! @return true when the value is a duration
     function isDuration(type as Complications.Type?) as Boolean {
-        return (type == Complications.COMPLICATION_TYPE_RECOVERY_TIME)
-            || (type == Complications.COMPLICATION_TYPE_RACE_PREDICTOR_5K)
-            || (type == Complications.COMPLICATION_TYPE_RACE_PREDICTOR_10K)
-            || (type == Complications.COMPLICATION_TYPE_RACE_PREDICTOR_HALF_MARATHON)
-            || (type == Complications.COMPLICATION_TYPE_RACE_PREDICTOR_MARATHON);
+        return (type == Complications.COMPLICATION_TYPE_RECOVERY_TIME);
+    }
+
+    //! The altitude in the units the watch is set to.
+    //!
+    //! The value is meters whatever the watch displays, and arrives with the
+    //! UNIT_ELEVATION enum rather than a string, so the unit has to be said
+    //! here. Whole units: a tenth of a meter is more than the barometric
+    //! altimeter knows.
+    //! @param value The complication value, in meters
+    //! @return The text to draw
+    function altitude(value as Complications.Value) as String {
+        var height = decimal(value);
+
+        if (System.getDeviceSettings().elevationUnits == System.UNIT_STATUTE) {
+            return rounded(height * FEET_PER_METER) + FOOT;
+        }
+
+        return rounded(height) + METER;
+    }
+
+    //! Types whose value is a percentage. The system reports these as a bare
+    //! number between 0 and 100, with no unit to say so.
+    //! @param type The complication type, null if the system did not say
+    //! @return true when the value is a percentage
+    function isPercent(type as Complications.Type?) as Boolean {
+        return (type == Complications.COMPLICATION_TYPE_BATTERY)
+            || (type == Complications.COMPLICATION_TYPE_PULSE_OX)
+            || (type == Complications.COMPLICATION_TYPE_SOLAR_INPUT);
+    }
+
+    //! Types whose value is a distance, in meters
+    //! @param type The complication type, null if the system did not say
+    //! @return true when the value is a distance
+    function isDistance(type as Complications.Type?) as Boolean {
+        return (type == Complications.COMPLICATION_TYPE_WEEKLY_RUN_DISTANCE)
+            || (type == Complications.COMPLICATION_TYPE_WEEKLY_BIKE_DISTANCE);
+    }
+
+    //! A percentage, said as one
+    //! @param value The complication value, between 0 and 100
+    //! @return The text to draw
+    function percent(value as Complications.Value) as String {
+        return whole(value) + PERCENT;
+    }
+
+    //! A distance in the units the watch is set to.
+    //!
+    //! The value is meters, which is the wrong size for a week of it: a
+    //! marathon comes back as 42195.0.
+    //! @param value The complication value, in meters
+    //! @return The text to draw
+    function distance(value as Complications.Value) as String {
+        var meters = decimal(value);
+
+        if (System.getDeviceSettings().distanceUnits == System.UNIT_STATUTE) {
+            return (meters / METERS_PER_MILE).format(DISTANCE_FORMAT) + MILE;
+        }
+
+        return (meters / METERS_PER_KILOMETER).format(DISTANCE_FORMAT) + KILOMETER;
+    }
+
+    //! The sea level pressure, in bars.
+    //!
+    //! The raw value is pascals - 101325 for a standard atmosphere - which is
+    //! wider than the slot. The unit is not said here: it is the label, BAR,
+    //! that carries it, and DeviceSettings has no pressure unit to follow in
+    //! any case.
+    //! @param value The complication value, in pascals
+    //! @return The text to draw
+    function pressure(value as Complications.Value) as String {
+        return (decimal(value) / PASCALS_PER_BAR).format(BAR_FORMAT);
+    }
+
+    //! The current temperature in the units the watch is set to.
+    //!
+    //! The value is always Celsius, whatever the watch itself displays, and
+    //! its unit is the UNIT_TEMPERATURE enum rather than a string, so nothing
+    //! about the raw value says what it is. Whole degrees: a tenth of a degree
+    //! is noise, and the slot is narrow.
+    //! @param value The complication value, in degrees Celsius
+    //! @return The text to draw
+    function temperature(value as Complications.Value) as String {
+        var degrees = decimal(value);
+
+        if (System.getDeviceSettings().temperatureUnits == System.UNIT_STATUTE) {
+            degrees = (degrees * FAHRENHEIT_PER_CELSIUS) + FAHRENHEIT_AT_ZERO;
+        }
+
+        return rounded(degrees) + DEGREE;
+    }
+
+    //! A high and a low with a degree mark after each of them.
+    //!
+    //! This type is the one the system formats itself: it hands over a string
+    //! along the lines of "H 21 / L 12", with the numbers already in the
+    //! user's units and no mark on either. The exact shape is documented only
+    //! as "similar to", so the mark is placed by finding where each number
+    //! ends rather than by taking the string apart.
+    //! @param value The complication value
+    //! @return The text to draw
+    function marked(value as Complications.Value) as String {
+        if (!(value instanceof Lang.String)) {
+            // A watch that hands over one number instead of the pair.
+            return whole(value) + DEGREE;
+        }
+
+        var characters = value.toCharArray();
+        var text = NOTHING;
+
+        for (var i = 0; i < characters.size(); i++) {
+            text += characters[i].toString();
+
+            if (endsNumber(characters, i)) {
+                text += DEGREE;
+            }
+        }
+
+        return text;
+    }
+
+    //! Whether the character at this position is the last digit of a number
+    //! @param characters The whole string
+    //! @param i Where to look
+    //! @return true when a degree mark belongs after this character
+    function endsNumber(characters as Array<Char>, i as Number) as Boolean {
+        if (!isDigit(characters[i])) {
+            return false;
+        }
+
+        var next = i + 1;
+
+        if (next >= characters.size()) {
+            return true;
+        }
+
+        if (isDigit(characters[next])) {
+            return false;
+        }
+
+        // A separator with more digits behind it is inside the number, not
+        // the end of it: 21.5 takes one mark, not two.
+        return !(isSeparator(characters[next])
+            && ((next + 1) < characters.size())
+            && isDigit(characters[next + 1]));
+    }
+
+    //! Whether a character is a digit
+    //! @param character The character to test
+    //! @return true when it is 0 to 9
+    function isDigit(character as Char) as Boolean {
+        return (character >= '0') && (character <= '9');
+    }
+
+    //! Whether a character can sit between the digits of one number
+    //! @param character The character to test
+    //! @return true when it is a decimal point or comma
+    function isSeparator(character as Char) as Boolean {
+        return (character == '.') || (character == ',');
     }
 
     //! A time of day as the watch would write it, honoring the 12/24 hour
@@ -130,6 +358,39 @@ module ComplicationFormat {
         }
 
         return Lang.format("$1$", [value]);
+    }
+
+    //! A value rounded to a whole number, as text
+    //! @param value The complication value
+    //! @return The value as text, with no decimals
+    function whole(value as Complications.Value) as String {
+        return rounded(decimal(value));
+    }
+
+    //! A number rounded to a whole one, as text
+    //! @param amount The number to round
+    //! @return The number as text, with no decimals
+    function rounded(amount as Float) as String {
+        return Math.round(amount).toNumber().format("%d");
+    }
+
+    //! A value as a float, whatever number type it arrived as
+    //! @param value The complication value
+    //! @return The value as a float, or zero if it is not a number at all
+    function decimal(value as Complications.Value) as Float {
+        if (value instanceof Lang.Float) {
+            return value;
+        }
+
+        if (value instanceof Lang.Double) {
+            return value.toFloat();
+        }
+
+        if (value instanceof Lang.Number) {
+            return value.toFloat();
+        }
+
+        return 0.0;
     }
 
     //! A value as whole seconds, whatever number type it arrived as
