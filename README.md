@@ -136,15 +136,23 @@ face. The marks are hour marks only at one size, the hand is one size, and the
 row carries battery, phone, alarm, wind and AM/PM with the cat,
 notifications, do not disturb and GPS icons left behind. The wind is
 electric's too, where it is a triangle standing on the rim; here it is one
-arrow in the row, turned to the bearing with an `AffineTransform` passed to
-`drawBitmap2`, with the strength said in color: the data color up to 20 km/h,
-orange above that, red above 40. None of them have a setting: each icon
-shows whenever the thing it reports is worth reporting.
+arrow in the row, turned to the bearing, with the strength said in color: the
+data color up to 20 km/h, orange above that, red above 40. None of them have
+a setting: each icon shows whenever the thing it reports is worth reporting.
 
 The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
 and tinted to the accent color; untinted it would be invisible on the light
 style. The battery overrides that for its two lowest levels, which stay red
 and orange.
+
+The wind is the one item with no artwork: `Wind.paint()` overrides
+`Icon.paint()` and fills three corners it turns itself. A bitmap cannot be
+turned without the bilinear filter, the filter makes part opaque pixels out
+of an arrow that had none, and a MIP panel cannot composite those - it keeps
+or drops each one as it draws, so the tail used to thicken and thin with the
+bearing. Corners turned in code have nothing to sample, and they are smoothed
+by the same `setAntiAlias` the rim marks rely on. It has no bitmap to measure
+either, so `StatusBar.draw()` hands it the square the battery is running at.
 
 Icons come in two sizes, 24px in `resources/` and 36px in
 `resources-large-icons/`, selected by the `resourcePath` lines in
@@ -205,11 +213,9 @@ pixels and come out 3px. The 36px set is not flattened - AMOLED screens do
 composite, and their soft edges are the reason they look right - so its box is
 left cropped to the ratio.
 
-One icon this does not reach: the wind arrow is turned to its bearing by
-`drawBitmap2` at draw time, and the bilinear filter that turn needs
-manufactures a fresh set of part-opaque pixels for the panel to mishandle. On
-MIP it stays ragged whatever the source looks like. Drawing it as a polygon
-would fix it, which is what the electric face did with its own wind triangle.
+`direction.svg` is no longer rendered: the wind arrow is drawn rather than
+placed, for the reason above. The file stays as the drawing its corners were
+taken off.
 
 The launcher icon is 65x65, which is what fenix847mm asks for. Devices that want another size scale the
 image and emit a build warning; to silence one, drop a correctly sized copy in

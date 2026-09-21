@@ -26,6 +26,13 @@ class StatusBar {
 
     private var _icons as Array<Icon>;
 
+    //! The battery, kept to hand as the one item always on screen: it is what
+    //! the wind is measured against. See draw().
+    private var _battery as Battery;
+
+    //! The wind, kept to hand because it has to be told its size
+    private var _wind as Wind;
+
     //! Where the last full draw put the row, so one box answers for every
     //! item before any is asked about itself.
     private var _rowX as Number = 0;
@@ -35,11 +42,14 @@ class StatusBar {
 
     //! Constructor
     function initialize() {
+        _battery = new Battery();
+        _wind = new Wind();
+
         _icons = [
-            new Battery(),
+            _battery,
             new Phone(),
             new Alarm(),
-            new Wind(),
+            _wind,
             new Meridiem()
         ] as Array<Icon>;
     }
@@ -62,6 +72,11 @@ class StatusBar {
         if (total == 0) {
             return;
         }
+
+        // The wind fills its square rather than placing a bitmap in it, so it
+        // has no size of its own to report. The battery is the one item that
+        // is always on screen, which makes its artwork the row's measure.
+        _wind.setSquare(_battery.height());
 
         var tall = tallest();
         var centerY = middle(dc);

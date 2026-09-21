@@ -146,13 +146,6 @@ class Icon {
         return _tint;
     }
 
-    //! How to turn the artwork before drawing it. Overridden by the wind,
-    //! which points its arrow at a bearing.
-    //! @return The transform, or null to draw the bitmap as it is
-    protected function transform() as AffineTransform? {
-        return null;
-    }
-
     //! One bitmap out of a set, held on to until the choice moves. The row
     //! asks for the size several times a draw and loading is not free.
     //! @param images The set to choose from
@@ -171,32 +164,19 @@ class Icon {
     //!
     //! The artwork is white on transparent, so it is tinted rather than drawn
     //! as it is: on the light style an untinted icon would be invisible.
+    //!
+    //! Always at its own size, where every source pixel lands on one output
+    //! pixel and sampling has nothing to decide. Overridden by the wind,
+    //! which has no artwork to place: it draws its arrow.
     //! @param dc The drawing context
     //! @param x The left edge
     //! @param y The top edge
-    private function paint(dc as Dc, x as Number, y as Number) as Void {
+    protected function paint(dc as Dc, x as Number, y as Number) as Void {
         if (!(dc has :drawBitmap2)) {
             dc.drawBitmap(x, y, bitmap());
             return;
         }
 
-        var turn = transform();
-
-        if (turn == null) {
-            // Drawn at its own size, where every source pixel lands on one
-            // output pixel and sampling has nothing to decide.
-            dc.drawBitmap2(x, y, bitmap(), { :tintColor => tint() });
-            return;
-        }
-
-        // Turned artwork samples between pixels, so it needs the bilinear
-        // filter. setAntiAlias covers the arcs on the rim, not this: a
-        // transformed bitmap is smoothed by its filter mode, and the default
-        // is FILTER_MODE_POINT, which staircases at every angle off square.
-        dc.drawBitmap2(x, y, bitmap(), {
-            :tintColor => tint(),
-            :transform => turn,
-            :filterMode => Graphics.FILTER_MODE_BILINEAR
-        });
+        dc.drawBitmap2(x, y, bitmap(), { :tintColor => tint() });
     }
 }

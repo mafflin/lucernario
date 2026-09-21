@@ -24,8 +24,6 @@
     <bitmap id="Battery90" filename="battery/battery_90.png" packingFormat="png" />
     <bitmap id="Battery100" filename="battery/battery_100.png" packingFormat="png" />
 
-    <bitmap id="Wind" filename="wind/direction.png" packingFormat="png" />
-
     <bitmap id="Am" filename="meridiem/am.png" packingFormat="png" />
     <bitmap id="Pm" filename="meridiem/pm.png" packingFormat="png" />
 </drawables>
