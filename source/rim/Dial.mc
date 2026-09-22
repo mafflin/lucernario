@@ -19,8 +19,8 @@ module Dial {
     const SECONDS_PER_TURN = 60;
     const DEGREES_PER_SECOND = DEGREES_PER_CIRCLE / SECONDS_PER_TURN;
 
-    //! A full circle is half a day round, one mark an hour
-    const HOUR_MARKS = 12;
+    //! A full circle is a whole day round, one mark an hour
+    const HOUR_MARKS = 24;
     const DEGREES_PER_HOUR_MARK = DEGREES_PER_CIRCLE / HOUR_MARKS;
 
     //! The band of rim the marks occupy, as a share of the radius rather than

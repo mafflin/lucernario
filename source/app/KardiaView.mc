@@ -25,6 +25,9 @@ class KardiaView extends WatchUi.WatchFace {
     //! The hour marks around the rim
     private var _rimMarks as RimMarks;
 
+    //! The numerals at the top and bottom marks
+    private var _numerals as RimNumerals;
+
     //! The seconds hand sweeping the rim
     private var _hand as SecondsHand;
 
@@ -68,6 +71,7 @@ class KardiaView extends WatchUi.WatchFace {
 
         _time = new TimeDisplay();
         _rimMarks = new RimMarks();
+        _numerals = new RimNumerals();
         _hand = new SecondsHand();
         _statusBar = new StatusBar();
 
@@ -88,10 +92,8 @@ class KardiaView extends WatchUi.WatchFace {
         ClipRegion.setup();
 
         _rimMarks.prepare();
+        _numerals.prepare(dc, _rimMarks.reach());
         _hand.prepare();
-
-        // The rim is always drawn, so the time is always fitted inside it.
-        _time.prepare(dc, Dial.ringDepth);
 
         placeFields(dc);
 
@@ -142,6 +144,7 @@ class KardiaView extends WatchUi.WatchFace {
         dc.clear();
 
         _rimMarks.draw(dc);
+        _numerals.draw(dc);
         _statusBar.draw(dc);
         _time.draw(dc);
         drawFields(dc);
@@ -175,6 +178,7 @@ class KardiaView extends WatchUi.WatchFace {
         dc.clear();
 
         _rimMarks.redraw(dc);
+        _numerals.redraw(dc);
         _statusBar.redraw(dc);
     }
 
@@ -381,13 +385,15 @@ class KardiaView extends WatchUi.WatchFace {
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the
-    //! time, the hour marks, the status icons and the data containers
+    //! time, the hour marks and numerals, the status icons and the data
+    //! containers
     //! @param dataColor The color chosen in the editor, null if unset
     private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
         var color = colorOf(dataColor);
 
         _time.setColor(color);
         _rimMarks.setColor(color);
+        _numerals.setColor(color);
         _statusBar.setColor(color);
 
         for (var i = 0; i < _fields.size(); i++) {

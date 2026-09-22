@@ -2,7 +2,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! The twelve hour marks around the rim.
+//! The twenty four hour marks around the rim.
 //!
 //! Lifted from the electric watch face, cut down to hour marks at the one
 //! size. There is no setting of its own: the marks come and go with the style
@@ -26,8 +26,8 @@ class RimMarks {
     private const _MIN_WIDTH = 1;
 
     //! How far in from the rim a mark reaches, as a share of the ring
-    private const _LENGTH_NUMERATOR = 3;
-    private const _LENGTH_DIVISOR = 4;
+    private const _LENGTH_NUMERATOR = 2;
+    private const _LENGTH_DIVISOR = 5;
 
     //! The color the marks are drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
@@ -56,6 +56,12 @@ class RimMarks {
         }
 
         _widthDegrees = Math.toDegrees(_width.toFloat() / Dial.rim).toFloat();
+    }
+
+    //! How far in from the rim a mark comes, for whatever sits against its end
+    //! @return The reach in pixels
+    function reach() as Number {
+        return _length;
     }
 
     //! Set the color the marks are drawn in

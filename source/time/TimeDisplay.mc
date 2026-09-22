@@ -1,37 +1,25 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! Renders the current time centered on the screen, in the largest font the
-//! display can carry.
+//! Renders the current time centered on the screen, in the largest numeric
+//! font the system has.
 class TimeDisplay {
 
-    //! How the time is laid out. The string used to size the font is built
-    //! from this same format, so the two can never drift apart.
+    //! How the time is laid out
     private const _TIME_FORMAT = "$1$$2$";
 
-    //! How each field is padded. Must produce the same width as _WIDEST_FIELD.
+    //! How each field is padded
     private const _FIELD_FORMAT = "%02d";
 
-    //! The widest a single field can render. Digits are uniform width in the
-    //! faces we use, so any two digits would do.
-    private const _WIDEST_FIELD = "88";
-
-    //! The font the time is drawn with, resolved in prepare()
-    private var _font as FontType = Graphics.FONT_NUMBER_HOT;
+    //! The font the time is drawn with: the largest of the system's numeric
+    //! fonts, which Garmin sizes per device to fill a watch face.
+    private const _FONT = Graphics.FONT_NUMBER_THAI_HOT;
 
     //! The color the time is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
 
     //! Constructor
     function initialize() {
-    }
-
-    //! Resolve the largest font this screen can carry. Call once per layout,
-    //! and again whenever the space left for the time changes.
-    //! @param dc The drawing context
-    //! @param inset Pixels to keep clear around the edge of the screen
-    function prepare(dc as Dc, inset as Number) as Void {
-        _font = FontFitter.largestFor(dc, widestTime(), inset);
     }
 
     //! Set the color the time is drawn in
@@ -47,7 +35,7 @@ class TimeDisplay {
         dc.drawText(
             dc.getWidth() / 2,
             dc.getHeight() / 2,
-            _font,
+            _FONT,
             currentTime(),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
@@ -61,7 +49,7 @@ class TimeDisplay {
     //! @param dc The drawing context
     //! @return The y coordinate of the bottom of the digits
     function inkBottomIn(dc as Dc) as Number {
-        var halfInk = FontFitter.inkHeightOf(dc, _font) / 2;
+        var halfInk = Fonts.inkHeightOf(dc, _FONT) / 2;
 
         return ((dc.getHeight() / 2) + halfInk).toNumber();
     }
@@ -75,12 +63,5 @@ class TimeDisplay {
             Clock.displayHour(clockTime.hour).format(_FIELD_FORMAT),
             clockTime.min.format(_FIELD_FORMAT)
         ]);
-    }
-
-    //! The widest string the time can ever render as. Sizing the font against
-    //! this keeps the layout from jumping between minutes.
-    //! @return The formatted time at its widest
-    private function widestTime() as String {
-        return Lang.format(_TIME_FORMAT, [_WIDEST_FIELD, _WIDEST_FIELD]);
     }
 }

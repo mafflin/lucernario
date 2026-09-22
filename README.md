@@ -1,7 +1,7 @@
 # Kardia
 
-A digital Garmin watch face: the time, centered, in the largest font the
-screen allows.
+A digital Garmin watch face: the time, centered, in the largest numeric font
+the system has.
 
 ## Requirements
 
@@ -31,11 +31,12 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`, and the colors each implies |
 | `source/time/TimeDisplay.mc` | Formats and draws the time |
 | `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
-| `source/time/FontFitter.mc` | Picks the largest font a screen can carry |
+| `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
-| `source/rim/RimMarks.mc` | The twelve hour marks around the rim |
+| `source/rim/RimMarks.mc` | The twenty four hour marks around the rim |
+| `source/rim/RimNumerals.mc` | The 24, 6, 12 and 18 numerals against the quarter marks |
 | `source/rim/SecondsHand.mc` | The seconds hand sweeping the rim |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
@@ -55,8 +56,8 @@ not Connect IQ app settings. Currently configurable:
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
-- **Data color** — everything else: the time, the hour marks, the status
-  icons and the data container.
+- **Data color** — everything else: the time, the hour marks and numerals,
+  the status icons and the data container.
 
 Both offer the same thirty named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
@@ -229,24 +230,13 @@ image and emit a build warning; to silence one, drop a correctly sized copy in
 `~/Library/Application Support/Garmin/ConnectIQ/Devices/<device>/compiler.json`
 under `launcherIcon`.
 
-## Font sizing
+## Fonts
 
-`FontFitter.largestFor(dc, text)` returns the largest font that can draw
-`text` within the screen:
+The time is drawn in `FONT_NUMBER_THAI_HOT`, the largest numeric system font,
+which Garmin sizes per device. The rim numerals use `FONT_XTINY`, the
+smallest. Nothing is fitted at runtime.
 
-1. If the device supports vector fonts, binary search the largest size.
-   `FontFitter.VECTOR_FACES` is the face preference, `RobotoRegular` first;
-   `getVectorFont` answers with the first of them the device carries.
-2. Otherwise walk a ladder of system fonts down from `FONT_NUMBER_THAI_HOT`.
-
-On round displays the usable width is not the screen width but the chord
-across the circle at the text box's corners, which `usableWidthAt()` accounts
-for.
-
-`TimeDisplay` sizes against `widestTime()` rather than the current time, so
-the layout never jumps between minutes. Both that string and the rendered time
-come from `_TIME_FORMAT`, so changing the format automatically resizes the
-font.
-
-The time is fitted with an inset of `Dial.ringDepth`, keeping it clear of the
-marks and the hand on the rim.
+`Fonts.inkHeightOf(dc, font)` is the height of the glyphs rather than the font
+box: digits stand on the baseline, so the descent the font reserves is empty
+space. It is what places the data container under the digits and the rim
+numerals against their marks.
