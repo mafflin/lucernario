@@ -55,13 +55,11 @@ class Wind extends Icon {
     //! half of the shared pixels, and the two halves do not add back up to a
     //! covered pixel.
     private const _GRID = 24.0;
-    private const _MIDDLE = 12;
+    private const _MIDDLE = _GRID / 2;
     private const _APEX_X = 12;
     private const _APEX_Y = 2;
     private const _WING_X = 4;
     private const _WING_Y = 20;
-
-    private const _NO_MINUTE = -1;
 
     //! A compass bearing, which the arrow reads as a clock angle: north up
     private var _bearing as Number? = null;
@@ -78,11 +76,14 @@ class Wind extends Icon {
     //! bearing moves once an hour at best.
     private var _corners as Array< Array<Float> >? = null;
 
-    private var _cachedMinute as Number = _NO_MINUTE;
+    //! Once a minute: the phone refills the weather by the hour at best, and
+    //! the row asks every draw.
+    private var _reading as MinuteGate;
 
     //! Constructor. No resource: this icon draws itself.
     function initialize() {
         Icon.initialize(null);
+        _reading = new MinuteGate();
     }
 
     //! Shown once there is a bearing to point at. A watch with no weather
@@ -218,18 +219,12 @@ class Wind extends Icon {
         ];
     }
 
-    //! The bearing the wind blows from, and how hard.
-    //!
-    //! Once a minute: the phone refills this by the hour at best, and the row
-    //! asks every draw.
+    //! The bearing the wind blows from, and how hard
     private function readWind() as Void {
-        var minute = System.getClockTime().min;
-
-        if (minute == _cachedMinute) {
+        if (!_reading.opens()) {
             return;
         }
 
-        _cachedMinute = minute;
         _bearing = null;
         _corners = null;
         _strength = _LIGHT;

@@ -1,6 +1,5 @@
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.System;
 
 //! The seconds hand sweeping the rim.
 //!
@@ -8,9 +7,6 @@ import Toybox.System;
 //! low power mode through partial updates, repainting only the pixels it
 //! vacates.
 class SecondsHand {
-
-    //! A full circle is a minute of seconds round, so a second is 6 degrees
-    private const _DEGREES_PER_SECOND = 6;
 
     //! How wide the hand is. The widest anything on the ring is drawn.
     private const _WIDTH_DEGREES = 4;
@@ -51,14 +47,15 @@ class SecondsHand {
     function draw(dc as Dc) as Void {
         _position = currentPosition();
 
-        HandDrawer.draw(dc, _position, _color, _WIDTH_DEGREES, _length);
+        RimPainter.drawArc(dc, _position, _color, _WIDTH_DEGREES, _length);
     }
 
     //! Repaint just the pixels the hand vacates. Where it is going needs
     //! nothing put back: the hand is opaque and covers whatever it lands on.
     //! @param dc The drawing context
-    //! @param view The view, asked to put the rim back under the old position
-    function drawPartial(dc as Dc, view as KardiaView) as Void {
+    //! @param restoreRim Puts the rim back under the old position, called
+    //!        with that position already clipped
+    function drawPartial(dc as Dc, restoreRim as Method(dc as Dc) as Void) as Void {
         var next = currentPosition();
         var previous = _position;
 
@@ -69,12 +66,12 @@ class SecondsHand {
         // Where it was: lift the hand off and put the rim back underneath.
         if (previous != null) {
             ClipRegion.clip(dc, previous, _WIDTH_DEGREES, _length);
-            view.restoreRim(dc);
+            restoreRim.invoke(dc);
         }
 
         // Where it is going: the box bounds the draw and nothing more.
         ClipRegion.clip(dc, next, _WIDTH_DEGREES, _length);
-        HandDrawer.draw(dc, next, _color, _WIDTH_DEGREES, _length);
+        RimPainter.drawArc(dc, next, _color, _WIDTH_DEGREES, _length);
 
         dc.clearClip();
 
@@ -84,6 +81,6 @@ class SecondsHand {
     //! Where the hand stands right now
     //! @return The position in degrees, clockwise from noon
     private function currentPosition() as Numeric {
-        return System.getClockTime().sec * _DEGREES_PER_SECOND;
+        return Clock.now().sec * Dial.DEGREES_PER_SECOND;
     }
 }

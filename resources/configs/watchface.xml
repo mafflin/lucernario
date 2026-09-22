@@ -1,6 +1,6 @@
 <resources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <watchface-config>
-        <!-- Ids must match the Styles module in source/Styles.mc -->
+        <!-- Ids must match the Styles module in source/app/Styles.mc -->
         <styles>
             <style id="1" label="@Strings.styleDark" default="true"/>
             <style id="2" label="@Strings.styleLight"/>
@@ -79,7 +79,7 @@
             <color label="@Strings.ColorDarkMagenta">0xAA00AA</color>
             <color label="@Strings.ColorPink">0xFF00AA</color>
         </dataColors>
-        <!-- Ids must match the FieldLocation module in source/FieldLocation.mc
+        <!-- Ids must match the FieldLocation module in source/complications/FieldLocation.mc
 
              The types are listed rather than allowAny: the editor offers
              exactly these, in this order. Steps is the default. The comment

@@ -19,11 +19,20 @@ import Toybox.System;
 //! number with nothing to say they are one.
 module ComplicationFormat {
 
-    const SECONDS_PER_MINUTE = 60;
-    const SECONDS_PER_HOUR = 3600;
+    //! How the two halves of a time or a duration sit together
+    const CLOCK_FORMAT = "$1$:$2$";
+    const HOURS_MINUTES_FORMAT = "$1$h$2$";
 
-    //! Hours on a 12 hour clock face
-    const HOURS_PER_HALF_DAY = 12;
+    //! A count of hours, minutes or seconds: the leading one as it is, the
+    //! trailing one padded to two digits
+    const LEADING_FORMAT = "%d";
+    const TRAILING_FORMAT = "%02d";
+
+    //! How finely a value that arrived with decimals keeps them
+    const DECIMAL_FORMAT = "%.1f";
+
+    //! A value followed straight by its unit
+    const VALUE_UNIT_FORMAT = "$1$$2$";
 
     //! Meters to a kilometer and to a mile
     const METERS_PER_KILOMETER = 1000.0;
@@ -294,18 +303,10 @@ module ComplicationFormat {
     //! @param secondsOfDay Seconds since midnight
     //! @return The time as H:MM
     function clockTime(secondsOfDay as Number) as String {
-        var hour = secondsOfDay / SECONDS_PER_HOUR;
-        var minute = (secondsOfDay % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE;
+        var hour = Clock.displayHour(secondsOfDay / Clock.SECONDS_PER_HOUR);
+        var minute = (secondsOfDay % Clock.SECONDS_PER_HOUR) / Clock.SECONDS_PER_MINUTE;
 
-        if (!System.getDeviceSettings().is24Hour) {
-            hour = hour % HOURS_PER_HALF_DAY;
-
-            if (hour == 0) {
-                hour = HOURS_PER_HALF_DAY;
-            }
-        }
-
-        return Lang.format("$1$:$2$", [hour.format("%d"), minute.format("%02d")]);
+        return pair(CLOCK_FORMAT, hour, minute);
     }
 
     //! A length of time, in whichever units read best at this size: hours and
@@ -313,17 +314,26 @@ module ComplicationFormat {
     //! @param total The duration in seconds
     //! @return The duration as H:MM or M:SS
     function duration(total as Number) as String {
-        if (total >= SECONDS_PER_HOUR) {
-            var hours = total / SECONDS_PER_HOUR;
-            var minutes = (total % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE;
+        if (total >= Clock.SECONDS_PER_HOUR) {
+            var hours = total / Clock.SECONDS_PER_HOUR;
+            var minutes = (total % Clock.SECONDS_PER_HOUR) / Clock.SECONDS_PER_MINUTE;
 
-            return Lang.format("$1$h$2$", [hours.format("%d"), minutes.format("%02d")]);
+            return pair(HOURS_MINUTES_FORMAT, hours, minutes);
         }
 
-        var wholeMinutes = total / SECONDS_PER_MINUTE;
-        var remainder = total % SECONDS_PER_MINUTE;
+        var minutes = total / Clock.SECONDS_PER_MINUTE;
+        var seconds = total % Clock.SECONDS_PER_MINUTE;
 
-        return Lang.format("$1$:$2$", [wholeMinutes.format("%d"), remainder.format("%02d")]);
+        return pair(CLOCK_FORMAT, minutes, seconds);
+    }
+
+    //! Two counts laid out together, the trailing one padded to two digits
+    //! @param format How the two sit together
+    //! @param leading The larger unit
+    //! @param trailing The smaller unit, 0 to 59
+    //! @return The pair as text
+    function pair(format as String, leading as Number, trailing as Number) as String {
+        return Lang.format(format, [leading.format(LEADING_FORMAT), trailing.format(TRAILING_FORMAT)]);
     }
 
     //! The value as it stands, with whatever unit the system supplied. Most
@@ -342,22 +352,18 @@ module ComplicationFormat {
             return text;
         }
 
-        return Lang.format("$1$$2$", [text, unit]);
+        return Lang.format(VALUE_UNIT_FORMAT, [text, unit]);
     }
 
     //! A value as text, without losing a float to its decimals
     //! @param value The complication value
     //! @return The value as text
     function number(value as Complications.Value) as String {
-        if (value instanceof Lang.Float) {
-            return value.format("%.1f");
+        if ((value instanceof Lang.Float) || (value instanceof Lang.Double)) {
+            return decimal(value).format(DECIMAL_FORMAT);
         }
 
-        if (value instanceof Lang.Double) {
-            return value.format("%.1f");
-        }
-
-        return Lang.format("$1$", [value]);
+        return value.toString();
     }
 
     //! A value rounded to a whole number, as text
@@ -371,7 +377,7 @@ module ComplicationFormat {
     //! @param amount The number to round
     //! @return The number as text, with no decimals
     function rounded(amount as Float) as String {
-        return Math.round(amount).toNumber().format("%d");
+        return Math.round(amount).toNumber().format(LEADING_FORMAT);
     }
 
     //! A value as a float, whatever number type it arrived as
@@ -401,14 +407,6 @@ module ComplicationFormat {
             return value;
         }
 
-        if (value instanceof Lang.Float) {
-            return value.toNumber();
-        }
-
-        if (value instanceof Lang.Double) {
-            return value.toNumber();
-        }
-
-        return 0;
+        return decimal(value).toNumber();
     }
 }

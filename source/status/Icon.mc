@@ -8,6 +8,9 @@ import Toybox.WatchUi;
 //! whenever the thing it reports is worth reporting.
 class Icon {
 
+    //! No bitmap out of a set has been loaded yet
+    private const _NONE_CHOSEN = -1;
+
     //! Where the last full draw put this icon, null if it was not drawn
     private var _lastX as Number? = null;
     private var _lastY as Number? = null;
@@ -19,7 +22,7 @@ class Icon {
     private var _resource as BitmapResource? = null;
 
     //! Which of a set is loaded, for the icons that pick from several
-    private var _chosenIndex as Number = -1;
+    private var _chosenIndex as Number = _NONE_CHOSEN;
 
     //! Sizes differ by device, so they are asked of the bitmap once: the
     //! partial update asks every second, and loading is not free.
@@ -77,9 +80,7 @@ class Icon {
     //! The width of the icon in pixels
     //! @return The width
     function width() as Number {
-        if (_measuredWidth == null) {
-            _measuredWidth = bitmap().getWidth();
-        }
+        measure();
 
         return _measuredWidth as Number;
     }
@@ -87,9 +88,7 @@ class Icon {
     //! The height of the icon in pixels
     //! @return The height
     function height() as Number {
-        if (_measuredHeight == null) {
-            _measuredHeight = bitmap().getHeight();
-        }
+        measure();
 
         return _measuredHeight as Number;
     }
@@ -139,8 +138,8 @@ class Icon {
         return _resource as BitmapResource;
     }
 
-    //! The color to draw in. Overridden by the battery, which says something
-    //! with color that the rest of the row does not.
+    //! The color to draw in. Overridden by the battery and the wind, which
+    //! say something with color that the rest of the row does not.
     //! @return The color
     protected function tint() as Number {
         return _tint;
@@ -178,5 +177,17 @@ class Icon {
         }
 
         dc.drawBitmap2(x, y, bitmap(), { :tintColor => tint() });
+    }
+
+    //! Ask the bitmap its size, the first time either dimension is wanted
+    private function measure() as Void {
+        if (_measuredWidth != null) {
+            return;
+        }
+
+        var image = bitmap();
+
+        _measuredWidth = image.getWidth();
+        _measuredHeight = image.getHeight();
     }
 }

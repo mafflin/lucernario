@@ -20,24 +20,30 @@ screen allows.
 
 ## Layout
 
+Sources are grouped by the part of the face they draw. The compiler picks up
+every `.mc` under `source/`, so a new file goes in whichever folder fits.
+
 | Path | Purpose |
 | --- | --- |
-| `source/KardiaApp.mc` | App entry point; detects the watch face editor at startup |
-| `source/KardiaView.mc` | Owns the elements, applies configuration, clears the screen |
-| `source/TimeDisplay.mc` | Formats and draws the time |
-| `source/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
-| `source/FieldLocation.mc` | The container slot id, mirroring `watchface.xml` |
-| `source/ComplicationFormat.mc` | Turns a complication's raw value into readable text |
-| `source/StatusBar.mc` | The row of status icons above the time |
-| `source/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
-| `source/RimMarks.mc` | The twelve hour marks around the rim |
-| `source/SecondsHand.mc` | The seconds hand sweeping the rim |
-| `source/Dial.mc` | Ring geometry: where a value lands on the glass |
-| `source/HandDrawer.mc` | Draws the arc shapes on the rim |
-| `source/ClipRegion.mc` | The box a partial update may touch |
-| `source/Styles.mc` | Style ids, mirroring `watchface.xml` |
-| `source/FontFitter.mc` | Picks the largest font a screen can carry |
-| `source/KardiaDelegate.mc` | Receives live edits from the native watch face editor |
+| `source/app/KardiaApp.mc` | App entry point; detects the watch face editor at startup |
+| `source/app/KardiaView.mc` | Owns the elements, applies configuration, clears the screen |
+| `source/app/KardiaDelegate.mc` | Receives live edits from the native watch face editor |
+| `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`, and the colors each implies |
+| `source/time/TimeDisplay.mc` | Formats and draws the time |
+| `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
+| `source/time/FontFitter.mc` | Picks the largest font a screen can carry |
+| `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
+| `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
+| `source/rim/RimPainter.mc` | Draws the shapes on the rim |
+| `source/rim/RimMarks.mc` | The twelve hour marks around the rim |
+| `source/rim/SecondsHand.mc` | The seconds hand sweeping the rim |
+| `source/rim/ClipRegion.mc` | The box a partial update may touch |
+| `source/status/StatusBar.mc` | The row of status icons above the time |
+| `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
+| `source/complications/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
+| `source/complications/FieldLocation.mc` | The container slot id, mirroring `watchface.xml` |
+| `source/complications/ComplicationLabel.mc` | A short name per complication type |
+| `source/complications/ComplicationFormat.mc` | Turns a complication's raw value into readable text |
 | `resources/configs/watchface.xml` | Declares which settings the editor offers |
 
 ## Configuration
@@ -46,7 +52,7 @@ Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
 - **Style** — `Dark` (default) or `Light`. The editor has no background
-  setting, so the style id is what carries it; `source/Styles.mc` decodes it.
+  setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
 - **Data color** — everything else: the time, the hour marks, the status
@@ -62,7 +68,7 @@ screens. Black is added for the light style.
   types it offers are listed one by one in `watchface.xml` rather than opened
   up with `allowAny`, which keeps the picker to what reads well in a slot this
   size; the cost is that complications published by other Connect IQ apps are
-  not offered at all. Its slot id lives in `source/FieldLocation.mc` and must
+  not offered at all. Its slot id lives in `source/complications/FieldLocation.mc` and must
   stay in step with `watchface.xml`. It defaults to the weekday and the date,
   named twice: `default="true"` in `watchface.xml` is what the editor offers,
   and the type handed to `ComplicationField` in `KardiaView` is what the slot
@@ -94,7 +100,7 @@ after each of them. Anything else falls through to value plus unit.
 
 The container draws a short label in front of the value. The system's own
 `shortLabel` and `longLabel` run long enough to overflow the slot, so
-`source/ComplicationLabel.mc` carries a four character name per type instead,
+`source/complications/ComplicationLabel.mc` carries a four character name per type instead,
 one case per type offered in `watchface.xml`; the types whose value already
 reads as what it is, like the date and the training status, get none.
 

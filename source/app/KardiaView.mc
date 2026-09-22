@@ -8,11 +8,16 @@ import Toybox.WatchUi;
 //! that styles them.
 class KardiaView extends WatchUi.WatchFace {
 
+    //! How far below the digits the data container sits, as a fraction of
+    //! the screen height
+    private const _FIELD_GAP_RATIO = 0.02;
+
+    //! The style chosen in the editor, which decides the background and the
+    //! color everything falls back to
+    private var _style as Number = Styles.DEFAULT;
+
     //! The background the face is drawn on, which the style chooses
     private var _background as Number = Graphics.COLOR_BLACK;
-
-    //! Style used when the editor has not set one
-    private const _DEFAULT_STYLE = Styles.DARK;
 
     //! The time in the center of the screen
     private var _time as TimeDisplay;
@@ -26,7 +31,10 @@ class KardiaView extends WatchUi.WatchFace {
     //! The row of status icons above the time
     private var _statusBar as StatusBar;
 
-    //! The data container below the time, indexed by FieldLocation - 1
+    //! The data container below the time
+    private var _centerField as ComplicationField;
+
+    //! Every data container on the face
     private var _fields as Array<ComplicationField>;
 
     //! Whether the view was started by the native watch face editor
@@ -36,9 +44,6 @@ class KardiaView extends WatchUi.WatchFace {
     //! It is hidden on the face while the editor pulses it in place.
     private var _editedField as ComplicationField?;
 
-    //! Whether the selected style is dark on light rather than light on dark
-    private var _isLight as Boolean = false;
-
     //! Whether the watch face is in high power mode
     private var _isAwake as Boolean = true;
 
@@ -46,9 +51,13 @@ class KardiaView extends WatchUi.WatchFace {
     //! low power mode. Turned off if we exceed the power budget.
     private var _partialUpdatesAllowed as Boolean;
 
-    //! How far below the digits the data container sits, as a fraction of
-    //! the screen height
-    private const _FIELD_GAP_RATIO = 0.02;
+    //! Whether the screen can smooth what it draws. Asked once: a partial
+    //! update has no business looking a symbol up every tick.
+    private var _canSmooth as Boolean = false;
+
+    //! What the hand calls to put the rim back under its old position. Made
+    //! once: a partial update has no business allocating a Method every tick.
+    private var _restoreRim as Method(dc as Dc) as Void;
 
     //! Constructor
     //! @param editMode Whether the native watch face editor started this view
@@ -62,19 +71,21 @@ class KardiaView extends WatchUi.WatchFace {
         _hand = new SecondsHand();
         _statusBar = new StatusBar();
 
-        _fields = [
-            new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY)
-        ];
+        _centerField = new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
+        _fields = [_centerField];
+
         _partialUpdatesAllowed = (WatchUi.WatchFace has :onPartialUpdate);
+        _restoreRim = method(:restoreRim);
     }
 
     //! Size the elements for this device and load the configuration set in
     //! the native watch face editor
     //! @param dc The drawing context
     function onLayout(dc as Dc) as Void {
+        _canSmooth = (dc has :setAntiAlias);
+
         Dial.setup(dc);
         ClipRegion.setup();
-        HandDrawer.setup(dc);
 
         _rimMarks.prepare();
         _hand.prepare();
@@ -124,7 +135,8 @@ class KardiaView extends WatchUi.WatchFace {
             dc.clearClip();
         }
 
-        HandDrawer.smooth(dc);
+        Clock.read();
+        smooth(dc);
 
         dc.setColor(_background, _background);
         dc.clear();
@@ -150,8 +162,9 @@ class KardiaView extends WatchUi.WatchFace {
             return;
         }
 
-        HandDrawer.smooth(dc);
-        _hand.drawPartial(dc, self);
+        Clock.read();
+        smooth(dc);
+        _hand.drawPartial(dc, _restoreRim);
     }
 
     //! Put the rim back where the hand has just been. Called by the hand with
@@ -234,6 +247,18 @@ class KardiaView extends WatchUi.WatchFace {
         WatchUi.requestUpdate();
     }
 
+    //! Turn smoothing on for everything drawn after it.
+    //!
+    //! Asserted once per dc the system hands the face rather than by each
+    //! shape around itself, and re-asserted every update because the dc
+    //! between two updates is the system's.
+    //! @param dc The drawing context
+    private function smooth(dc as Dc) as Void {
+        if (_canSmooth) {
+            dc.setAntiAlias(true);
+        }
+    }
+
     //! Put the container on the centerline below the digits
     //! @param dc The drawing context
     private function placeFields(dc as Dc) as Void {
@@ -241,9 +266,9 @@ class KardiaView extends WatchUi.WatchFace {
 
         // Sit it just under the time rather than at a fixed height: the time
         // is sized to the device, so where it ends moves with it.
-        var rowCenterY = _time.inkBottomIn(dc) + gap + (_fields[0].heightIn(dc) / 2);
+        var rowCenterY = _time.inkBottomIn(dc) + gap + (_centerField.heightIn(dc) / 2);
 
-        _fields[FieldLocation.CENTER - 1].prepare(dc, dc.getWidth() / 2, rowCenterY);
+        _centerField.prepare(dc, dc.getWidth() / 2, rowCenterY);
     }
 
     //! Draw the containers, leaving out the one the editor is pulsing
@@ -265,7 +290,7 @@ class KardiaView extends WatchUi.WatchFace {
         }
     }
 
-    //! Ask the system to tell us when either complication changes
+    //! Ask the system to tell us when a shown complication changes
     private function subscribeToComplications() as Void {
         for (var i = 0; i < _fields.size(); i++) {
             Complications.subscribeToUpdates(_fields[i].getComplicationId());
@@ -275,25 +300,25 @@ class KardiaView extends WatchUi.WatchFace {
     }
 
     //! The container in the given slot
-    //! @param location The slot, from FieldLocation
+    //! @param location The slot, from FieldLocation, as the editor hands it over
     //! @return The container, or null if the slot is not one of ours
     private function fieldAt(location as Object?) as ComplicationField? {
         if (!(location instanceof Lang.Number)) {
             return null;
         }
 
-        var index = location - 1;
-
-        if ((index < 0) || (index >= _fields.size())) {
-            return null;
+        for (var i = 0; i < _fields.size(); i++) {
+            if (_fields[i].getLocation() == location) {
+                return _fields[i];
+            }
         }
 
-        return _fields[index];
+        return null;
     }
 
     //! The container currently showing the given complication
     //! @param complicationId The complication to look for
-    //! @return The container, or null if neither shows it
+    //! @return The container, or null if none shows it
     private function fieldShowing(complicationId as Complications.Id) as ComplicationField? {
         for (var i = 0; i < _fields.size(); i++) {
             if (_fields[i].shows(complicationId)) {
@@ -335,31 +360,31 @@ class KardiaView extends WatchUi.WatchFace {
         return _isAwake || _partialUpdatesAllowed;
     }
 
-    //! Turn the selected style into the way round the colors go
+    //! Take the selected style, which decides which way round the colors go
     //! @param styleId The style chosen in the editor, null if unset
     private function applyStyle(styleId as Number?) as Void {
-        var style = _DEFAULT_STYLE;
+        var style = Styles.DEFAULT;
 
         if (styleId != null) {
             style = styleId;
         }
 
-        _isLight = Styles.isLight(style);
-        _background = _isLight ? Graphics.COLOR_WHITE : Graphics.COLOR_BLACK;
+        _style = style;
+        _background = Styles.backgroundOf(style);
     }
 
     //! Apply the chosen accent color to the seconds hand, the one thing on
     //! the face that is meant to stand apart from the rest
     //! @param accentColor The color chosen in the editor, null if unset
     private function applyAccentColor(accentColor as WatchFaceConfig.Color?) as Void {
-        _hand.setColor(colorOf(accentColor, defaultForeground()));
+        _hand.setColor(colorOf(accentColor));
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the
     //! time, the hour marks, the status icons and the data containers
     //! @param dataColor The color chosen in the editor, null if unset
     private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
-        var color = colorOf(dataColor, defaultForeground());
+        var color = colorOf(dataColor);
 
         _time.setColor(color);
         _rimMarks.setColor(color);
@@ -370,22 +395,15 @@ class KardiaView extends WatchUi.WatchFace {
         }
     }
 
-    //! The color to draw with when the editor has not chosen one: whatever
-    //! reads against the background this style picked
-    //! @return The default foreground color
-    private function defaultForeground() as Number {
-        return _isLight ? Graphics.COLOR_BLACK : Graphics.COLOR_WHITE;
-    }
-
-    //! Unwrap a color from the editor, falling back when it has not set one
+    //! Unwrap a color from the editor, falling back to whatever reads against
+    //! the style's background when it has not set one
     //! @param chosen The color from the configuration
-    //! @param fallback The color to use when nothing is set
     //! @return The color to draw with
-    private function colorOf(chosen as WatchFaceConfig.Color?, fallback as Number) as Number {
+    private function colorOf(chosen as WatchFaceConfig.Color?) as Number {
         if ((chosen != null) && (chosen.color != null)) {
             return chosen.color as Number;
         }
 
-        return fallback;
+        return Styles.foregroundOf(_style);
     }
 }

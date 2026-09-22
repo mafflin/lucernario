@@ -82,11 +82,12 @@ class StatusBar {
         var centerY = middle(dc);
         var items = itemsWidth();
         var gap = gapFor(total, centerY, items, tall);
-        var x = (dc.getWidth() - items - ((total - 1) * gap)) / 2;
+        var rowWidth = items + ((total - 1) * gap);
+        var x = (dc.getWidth() - rowWidth) / 2;
 
         _rowX = x;
         _rowY = centerY - (tall / 2);
-        _rowWidth = items + ((total - 1) * gap);
+        _rowWidth = rowWidth;
         _rowHeight = tall;
 
         for (var i = 0; i < _icons.size(); i++) {

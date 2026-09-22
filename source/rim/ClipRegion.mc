@@ -44,21 +44,21 @@ module ClipRegion {
     function clip(dc as Dc, valueDegrees as Numeric, angularWidthDegrees as Numeric, radialLength as Number) as Void {
         var outer = Dial.rim;
         var inner = outer - radialLength;
-        var position = Dial.positionOf(valueDegrees);
-        var from = Math.toRadians(position + (angularWidthDegrees / 2.0));
-        var to = Math.toRadians(position - (angularWidthDegrees / 2.0));
+        var half = angularWidthDegrees / 2.0;
+        var from = Dial.radiansOf(valueDegrees + half);
+        var to = Dial.radiansOf(valueDegrees - half);
 
-        var cosFrom = Math.cos(from);
-        var cosTo = Math.cos(to);
+        var fromX = Math.cos(from);
+        var toX = Math.cos(to);
 
         // Screen y grows downward, so the sine of the angle is negated.
-        var sinFrom = -Math.sin(from);
-        var sinTo = -Math.sin(to);
+        var fromY = -Math.sin(from);
+        var toY = -Math.sin(to);
 
-        var x1 = (Dial.centerX + lowEdge(cosFrom, cosTo, inner, outer)).toNumber() - padding;
-        var y1 = (Dial.centerY + lowEdge(sinFrom, sinTo, inner, outer)).toNumber() - padding;
-        var x2 = (Dial.centerX + highEdge(cosFrom, cosTo, inner, outer)).toNumber() + padding;
-        var y2 = (Dial.centerY + highEdge(sinFrom, sinTo, inner, outer)).toNumber() + padding;
+        var x1 = (Dial.centerX + lowEdge(fromX, toX, inner, outer)).toNumber() - padding;
+        var y1 = (Dial.centerY + lowEdge(fromY, toY, inner, outer)).toNumber() - padding;
+        var x2 = (Dial.centerX + highEdge(fromX, toX, inner, outer)).toNumber() + padding;
+        var y2 = (Dial.centerY + highEdge(fromY, toY, inner, outer)).toNumber() + padding;
 
         if (x1 < 0) { x1 = 0; }
         if (y1 < 0) { y1 = 0; }

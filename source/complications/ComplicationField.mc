@@ -23,7 +23,6 @@ class ComplicationField extends WatchUi.Drawable {
     //! Which slot this is, matching the ids in watchface.xml
     private var _location as Number;
 
-
     //! The complication assigned to this slot
     private var _complicationId as Complications.Id;
 
@@ -49,7 +48,7 @@ class ComplicationField extends WatchUi.Drawable {
     //! @param centerY Where the middle of the slot sits vertically
     function prepare(dc as Dc, centerX as Number, centerY as Number) as Void {
         width = (dc.getWidth() * _WIDTH_RATIO).toNumber();
-        height = dc.getFontHeight(_FONT);
+        height = heightIn(dc);
         locX = (centerX - (width / 2)).toNumber();
         locY = (centerY - (height / 2)).toNumber();
     }
@@ -86,6 +85,12 @@ class ComplicationField extends WatchUi.Drawable {
         return _complicationId.equals(complicationId);
     }
 
+    //! Set the color the value is drawn in
+    //! @param color The color to use
+    function setColor(color as Number) as Void {
+        _color = color;
+    }
+
     //! Read the current value of the assigned complication
     function refresh() as Void {
         // Some watches throw on a complication they do not carry.
@@ -99,25 +104,6 @@ class ComplicationField extends WatchUi.Drawable {
         } catch (exception) {
             _text = "";
         }
-    }
-
-    //! The value behind its label, or on its own for a type whose value
-    //! already reads as what it is
-    //! @param label The short name for the type
-    //! @param value The formatted value
-    //! @return The text to draw
-    private function labelled(label as String, value as String) as String {
-        if (label.length() == 0) {
-            return value;
-        }
-
-        return Lang.format(_LABEL_FORMAT, [label, value]);
-    }
-
-    //! Set the color the value is drawn in
-    //! @param color The color to use
-    function setColor(color as Number) as Void {
-        _color = color;
     }
 
     //! Draw the field
@@ -154,5 +140,18 @@ class ComplicationField extends WatchUi.Drawable {
     //! @return true when the point is inside
     function containsPoint(x as Number, y as Number) as Boolean {
         return getBoundingBox().includesPoint(x, y);
+    }
+
+    //! The value behind its label, or on its own for a type whose value
+    //! already reads as what it is
+    //! @param label The short name for the type
+    //! @param value The formatted value
+    //! @return The text to draw
+    private function labelled(label as String, value as String) as String {
+        if (label.length() == 0) {
+            return value;
+        }
+
+        return Lang.format(_LABEL_FORMAT, [label, value]);
     }
 }

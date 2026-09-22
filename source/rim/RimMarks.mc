@@ -9,12 +9,6 @@ import Toybox.Math;
 //! that shows the seconds hand, which is what they are there to read against.
 class RimMarks {
 
-    //! Marks around the dial, one an hour
-    private const _MARKS = 12;
-
-    //! A full circle is half a day round, so an hour is 30 degrees of it
-    private const _DEGREES_PER_MARK = 30;
-
     //! How wide a mark is, as a share of the rim radius rather than a fixed
     //! count, so it holds its proportions on every screen. Narrower than the
     //! hand that sweeps over them, which is what tells the two apart at a
@@ -23,7 +17,7 @@ class RimMarks {
     //! Pixels, not degrees of arc: a mark is about a degree wide, and drawArc
     //! renders in whole degrees, so every width from one degree to two came
     //! out as the same mark. A quarter of a degree of movement is worth
-    //! having on a shape this small. A fiftieth of the radius is where the
+    //! having on a shape this small. A fortieth of the radius is where the
     //! old one and a half degrees landed.
     private const _WIDTH_NUMERATOR = 1;
     private const _WIDTH_DIVISOR = 40;
@@ -44,9 +38,8 @@ class RimMarks {
     //! How wide a mark is in pixels, resolved in prepare()
     private var _width as Number = _MIN_WIDTH;
 
-    //! The same width as an angle, for the redraw test below. The arc a mark
-    //! subtends at the rim; the clip test is the only thing that still wants
-    //! the width in degrees.
+    //! The same width as an angle: the arc a mark subtends at the rim. The
+    //! clip test is the only thing that still wants the width in degrees.
     private var _widthDegrees as Float = 0.0;
 
     //! Constructor
@@ -74,7 +67,7 @@ class RimMarks {
     //! Draw every mark
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
-        for (var mark = 0; mark < _MARKS; mark++) {
+        for (var mark = 0; mark < Dial.HOUR_MARKS; mark++) {
             paint(dc, mark);
         }
     }
@@ -83,8 +76,8 @@ class RimMarks {
     //! Only the ones inside the clip are worth issuing a draw for.
     //! @param dc The drawing context
     function redraw(dc as Dc) as Void {
-        for (var mark = 0; mark < _MARKS; mark++) {
-            if (ClipRegion.reaches(mark * _DEGREES_PER_MARK, _widthDegrees)) {
+        for (var mark = 0; mark < Dial.HOUR_MARKS; mark++) {
+            if (ClipRegion.reaches(positionOf(mark), _widthDegrees)) {
                 paint(dc, mark);
             }
         }
@@ -94,6 +87,13 @@ class RimMarks {
     //! @param dc The drawing context
     //! @param mark Which mark, counting clockwise from noon
     private function paint(dc as Dc, mark as Number) as Void {
-        HandDrawer.drawRadial(dc, mark * _DEGREES_PER_MARK, _color, _width, _length);
+        RimPainter.drawRadial(dc, positionOf(mark), _color, _width, _length);
+    }
+
+    //! Where a mark sits on the dial
+    //! @param mark Which mark, counting clockwise from noon
+    //! @return The position in degrees, clockwise from noon
+    private function positionOf(mark as Number) as Number {
+        return mark * Dial.DEGREES_PER_HOUR_MARK;
     }
 }

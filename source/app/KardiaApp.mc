@@ -17,11 +17,8 @@ class KardiaApp extends Application.AppBase {
     //! @param state Startup arguments
     function onStart(state as Dictionary?) as Void {
         if (state != null) {
-            var editorActive = state[:launchedFromWatchFaceSettingsEditor] as Boolean?;
-
-            if (editorActive) {
-                _editMode = true;
-            }
+            var launched = state[:launchedFromWatchFaceSettingsEditor];
+            _editMode = (launched instanceof Boolean) ? (launched as Boolean) : false;
         }
     }
 

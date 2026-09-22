@@ -9,11 +9,19 @@ import Toybox.Math;
 //! dc, which a partial update would do every tick.
 module Dial {
 
+    const DEGREES_PER_CIRCLE = 360;
+
     //! Noon at the top and values running clockwise, where the screen's own
     //! zero sits at three o'clock and runs the other way.
     const TWELVE_OCLOCK_DEGREES = 90;
 
-    const DEGREES_PER_CIRCLE = 360;
+    //! A full circle is a minute of seconds round
+    const SECONDS_PER_TURN = 60;
+    const DEGREES_PER_SECOND = DEGREES_PER_CIRCLE / SECONDS_PER_TURN;
+
+    //! A full circle is half a day round, one mark an hour
+    const HOUR_MARKS = 12;
+    const DEGREES_PER_HOUR_MARK = DEGREES_PER_CIRCLE / HOUR_MARKS;
 
     //! The band of rim the marks occupy, as a share of the radius rather than
     //! pixels: widths are in degrees and grow with the screen, so a fixed
@@ -45,6 +53,16 @@ module Dial {
     //! @return The angle in screen degrees
     function positionOf(valueDegrees as Numeric) as Numeric {
         return TWELVE_OCLOCK_DEGREES - valueDegrees;
+    }
+
+    //! A value on the dial as an angle on the screen, in radians, ready for
+    //! the trig functions. Converted once per angle: the callers take both
+    //! the cosine and the sine of it, and the partial update calls them every
+    //! second. Screen y grows downward, so callers negate the sine.
+    //! @param valueDegrees The value, clockwise from noon
+    //! @return The angle in radians
+    function radiansOf(valueDegrees as Numeric) as Decimal {
+        return Math.toRadians(positionOf(valueDegrees));
     }
 
     //! Into one turn and never below zero: an arc ending where it starts is a

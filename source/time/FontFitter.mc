@@ -51,6 +51,7 @@ module FontFitter {
     //! Binary search the largest vector font size that still fits
     //! @param dc The drawing context
     //! @param text The string that has to fit
+    //! @param inset Pixels to keep clear around the edge of the screen
     //! @return The vector font, or null if the device has none of our faces
     function largestVectorFor(dc as Dc, text as String, inset as Number) as VectorFont? {
         var bestSize = NO_SIZE;
@@ -80,6 +81,7 @@ module FontFitter {
     //! Pick the largest system font that fits, from biggest to smallest
     //! @param dc The drawing context
     //! @param text The string that has to fit
+    //! @param inset Pixels to keep clear around the edge of the screen
     //! @return The font to draw with
     function largestSystemFor(dc as Dc, text as String, inset as Number) as FontType {
         var ladder = [
@@ -105,6 +107,7 @@ module FontFitter {
     //! @param dc The drawing context
     //! @param size The vector font size to test, in pixels
     //! @param text The string that has to fit
+    //! @param inset Pixels to keep clear around the edge of the screen
     //! @return true when a font of that size exists and fits
     function vectorFits(dc as Dc, size as Number, text as String, inset as Number) as Boolean {
         var font = vectorFontOf(size);
@@ -127,6 +130,7 @@ module FontFitter {
     //! @param dc The drawing context
     //! @param font The font to measure with
     //! @param text The string that has to fit
+    //! @param inset Pixels to keep clear around the edge of the screen
     //! @return true when the text fits both ways
     function fits(dc as Dc, font as FontType, text as String, inset as Number) as Boolean {
         var boxHeight = dc.getFontHeight(font);

@@ -5,11 +5,9 @@ import Toybox.WatchUi;
 //! AM or PM, shown only on a watch set to a 12 hour clock.
 class Meridiem extends Icon {
 
+    //! Which bitmap in _images belongs to which half of the day
     private const _MORNING = 0;
     private const _AFTERNOON = 1;
-
-    //! Hours on a 12 hour clock face
-    private const _HOURS_PER_HALF_DAY = 12;
 
     private var _images as Array<ResourceId> = [
         Rez.Drawables.Am,
@@ -34,7 +32,7 @@ class Meridiem extends Icon {
             return false;
         }
 
-        _morning = (System.getClockTime().hour < _HOURS_PER_HALF_DAY);
+        _morning = Clock.isMorning(Clock.now().hour);
 
         return true;
     }

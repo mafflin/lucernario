@@ -7,29 +7,11 @@ import Toybox.Math;
 //! The hand is an arc as wide as the pen is thick, which is the shape it was
 //! lifted as. The marks are lines running inward from the rim, because an arc
 //! cannot be made narrow enough - see drawRadial.
-module HandDrawer {
-
-    //! Whether the screen can smooth what it draws. Asked once: a partial
-    //! update has no business looking a symbol up every tick.
-    var antiAlias as Boolean = false;
-
-    //! Ask the screen whether it smooths
-    //! @param dc The drawing context
-    function setup(dc as Dc) as Void {
-        antiAlias = (dc has :setAntiAlias);
-    }
-
-    //! Turn smoothing on for everything drawn after it.
-    //!
-    //! Asserted once per dc the system hands the face rather than by each
-    //! shape around itself, and re-asserted every update because the dc
-    //! between two updates is the system's.
-    //! @param dc The drawing context
-    function smooth(dc as Dc) as Void {
-        if (antiAlias) {
-            dc.setAntiAlias(true);
-        }
-    }
+//!
+//! Both want the smoothing the view turns on once per update. A mark is a
+//! degree or two of arc, and hard edged its two sides land on whichever pixels
+//! the angle happens to fall on, which reads as a leaning tick.
+module RimPainter {
 
     //! A mark on the rim drawn as a line running inward from the rim, as wide
     //! as the pen is thick.
@@ -45,11 +27,11 @@ module HandDrawer {
     //! @param widthPixels How wide the mark is
     //! @param radialLength How far in from the rim it reaches
     function drawRadial(dc as Dc, valueDegrees as Numeric, color as Number, widthPixels as Number, radialLength as Number) as Void {
-        var radians = Math.toRadians(Dial.positionOf(valueDegrees));
-        var cosine = Math.cos(radians);
+        var radians = Dial.radiansOf(valueDegrees);
+        var acrossX = Math.cos(radians);
 
         // Screen y grows downward, so the sine of the angle is negated.
-        var sine = -Math.sin(radians);
+        var acrossY = -Math.sin(radians);
 
         var outer = Dial.rim;
         var inner = outer - radialLength;
@@ -57,24 +39,20 @@ module HandDrawer {
         dc.setPenWidth(widthPixels);
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.drawLine(
-            Dial.centerX + (outer * cosine),
-            Dial.centerY + (outer * sine),
-            Dial.centerX + (inner * cosine),
-            Dial.centerY + (inner * sine)
+            Dial.centerX + (outer * acrossX),
+            Dial.centerY + (outer * acrossY),
+            Dial.centerX + (inner * acrossX),
+            Dial.centerY + (inner * acrossY)
         );
     }
 
     //! A mark on the rim: an arc as wide as the pen is thick.
-    //!
-    //! Wants the smoothing above. A mark is a degree or two of arc, and hard
-    //! edged its two sides land on whichever pixels the angle happens to fall
-    //! on, which reads as a leaning tick.
     //! @param dc The drawing context
     //! @param valueDegrees Where on the dial it sits, clockwise from noon
     //! @param color The color to draw in
     //! @param angularWidthDegrees How wide the mark is
     //! @param radialLength How far in from the rim it reaches
-    function draw(dc as Dc, valueDegrees as Numeric, color as Number, angularWidthDegrees as Numeric, radialLength as Number) as Void {
+    function drawArc(dc as Dc, valueDegrees as Numeric, color as Number, angularWidthDegrees as Numeric, radialLength as Number) as Void {
         var position = Dial.positionOf(valueDegrees);
 
         // Float: a one degree mark would otherwise start and end on the same
