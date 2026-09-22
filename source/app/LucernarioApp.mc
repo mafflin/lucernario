@@ -3,7 +3,7 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 
 //! Digital watch face that shows the time, as large as the screen allows.
-class KardiaApp extends Application.AppBase {
+class LucernarioApp extends Application.AppBase {
 
     //! Whether the watch face was started by the native watch face editor
     private var _editMode as Boolean = false;
@@ -32,12 +32,12 @@ class KardiaApp extends Application.AppBase {
     //! The delegate is always attached: it carries both the edits made in the
     //! native watch face editor and the power budget notice for partial
     //! updates, and the latter can arrive at any time.
-    //! @return Array [KardiaView] or [KardiaView, KardiaDelegate]
+    //! @return Array [LucernarioView] or [LucernarioView, LucernarioDelegate]
     function getInitialView() as [Views] or [Views, InputDelegates] {
-        var view = new KardiaView(_editMode);
+        var view = new LucernarioView(_editMode);
 
         if (WatchUi has :WatchFaceDelegate) {
-            return [ view, new KardiaDelegate(view) ];
+            return [ view, new LucernarioDelegate(view) ];
         }
 
         return [ view ];

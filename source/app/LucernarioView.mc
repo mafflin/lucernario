@@ -6,7 +6,7 @@ import Toybox.WatchUi;
 
 //! The watch face itself. Owns the elements drawn on it and the configuration
 //! that styles them.
-class KardiaView extends WatchUi.WatchFace {
+class LucernarioView extends WatchUi.WatchFace {
 
     //! How far below the digits the data container sits, as a fraction of
     //! the screen height

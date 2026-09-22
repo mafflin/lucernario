@@ -5,14 +5,14 @@ import Toybox.WatchUi;
 
 //! Receives watch face events from the system: edits made in the native watch
 //! face editor, and notice that partial updates cost too much.
-class KardiaDelegate extends WatchUi.WatchFaceDelegate {
+class LucernarioDelegate extends WatchUi.WatchFaceDelegate {
 
     //! The view attached to this delegate
-    private var _view as KardiaView;
+    private var _view as LucernarioView;
 
     //! Constructor
     //! @param view The view to apply configuration changes to
-    function initialize(view as KardiaView) {
+    function initialize(view as LucernarioView) {
         WatchFaceDelegate.initialize();
         _view = view;
     }

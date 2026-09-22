@@ -1,4 +1,4 @@
-# Kardia
+# Lucernario
 
 A digital Garmin watch face: the time, centered, in the largest numeric font
 the system has.
@@ -25,9 +25,9 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 
 | Path | Purpose |
 | --- | --- |
-| `source/app/KardiaApp.mc` | App entry point; detects the watch face editor at startup |
-| `source/app/KardiaView.mc` | Owns the elements, applies configuration, clears the screen |
-| `source/app/KardiaDelegate.mc` | Receives live edits from the native watch face editor |
+| `source/app/LucernarioApp.mc` | App entry point; detects the watch face editor at startup |
+| `source/app/LucernarioView.mc` | Owns the elements, applies configuration, clears the screen |
+| `source/app/LucernarioDelegate.mc` | Receives live edits from the native watch face editor |
 | `source/app/Palette.mc` | The colors the code names, in step with `watchface.xml` |
 | `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`, and the colors each implies |
 | `source/time/TimeDisplay.mc` | Formats and draws the time |
@@ -79,7 +79,7 @@ screens. Black is added for the light style.
   not offered at all. Its slot id lives in `source/complications/FieldLocation.mc` and must
   stay in step with `watchface.xml`. It defaults to the weekday and the date,
   named twice: `default="true"` in `watchface.xml` is what the editor offers,
-  and the type handed to `ComplicationField` in `KardiaView` is what the slot
+  and the type handed to `ComplicationField` in `LucernarioView` is what the slot
   holds until the editor has said anything at all. Requires the
   `ComplicationSubscriber` permission.
 
@@ -131,7 +131,7 @@ white on the dark style, black on the light one. A color the user has chosen
 is kept as it is when the style changes.
 
 The hand keeps sweeping in low power mode through
-`KardiaView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
+`LucernarioView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
 puts the rim back there, then clips to where it is going and draws it. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
@@ -174,8 +174,8 @@ Icons come in two sizes, 24px in `resources/` and 36px in
 below.
 
 `resources/configs/watchface.xml` declares what the editor shows.
-`KardiaView.updateConfiguration()` applies it, and is called both at startup
-(from `onLayout`) and on every edit (from `KardiaDelegate`).
+`LucernarioView.updateConfiguration()` applies it, and is called both at startup
+(from `onLayout`) and on every edit (from `LucernarioDelegate`).
 
 ## Testing the settings
 
