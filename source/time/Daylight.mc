@@ -1,8 +1,8 @@
 import Toybox.Complications;
 import Toybox.Lang;
 
-//! When the sun rises and sets today, and which hours of the day fall in
-//! daylight.
+//! When the sun rises and sets today, which moments of the day fall in
+//! daylight, and the color that says so.
 //!
 //! Read off the sunrise and sunset complications, the same numbers the data
 //! container shows, so the two can never disagree. The system works them out
@@ -10,6 +10,10 @@ import Toybox.Lang;
 //! Refreshed once a minute at most, which is far more often than the answer
 //! moves: the marks ask on every full update.
 class Daylight {
+
+    //! The colors of a moment in daylight and after dark
+    private const _DAY_COLOR = Palette.AMBER;
+    private const _NIGHT_COLOR = Palette.SKY;
 
     //! No reading yet, or none available: a watch that does not carry the
     //! complications, or has no position to work them out from
@@ -50,18 +54,31 @@ class Daylight {
         return _sunset;
     }
 
-    //! Whether the given hour of the day, on the hour, falls in daylight
-    //! @param hour The hour of the day, 0 to 23
+    //! The color of a moment of the day: by whether the sun is up then, or
+    //! the given fallback while the sun is not known
+    //! @param minutes Minutes past midnight
+    //! @param unknown The color to use until the sun is known
+    //! @return The color to draw in
+    function colorAt(minutes as Number, unknown as Number) as Number {
+        var day = isDayAt(minutes);
+
+        if (day == null) {
+            return unknown;
+        }
+
+        return day ? _DAY_COLOR : _NIGHT_COLOR;
+    }
+
+    //! Whether the given moment of the day falls in daylight
+    //! @param minutes Minutes past midnight
     //! @return true by day, false by night, null when the sun is not known
-    function isDay(hour as Number) as Boolean? {
+    function isDayAt(minutes as Number) as Boolean? {
         var sunrise = _sunrise;
         var sunset = _sunset;
 
         if ((sunrise == null) || (sunset == null)) {
             return null;
         }
-
-        var minutes = hour * Clock.MINUTES_PER_HOUR;
 
         // Sunset before sunrise on the local clock means the sun is up across
         // midnight, so the day is everything outside the gap between them.

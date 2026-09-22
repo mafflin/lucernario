@@ -28,6 +28,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/app/KardiaApp.mc` | App entry point; detects the watch face editor at startup |
 | `source/app/KardiaView.mc` | Owns the elements, applies configuration, clears the screen |
 | `source/app/KardiaDelegate.mc` | Receives live edits from the native watch face editor |
+| `source/app/Palette.mc` | The colors the code names, in step with `watchface.xml` |
 | `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`, and the colors each implies |
 | `source/time/TimeDisplay.mc` | Formats and draws the time |
 | `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
@@ -38,6 +39,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimMarks.mc` | The hour marks, colored by daylight, and the sunrise and sunset marks |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/rim/RimNumerals.mc` | The 24, 6, 12 and 18 numerals against the quarter marks |
+| `source/rim/HourHand.mc` | The hour hand, an arrow on the inner edge of the ring |
 | `source/rim/SecondsHand.mc` | The seconds hand sweeping the rim |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
@@ -58,10 +60,11 @@ not Connect IQ app settings. Currently configurable:
   Ids must stay in step with `watchface.xml`.
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
 - **Data color** — everything else: the time, the rim numerals, the status
-  icons and the data container. The hour marks take it only until the sun is
-  known; then each is amber if the sun is up at its hour and sky blue if not,
-  from the sunrise and sunset complications, the same numbers the data
-  container shows.
+  icons and the data container. The hour marks, the rim numerals and the hour
+  hand take it only until the sun is known; then each mark and numeral is
+  amber if the sun is up at its hour and sky blue if not, and the hand likewise
+  for the minute it points at, from the sunrise and sunset complications, the
+  same numbers the data container shows.
 
 Both offer the same thirty named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per

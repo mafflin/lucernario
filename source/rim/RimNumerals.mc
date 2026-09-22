@@ -5,7 +5,8 @@ import Toybox.Lang;
 //! six and nine on the dial.
 //!
 //! In the smallest system font, sat right against the inner ends of their
-//! marks, inside the ring the hand sweeps. The hand's clip reaches past the
+//! marks, inside the ring the hand sweeps, and colored as the marks are: by
+//! whether the sun is up at that hour. The hand's clip reaches past the
 //! ring by its padding, so a partial update passing one of the marks has to
 //! put the numeral back too.
 class RimNumerals {
@@ -51,12 +52,23 @@ class RimNumerals {
     private var _widths as Array<Number>;
     private var _height as Number = 0;
 
-    //! The color the numerals are drawn in
+    //! The hour each numeral stands for, which the sun colors it by
+    private var _hours as Array<Number>;
+
+    //! The color the numerals are drawn in when the sun is not known
     private var _color as Number = Graphics.COLOR_WHITE;
 
+    //! Where the sun is through the day. The view's, shared with the marks.
+    private var _daylight as Daylight;
+
     //! Constructor
-    function initialize() {
+    //! @param daylight Where the sun is through the day
+    function initialize(daylight as Daylight) {
+        _daylight = daylight;
+
         var quarter = Dial.HOUR_MARKS / _QUARTERS;
+
+        _hours = [0, quarter, 2 * quarter, 3 * quarter] as Array<Number>;
 
         // Noon reads as the full count rather than zero.
         _texts = [
@@ -113,7 +125,7 @@ class RimNumerals {
         _lefts[_LEFT] = _xs[_LEFT];
     }
 
-    //! Set the color the numerals are drawn in
+    //! Set the color the numerals are drawn in until the sun is known
     //! @param color The color to use
     function setColor(color as Number) as Void {
         _color = color;
@@ -141,7 +153,9 @@ class RimNumerals {
     //! @param dc The drawing context
     //! @param quarter Which one, counting clockwise from the top
     private function paint(dc as Dc, quarter as Number) as Void {
-        dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+        var color = _daylight.colorAt(_hours[quarter] * Clock.MINUTES_PER_HOUR, _color);
+
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.drawText(_xs[quarter], _ys[quarter], _FONT, _texts[quarter], _justify[quarter]);
     }
 }

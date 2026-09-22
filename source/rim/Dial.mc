@@ -22,6 +22,7 @@ module Dial {
     //! A full circle is a whole day round, one mark an hour
     const HOUR_MARKS = 24;
     const DEGREES_PER_HOUR_MARK = DEGREES_PER_CIRCLE / HOUR_MARKS;
+    const MINUTES_PER_DAY = HOUR_MARKS * Clock.MINUTES_PER_HOUR;
 
     //! The band of rim the marks occupy, as a share of the radius rather than
     //! pixels: widths are in degrees and grow with the screen, so a fixed
@@ -53,6 +54,31 @@ module Dial {
     //! @return The angle in screen degrees
     function positionOf(valueDegrees as Numeric) as Numeric {
         return TWELVE_OCLOCK_DEGREES - valueDegrees;
+    }
+
+    //! Where a minute of the day sits on the dial. A float: a minute is a
+    //! quarter of a degree, and the hour hand and the sun marks stand at the
+    //! minute, between the hour marks.
+    //! @param minutes Minutes past midnight
+    //! @return The value in degrees, clockwise from midnight
+    function positionOfMinute(minutes as Number) as Float {
+        return minutes.toFloat() * DEGREES_PER_CIRCLE / MINUTES_PER_DAY;
+    }
+
+    //! The pixel at an angle and radius. Screen y grows downward, so the sine
+    //! is subtracted rather than added.
+    //! @param radians The angle on the screen, as radiansOf() gives it
+    //! @param radius How far from the center
+    //! @return The x coordinate
+    function pointX(radians as Decimal, radius as Numeric) as Number {
+        return (centerX + (radius * Math.cos(radians))).toNumber();
+    }
+
+    //! @param radians The angle on the screen, as radiansOf() gives it
+    //! @param radius How far from the center
+    //! @return The y coordinate
+    function pointY(radians as Decimal, radius as Numeric) as Number {
+        return (centerY - (radius * Math.sin(radians))).toNumber();
     }
 
     //! A value on the dial as an angle on the screen, in radians, ready for

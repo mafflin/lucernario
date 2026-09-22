@@ -22,6 +22,10 @@ class KardiaView extends WatchUi.WatchFace {
     //! The time in the center of the screen
     private var _time as TimeDisplay;
 
+    //! Where the sun is through the day, which colors the marks and the hour
+    //! hand. Owned here so both read the same reading.
+    private var _daylight as Daylight;
+
     //! The hour marks around the rim
     private var _rimMarks as RimMarks;
 
@@ -30,6 +34,9 @@ class KardiaView extends WatchUi.WatchFace {
 
     //! The seconds hand sweeping the rim
     private var _hand as SecondsHand;
+
+    //! The hour hand pointing out at the ring
+    private var _hourHand as HourHand;
 
     //! The row of status icons above the time
     private var _statusBar as StatusBar;
@@ -70,9 +77,11 @@ class KardiaView extends WatchUi.WatchFace {
         _editMode = editMode;
 
         _time = new TimeDisplay();
-        _rimMarks = new RimMarks();
-        _numerals = new RimNumerals();
+        _daylight = new Daylight();
+        _rimMarks = new RimMarks(_daylight);
+        _numerals = new RimNumerals(_daylight);
         _hand = new SecondsHand();
+        _hourHand = new HourHand(_daylight);
         _statusBar = new StatusBar();
 
         _centerField = new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
@@ -138,6 +147,7 @@ class KardiaView extends WatchUi.WatchFace {
         }
 
         Clock.read();
+        _daylight.refresh();
         smooth(dc);
 
         dc.setColor(_background, _background);
@@ -148,6 +158,7 @@ class KardiaView extends WatchUi.WatchFace {
         _statusBar.draw(dc);
         _time.draw(dc);
         drawFields(dc);
+        _hourHand.draw(dc);
 
         if (handIsVisible()) {
             _hand.draw(dc);
@@ -180,6 +191,7 @@ class KardiaView extends WatchUi.WatchFace {
         _rimMarks.redraw(dc);
         _numerals.redraw(dc);
         _statusBar.redraw(dc);
+        _hourHand.redraw(dc);
     }
 
     //! Hand the editor the drawable for the container it is about to let the
@@ -393,6 +405,7 @@ class KardiaView extends WatchUi.WatchFace {
 
         _time.setColor(color);
         _rimMarks.setColor(color);
+        _hourHand.setColor(color);
         _numerals.setColor(color);
         _statusBar.setColor(color);
 

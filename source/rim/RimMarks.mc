@@ -17,14 +17,6 @@ import Toybox.Math;
 //! mark in the night color: each points at what it brings.
 class RimMarks {
 
-    //! The colors of an hour in daylight and after dark: Amber and Sky from
-    //! the editor's palette in watchface.xml, so the marks match what the
-    //! user can pick for everything else. The palette lives in the config,
-    //! which the code cannot read a value out of, so the two are repeated
-    //! here and must stay in step with it.
-    private const _DAY_COLOR = 0xFFAA00;
-    private const _NIGHT_COLOR = 0x00AAFF;
-
     //! How wide a mark is, as a share of the rim radius rather than a fixed
     //! count, so it holds its proportions on every screen. Narrower than the
     //! hand that sweeps over them, which is what tells the two apart at a
@@ -51,13 +43,11 @@ class RimMarks {
     private const _SUN_LENGTH_NUMERATOR = 2;
     private const _SUN_LENGTH_DIVISOR = 5;
 
-    //! A day is one turn of the dial
-    private const _MINUTES_PER_DAY = Dial.HOUR_MARKS * Clock.MINUTES_PER_HOUR;
-
     //! The color the marks are drawn in when the sun is not known
     private var _color as Number = Graphics.COLOR_WHITE;
 
-    //! Where the sun is through the day
+    //! Where the sun is through the day. The view's, refreshed by it once per
+    //! full update and shared with the hour hand.
     private var _daylight as Daylight;
 
     //! How far in a mark reaches, resolved in prepare()
@@ -76,8 +66,9 @@ class RimMarks {
     private var _sunWidthDegrees as Float = 0.0;
 
     //! Constructor
-    function initialize() {
-        _daylight = new Daylight();
+    //! @param daylight Where the sun is through the day
+    function initialize(daylight as Daylight) {
+        _daylight = daylight;
     }
 
     //! Size the marks off the ring. Run after Dial.setup().
@@ -116,14 +107,12 @@ class RimMarks {
     //! Draw every mark, with today's sun
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
-        _daylight.refresh();
-
         for (var mark = 0; mark < Dial.HOUR_MARKS; mark++) {
             paint(dc, mark);
         }
 
-        paintSun(dc, _daylight.sunrise(), _DAY_COLOR);
-        paintSun(dc, _daylight.sunset(), _NIGHT_COLOR);
+        paintSun(dc, _daylight.sunrise(), Palette.AMBER);
+        paintSun(dc, _daylight.sunset(), Palette.SKY);
     }
 
     //! Put back the marks the hand is passing, if it is passing any at all.
@@ -136,8 +125,8 @@ class RimMarks {
             }
         }
 
-        redrawSun(dc, _daylight.sunrise(), _DAY_COLOR);
-        redrawSun(dc, _daylight.sunset(), _NIGHT_COLOR);
+        redrawSun(dc, _daylight.sunrise(), Palette.AMBER);
+        redrawSun(dc, _daylight.sunset(), Palette.SKY);
     }
 
     //! Draw one mark
@@ -152,13 +141,7 @@ class RimMarks {
     //! @param mark Which mark, counting clockwise from midnight
     //! @return The color to draw in
     private function colorOf(mark as Number) as Number {
-        var day = _daylight.isDay(mark);
-
-        if (day == null) {
-            return _color;
-        }
-
-        return day ? _DAY_COLOR : _NIGHT_COLOR;
+        return _daylight.colorAt(mark * Clock.MINUTES_PER_HOUR, _color);
     }
 
     //! Draw one sun mark, if the sun is known
@@ -170,7 +153,7 @@ class RimMarks {
             return;
         }
 
-        RimPainter.drawRadial(dc, sunPositionOf(minutes), color, _sunWidth, _sunLength);
+        RimPainter.drawRadial(dc, Dial.positionOfMinute(minutes), color, _sunWidth, _sunLength);
     }
 
     //! Put one sun mark back, if the hand is passing it
@@ -182,7 +165,7 @@ class RimMarks {
             return;
         }
 
-        var position = sunPositionOf(minutes);
+        var position = Dial.positionOfMinute(minutes);
 
         if (ClipRegion.reaches(position, _sunWidthDegrees)) {
             RimPainter.drawRadial(dc, position, color, _sunWidth, _sunLength);
@@ -194,13 +177,5 @@ class RimMarks {
     //! @return The position in degrees, clockwise from midnight
     private function positionOf(mark as Number) as Number {
         return mark * Dial.DEGREES_PER_HOUR_MARK;
-    }
-
-    //! Where a minute of the day sits on the dial. A float: the sun marks
-    //! stand at the minute, between the hour marks.
-    //! @param minutes Minutes past midnight
-    //! @return The position in degrees, clockwise from midnight
-    private function sunPositionOf(minutes as Number) as Float {
-        return minutes.toFloat() * Dial.DEGREES_PER_CIRCLE / _MINUTES_PER_DAY;
     }
 }
