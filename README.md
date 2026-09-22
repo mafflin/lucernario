@@ -35,7 +35,8 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
-| `source/rim/RimMarks.mc` | The twenty four hour marks around the rim |
+| `source/rim/RimMarks.mc` | The hour marks, colored by daylight, and the sunrise and sunset marks |
+| `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/rim/RimNumerals.mc` | The 24, 6, 12 and 18 numerals against the quarter marks |
 | `source/rim/SecondsHand.mc` | The seconds hand sweeping the rim |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
@@ -56,8 +57,11 @@ not Connect IQ app settings. Currently configurable:
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
-- **Data color** — everything else: the time, the hour marks and numerals,
-  the status icons and the data container.
+- **Data color** — everything else: the time, the rim numerals, the status
+  icons and the data container. The hour marks take it only until the sun is
+  known; then each is amber if the sun is up at its hour and sky blue if not,
+  from the sunrise and sunset complications, the same numbers the data
+  container shows.
 
 Both offer the same thirty named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
