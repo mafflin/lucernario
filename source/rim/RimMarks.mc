@@ -4,8 +4,7 @@ import Toybox.Lang;
 //! The twenty four hour marks around the rim, midnight at the top.
 //!
 //! Lifted from the electric watch face, cut down to hour marks at the one
-//! size. There is no setting of its own: the marks come and go with the style
-//! that shows the seconds hand, which is what they are there to read against.
+//! size, with no setting of their own.
 //!
 //! Drawn in the face's data color, on top of the day and night band.
 class RimMarks {
@@ -55,6 +54,12 @@ class RimMarks {
     //! @return The reach in pixels
     function reach() as Number {
         return _length;
+    }
+
+    //! How wide a mark is, for whatever is sized to match
+    //! @return The width in pixels
+    function width() as Number {
+        return _width;
     }
 
     //! Set the color the marks are drawn in

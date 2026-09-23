@@ -1,88 +1,97 @@
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.Math;
 
-//! The seconds hand: a dot going round inside the day and night band.
+//! The seconds hand: an arrow inside the day and night band, pointing out at
+//! the second - equilateral, with a base of seven degrees measured at the
+//! ring's inner edge.
 //!
 //! Set in far enough that the box a partial update clips to around it never
-//! reaches the band, at any angle, so a tick has neither the band nor the
-//! hour marks to put back - both lie wholly within it. The box is square, so
-//! its corners reach furthest on the diagonals, by the root of two.
+//! reaches the band, at any angle, so a tick has neither the band, the hour
+//! marks nor the hour hand to put back - all three lie wholly within it.
+//! The box is the upright rectangle round the three corners, and on the
+//! diagonals a base corner pokes out past the tip, which is what holds the
+//! tip a few pixels off the band.
 //!
 //! It ticks in low power mode through partial updates, repainting only the
 //! pixels it vacates.
 class SecondsHand {
 
-    //! How big the dot is, as a share of the ring
-    private const _RADIUS_DIVISOR = 4;
-    private const _MIN_RADIUS = 3;
+    //! The span of the base, measured at the ring's inner edge. Equilateral,
+    //! so this is the whole of its size.
+    private const _WIDTH_DEGREES = 7;
 
-    //! Air between the band and the furthest corner of the clip box: the
-    //! band's smoothed inner edge spills about a pixel inward, and the
-    //! corner's own pixel reaches up to one more
-    private const _BAND_GAP = 2;
+    //! Half the square root of three: an equilateral triangle's height over
+    //! its base
+    private const _EQUILATERAL_HEIGHT = 0.866;
 
-    //! The root of two, a little over, as a number rather than a call
-    private const _DIAGONAL = 1.415;
+    //! Air between the tip and the band: what the clip box reaches past the
+    //! tip on the diagonals, the band's smoothed edge spilling about a pixel
+    //! inward, and one more for the corners' own pixels
+    private const _BAND_GAP = 5;
 
-    //! The color the dot is drawn in
+    //! The color the arrow is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
 
-    //! The dot's radius, and how far its center stands from the dial's,
-    //! resolved in prepare()
-    private var _radius as Number = _MIN_RADIUS;
-    private var _orbit as Number = 0;
+    //! How far out the tip and the base stand, and half the base, resolved in
+    //! prepare()
+    private var _tip as Number = 0;
+    private var _base as Float = 0.0;
+    private var _halfBase as Float = 0.0;
 
-    //! Which second the dot was last drawn at and where, or null when it is
-    //! not on screen. The center rather than the angle, so lifting it off
-    //! takes no trig.
+    //! Which second the arrow was last drawn at, or null when it is not on
+    //! screen
     private var _second as Number? = null;
-    private var _x as Number = 0;
-    private var _y as Number = 0;
+
+    //! The corners it was last drawn with, filled in place rather than made
+    //! anew each tick, and the box around them
+    private var _points as Array<[Numeric, Numeric]>;
+    private var _left as Number = 0;
+    private var _top as Number = 0;
+    private var _right as Number = 0;
+    private var _bottom as Number = 0;
 
     //! Constructor
     function initialize() {
+        _points = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
     }
 
-    //! Size the dot off the ring. Run after Dial.setup().
+    //! Size the arrow off the ring. Run after Dial.setup().
     //! @param bandReach How far in from the rim the day and night band comes
     function prepare(bandReach as Number) as Void {
-        _radius = Dial.ringDepth / _RADIUS_DIVISOR;
+        var base = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(_WIDTH_DEGREES / 2.0));
 
-        if (_radius < _MIN_RADIUS) {
-            _radius = _MIN_RADIUS;
-        }
-
-        var corner = ((_radius + ClipRegion.PADDING) * _DIAGONAL).toNumber() + 1;
-
-        _orbit = Dial.rim - bandReach - _BAND_GAP - corner;
+        _tip = Dial.rim - bandReach - _BAND_GAP;
+        _base = (_tip - (base * _EQUILATERAL_HEIGHT)).toFloat();
+        _halfBase = (base / 2).toFloat();
         _second = null;
     }
 
-    //! Set the color the dot is drawn in
+    //! Set the color the arrow is drawn in
     //! @param color The color to use
     function setColor(color as Number) as Void {
         _color = color;
     }
 
-    //! Forget where the dot was, so the next partial update does not try to
+    //! Forget where the arrow was, so the next partial update does not try to
     //! lift it off a screen that has since been repainted
     function forget() as Void {
         _second = null;
     }
 
-    //! Draw the dot where it stands now
+    //! Draw the arrow where it stands now
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
         place(Clock.now().sec);
         paint(dc);
     }
 
-    //! Repaint just the pixels the dot vacates. Where it is going needs
-    //! nothing put back: the dot is opaque and covers whatever it lands on.
+    //! Repaint just the pixels the arrow vacates. Where it is going needs
+    //! nothing put back: the arrow is opaque and covers whatever it lands on.
     //! @param dc The drawing context
     //! @param restoreRim Puts the rim back under the old position, called
-    //!        with that position already clipped
-    function drawPartial(dc as Dc, restoreRim as Method(dc as Dc) as Void) as Void {
+    //!        with that position already clipped and the second it was at
+    function drawPartial(dc as Dc, restoreRim as Method(dc as Dc, second as Number) as Void) as Void {
         var second = Clock.now().sec;
         var previous = _second;
 
@@ -90,34 +99,85 @@ class SecondsHand {
             return;
         }
 
-        // Where it was: lift the dot off and put the rim back underneath.
+        // Where it was: lift the arrow off and put the rim back underneath.
         if (previous != null) {
-            ClipRegion.clip(dc, _x, _y, _radius, previous * Dial.DEGREES_PER_SECOND);
-            restoreRim.invoke(dc);
+            ClipRegion.clip(dc, _left, _top, _right, _bottom);
+            restoreRim.invoke(dc, previous);
         }
 
         // Where it is going: the box bounds the draw and nothing more.
         place(second);
-        ClipRegion.clip(dc, _x, _y, _radius, second * Dial.DEGREES_PER_SECOND);
+        ClipRegion.clip(dc, _left, _top, _right, _bottom);
         paint(dc);
 
         dc.clearClip();
     }
 
-    //! Work out where the dot stands at a second
+    //! Work out the corners at a second, and the box around them
     //! @param second The second, 0 to 59
     private function place(second as Number) as Void {
         var radians = Dial.radiansOf(second * Dial.DEGREES_PER_SECOND);
+        var outX = Math.cos(radians);
 
+        // Screen y grows downward, so the sine of the angle is negated.
+        var outY = -Math.sin(radians);
+
+        // Across the arrow is out turned a quarter: (-outY, outX).
+        var acrossX = -outY * _halfBase;
+        var acrossY = outX * _halfBase;
+        var baseX = Dial.centerX + (_base * outX);
+        var baseY = Dial.centerY + (_base * outY);
+
+        var tipX = (Dial.centerX + (_tip * outX)).toNumber();
+        var tipY = (Dial.centerY + (_tip * outY)).toNumber();
+        var leftX = (baseX + acrossX).toNumber();
+        var leftY = (baseY + acrossY).toNumber();
+        var rightX = (baseX - acrossX).toNumber();
+        var rightY = (baseY - acrossY).toNumber();
+
+        var tip = _points[0];
+        var left = _points[1];
+        var right = _points[2];
+
+        tip[0] = tipX;
+        tip[1] = tipY;
+        left[0] = leftX;
+        left[1] = leftY;
+        right[0] = rightX;
+        right[1] = rightY;
+
+        _left = min3(tipX, leftX, rightX);
+        _right = max3(tipX, leftX, rightX);
+        _top = min3(tipY, leftY, rightY);
+        _bottom = max3(tipY, leftY, rightY);
         _second = second;
-        _x = Dial.pointX(radians, _orbit);
-        _y = Dial.pointY(radians, _orbit);
     }
 
-    //! Draw the dot where it was last placed
+    //! Fill the arrow at its last corners
     //! @param dc The drawing context
     private function paint(dc as Dc) as Void {
-        dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(_x, _y, _radius);
+        RimPainter.fill(dc, _points, _color);
+    }
+
+    //! The least of three
+    //! @param a The first
+    //! @param b The second
+    //! @param c The third
+    //! @return The least
+    private function min3(a as Number, b as Number, c as Number) as Number {
+        var least = (a < b) ? a : b;
+
+        return (least < c) ? least : c;
+    }
+
+    //! The greatest of three
+    //! @param a The first
+    //! @param b The second
+    //! @param c The third
+    //! @return The greatest
+    private function max3(a as Number, b as Number, c as Number) as Number {
+        var most = (a > b) ? a : b;
+
+        return (most > c) ? most : c;
     }
 }

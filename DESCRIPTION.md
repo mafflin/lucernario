@@ -1,9 +1,9 @@
 Lucernario is a digital watch face built around one idea: the time, centered, in
 the largest font the watch has. Everything else sits on the rim, out of its way.
 
-**The rim** carries a 24-hour dial. The ring is dark amber from sunrise to
+**The rim** carries a 24-hour dial, numbered every four hours. The ring is dark amber from sunrise to
 sunset and deep blue through the night, so a glance at it tells you how much daylight
-is left. An arrow tracks the hour, and a dot counts the seconds just inside
+is left. A broad mark tracks the hour, and an arrow counts the seconds just inside
 the ring — it keeps going in low power mode on watches whose budget allows it.
 
 **Above the time**, a status row shows only what is worth reporting: battery,
@@ -20,7 +20,7 @@ solar input, temperature and today's high and low.
 are all set in Garmin's native watch face editor — no phone, no settings menus.
 
 - Dark or light style
-- 30 colors for the seconds dot and 30 for everything else, chosen to stay
+- 30 colors for the seconds hand and 30 for everything else, chosen to stay
   clean on MIP displays
-- Always-on seconds dot where the power budget allows
+- Always-on seconds hand where the power budget allows
 - Open source under the MIT License: github.com/mafflin/lucernario

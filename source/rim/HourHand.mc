@@ -1,30 +1,35 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! The hour hand: an arrow standing on the inner edge of the ring, pointing
-//! out at the hour on the 24 hour dial.
+//! The hour hand: a mark on the 24 hour dial at the hour, twice as wide as
+//! the hour marks and otherwise the same - running in from the rim as far
+//! as they do, in the data color. Once round a day rather than twice, so it
+//! moves a quarter of a degree a minute.
 //!
-//! Lifted from the electric watch face, without its setting to turn it on and
-//! its own color: it is always on here, and in the data color as the hour
-//! marks are, standing out against the day and night band its point reaches
-//! into. Once round a day rather than twice, so it moves a quarter of a
-//! degree a minute.
+//! It lies wholly within the day and night band, where the seconds hand's
+//! clip never reaches, so a partial update never has it to put back.
 class HourHand {
 
-    //! The span at its base. Equilateral, so this is the whole of its size: a
-    //! wider hand is a longer one.
-    private const _WIDTH_DEGREES = 7;
+    //! How much wider than an hour mark it is
+    private const _WIDTH_FACTOR = 2;
 
     //! The color the hand is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
 
-    //! Where the hand stood at the last full draw, and the corners it was
-    //! drawn with. Null when it is not on screen.
-    private var _position as Float? = null;
-    private var _points as Array<[Numeric, Numeric]>? = null;
+    //! How wide it is and how far in it reaches, resolved in prepare()
+    private var _width as Number = 0;
+    private var _length as Number = 0;
 
     //! Constructor
     function initialize() {
+    }
+
+    //! Size the hand off the marks. Run after the marks are prepared.
+    //! @param markWidth How wide an hour mark is
+    //! @param markReach How far in from the rim the marks come
+    function prepare(markWidth as Number, markReach as Number) as Void {
+        _width = markWidth * _WIDTH_FACTOR;
+        _length = markReach;
     }
 
     //! Set the color the hand is drawn in
@@ -37,31 +42,8 @@ class HourHand {
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
         var position = Dial.positionOfMinute(currentMinute());
-        var points = RimPainter.arrowPoints(position, _WIDTH_DEGREES);
 
-        _position = position;
-        _points = points;
-
-        RimPainter.fill(dc, points, _color);
-    }
-
-    //! Put the hand back where the seconds hand has cut into it. From the
-    //! last full draw: the hand moves a quarter of a degree a minute, so the
-    //! corners it was drawn at still stand and the tick only fills them.
-    //! @param dc The drawing context
-    function redraw(dc as Dc) as Void {
-        var position = _position;
-        var points = _points;
-
-        if ((position == null) || (points == null)) {
-            return;
-        }
-
-        if (!ClipRegion.reaches(position, _WIDTH_DEGREES)) {
-            return;
-        }
-
-        RimPainter.fill(dc, points, _color);
+        RimPainter.drawRadial(dc, position, _color, _width, _length);
     }
 
     //! The moment the hand points at: the hour, carried on by however much

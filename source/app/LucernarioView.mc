@@ -31,13 +31,13 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The hour marks around the rim
     private var _rimMarks as RimMarks;
 
-    //! The 24 at the top mark
-    private var _numeral as RimNumeral;
+    //! The numerals every four hours, against the ends of their marks
+    private var _numerals as RimNumerals;
 
-    //! The seconds hand sweeping the rim
+    //! The seconds hand, an arrow inside the band
     private var _hand as SecondsHand;
 
-    //! The hour hand pointing out at the ring
+    //! The hour hand, a broad mark in the band
     private var _hourHand as HourHand;
 
     //! The row of status icons above the time
@@ -69,7 +69,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
     //! What the hand calls to put the rim back under its old position. Made
     //! once: a partial update has no business allocating a Method every tick.
-    private var _restoreRim as Method(dc as Dc) as Void;
+    private var _restoreRim as Method(dc as Dc, second as Number) as Void;
 
     //! Constructor
     //! @param editMode Whether the native watch face editor started this view
@@ -82,7 +82,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _daylight = new Daylight();
         _rimBand = new RimBand(_daylight);
         _rimMarks = new RimMarks();
-        _numeral = new RimNumeral();
+        _numerals = new RimNumerals();
         _hand = new SecondsHand();
         _hourHand = new HourHand();
         _statusBar = new StatusBar();
@@ -102,10 +102,16 @@ class LucernarioView extends WatchUi.WatchFace {
 
         Dial.setup(dc);
 
+        // The marks size the rest of the rim: the band is as deep as they
+        // reach, and the hour hand is measured in mark widths.
         _rimMarks.prepare();
-        _rimBand.prepare(_rimMarks.reach());
-        _numeral.prepare(dc, _rimMarks.reach());
-        _hand.prepare(_rimMarks.reach());
+
+        var markReach = _rimMarks.reach();
+
+        _rimBand.prepare(markReach);
+        _numerals.prepare(dc, markReach);
+        _hand.prepare(markReach);
+        _hourHand.prepare(_rimMarks.width(), markReach);
 
         placeFields(dc);
 
@@ -158,7 +164,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _rimBand.draw(dc);
         _rimMarks.draw(dc);
-        _numeral.draw(dc);
+        _numerals.draw(dc);
         _statusBar.draw(dc);
         _time.draw(dc);
         drawFields(dc);
@@ -188,13 +194,13 @@ class LucernarioView extends WatchUi.WatchFace {
     //! Put the rim back where the hand has just been. Called by the hand with
     //! the old position already clipped, so this only touches those pixels.
     //! @param dc The drawing context
-    function restoreRim(dc as Dc) as Void {
+    //! @param second Where the hand has just been
+    function restoreRim(dc as Dc, second as Number) as Void {
         dc.setColor(_background, _background);
         dc.clear();
 
-        _numeral.redraw(dc);
+        _numerals.redraw(dc, second);
         _statusBar.redraw(dc);
-        _hourHand.redraw(dc);
     }
 
     //! Hand the editor the drawable for the container it is about to let the
@@ -400,7 +406,7 @@ class LucernarioView extends WatchUi.WatchFace {
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the
-    //! time, the hour marks and numeral, the status icons and the data
+    //! time, the hour marks and numerals, the status icons and the data
     //! containers
     //! @param dataColor The color chosen in the editor, null if unset
     private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
@@ -409,7 +415,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _time.setColor(color);
         _rimMarks.setColor(color);
         _hourHand.setColor(color);
-        _numeral.setColor(color);
+        _numerals.setColor(color);
         _statusBar.setColor(color);
 
         for (var i = 0; i < _fields.size(); i++) {

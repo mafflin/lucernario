@@ -39,9 +39,9 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimBand.mc` | The rim filled dark amber from sunrise to sunset, dark sky blue after, as deep as the marks |
 | `source/rim/RimMarks.mc` | The hour marks |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
-| `source/rim/RimNumeral.mc` | The 24 against the midnight mark |
-| `source/rim/HourHand.mc` | The hour hand, an arrow on the inner edge of the ring |
-| `source/rim/SecondsHand.mc` | The seconds hand, a dot circling clear of the band |
+| `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
+| `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks |
+| `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the band |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
 | `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
@@ -61,7 +61,7 @@ not Connect IQ app settings. Currently configurable:
   Ids must stay in step with `watchface.xml`.
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
 - **Data color** — everything else: the time, the hour marks, the rim
-  numeral, the hour hand, the status icons and the data container.
+  numerals, the hour hand, the status icons and the data container.
 
 The band under the marks, as deep as they are, is not configurable: dark amber from the exact
 minute the sun rises to the minute it sets and dark sky blue the rest of the day, from the
@@ -135,18 +135,19 @@ is kept as it is when the style changes.
 The hand keeps sweeping in low power mode through
 `LucernarioView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
 puts the rim back there, then clips to where it is going and draws it. The
-hand is a dot set in far enough that even the corners of its clip box stay
-off the day and night band, so a tick never repaints the band or the hour
-marks, which lie wholly within it: only the 24, the status row and the hour
-hand, and only when the box has cut into them. If that
+hand is an arrow set in far enough that even the corners of its clip box
+stay off the day and night band, so a tick never repaints the band, the hour
+marks or the hour hand, which lie wholly within it: only the numeral nearest
+the hand's last position and the status row, and only when the box has cut
+into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
 
 The rim marks are drawn as lines running inward from the rim, with the width
-as a pen width in pixels. An arc cannot be made narrow enough: `drawArc` takes its span in degrees and the
-renderer works in whole ones, so every width from one degree to two came out
-as the same mark. A pixel at the rim is roughly a quarter of a degree, which
+as a pen width in pixels. An arc cannot be made narrow enough: `drawArc` takes
+its span in degrees and the renderer works in whole ones, so every width from
+one degree to two came out as the same mark. A pixel at the rim is roughly a quarter of a degree, which
 is a useful step on a shape this small.
 
 The rim marks and the status bar are lifted from the electric watch face.
@@ -245,8 +246,11 @@ under `launcherIcon`.
 ## Fonts
 
 The time is drawn in `FONT_NUMBER_THAI_HOT`, the largest numeric system font,
-which Garmin sizes per device. The rim numeral uses `FONT_XTINY`, the
-smallest. Nothing is fitted at runtime.
+which Garmin sizes per device. The rim numerals are turned to follow the
+marks, which takes a vector font and `drawAngledText`: the first of a few
+Roboto and Swiss 721 faces the watch carries, at 80% of `FONT_XTINY`'s height.
+A watch without them draws the numerals upright in `FONT_XTINY` itself.
+Nothing is fitted at runtime.
 
 `Fonts.inkHeightOf(dc, font)` is the height of the glyphs rather than the font
 box: digits stand on the baseline, so the descent the font reserves is empty
