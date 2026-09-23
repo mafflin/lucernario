@@ -1,9 +1,3 @@
-# Lucernario
-
-Store description for the Connect IQ Store listing.
-
----
-
 Lucernario is a digital watch face built around one idea: the time, centered, in
 the largest font the watch has. Everything else sits on the rim, out of its way.
 
@@ -26,8 +20,7 @@ solar input, temperature and today's high and low.
 are all set in Garmin's native watch face editor — no phone, no settings menus.
 
 - Dark or light style
-- 30 colors for the seconds hand and 30 for everything else, chosen to stay
+- 30 colors for the seconds dot and 30 for everything else, chosen to stay
   clean on MIP displays
-- Always-on seconds sweep where the power budget allows
-
-Requires Connect IQ System 8 (API 5.1.0) or newer.
+- Always-on seconds dot where the power budget allows
+- Open source under the MIT License: github.com/mafflin/lucernario

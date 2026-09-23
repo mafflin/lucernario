@@ -250,3 +250,8 @@ smallest. Nothing is fitted at runtime.
 `Fonts.inkHeightOf(dc, font)` is the height of the glyphs rather than the font
 box: digits stand on the baseline, so the descent the font reserves is empty
 space. It is what places the data container under the digits.
+
+## License
+
+Copyright (c) 2026 Siarhei Ivanouski. Released under the MIT License; see
+[LICENSE](LICENSE).
