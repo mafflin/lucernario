@@ -29,8 +29,8 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The hour marks around the rim
     private var _rimMarks as RimMarks;
 
-    //! The numerals at the top and bottom marks
-    private var _numerals as RimNumerals;
+    //! The 24 at the top mark
+    private var _numeral as RimNumeral;
 
     //! The seconds hand sweeping the rim
     private var _hand as SecondsHand;
@@ -79,7 +79,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _time = new TimeDisplay();
         _daylight = new Daylight();
         _rimMarks = new RimMarks(_daylight);
-        _numerals = new RimNumerals(_daylight);
+        _numeral = new RimNumeral(_daylight);
         _hand = new SecondsHand();
         _hourHand = new HourHand(_daylight);
         _statusBar = new StatusBar();
@@ -101,7 +101,7 @@ class LucernarioView extends WatchUi.WatchFace {
         ClipRegion.setup();
 
         _rimMarks.prepare();
-        _numerals.prepare(dc, _rimMarks.reach());
+        _numeral.prepare(dc, _rimMarks.reach());
         _hand.prepare();
 
         placeFields(dc);
@@ -154,7 +154,7 @@ class LucernarioView extends WatchUi.WatchFace {
         dc.clear();
 
         _rimMarks.draw(dc);
-        _numerals.draw(dc);
+        _numeral.draw(dc);
         _statusBar.draw(dc);
         _time.draw(dc);
         drawFields(dc);
@@ -189,7 +189,7 @@ class LucernarioView extends WatchUi.WatchFace {
         dc.clear();
 
         _rimMarks.redraw(dc);
-        _numerals.redraw(dc);
+        _numeral.redraw(dc);
         _statusBar.redraw(dc);
         _hourHand.redraw(dc);
     }
@@ -397,7 +397,7 @@ class LucernarioView extends WatchUi.WatchFace {
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the
-    //! time, the hour marks and numerals, the status icons and the data
+    //! time, the hour marks and numeral, the status icons and the data
     //! containers
     //! @param dataColor The color chosen in the editor, null if unset
     private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
@@ -406,7 +406,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _time.setColor(color);
         _rimMarks.setColor(color);
         _hourHand.setColor(color);
-        _numerals.setColor(color);
+        _numeral.setColor(color);
         _statusBar.setColor(color);
 
         for (var i = 0; i < _fields.size(); i++) {

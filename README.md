@@ -38,7 +38,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
 | `source/rim/RimMarks.mc` | The hour marks, colored by daylight |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
-| `source/rim/RimNumerals.mc` | The 24, 6, 12 and 18 numerals against the quarter marks |
+| `source/rim/RimNumeral.mc` | The 24 against the midnight mark |
 | `source/rim/HourHand.mc` | The hour hand, an arrow on the inner edge of the ring |
 | `source/rim/SecondsHand.mc` | The seconds hand sweeping the rim |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
@@ -59,8 +59,8 @@ not Connect IQ app settings. Currently configurable:
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
-- **Data color** — everything else: the time, the rim numerals, the status
-  icons and the data container. The hour marks, the rim numerals and the hour
+- **Data color** — everything else: the time, the rim numeral, the status
+  icons and the data container. The hour marks, the rim numeral and the hour
   hand take it only until the sun is known; then each mark and numeral is
   amber if the sun is up at its hour and sky blue if not, and the hand likewise
   for the minute it points at, from the sunrise and sunset complications, the
@@ -240,10 +240,9 @@ under `launcherIcon`.
 ## Fonts
 
 The time is drawn in `FONT_NUMBER_THAI_HOT`, the largest numeric system font,
-which Garmin sizes per device. The rim numerals use `FONT_XTINY`, the
+which Garmin sizes per device. The rim numeral uses `FONT_XTINY`, the
 smallest. Nothing is fitted at runtime.
 
 `Fonts.inkHeightOf(dc, font)` is the height of the glyphs rather than the font
 box: digits stand on the baseline, so the descent the font reserves is empty
-space. It is what places the data container under the digits and the rim
-numerals against their marks.
+space. It is what places the data container under the digits.
