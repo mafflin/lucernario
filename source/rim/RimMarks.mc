@@ -11,10 +11,6 @@ import Toybox.Math;
 //! Each mark stands for an hour of the day and is colored by where the sun is
 //! then: amber through daylight, sky blue through the night. Until the sun is
 //! known they take the face's data color.
-//!
-//! Two more marks, finer and shorter, stand at the minute the sun rises and
-//! the minute it sets. The sunrise mark is in the day color and the sunset
-//! mark in the night color: each points at what it brings.
 class RimMarks {
 
     //! How wide a mark is, as a share of the rim radius rather than a fixed
@@ -37,12 +33,6 @@ class RimMarks {
     private const _LENGTH_NUMERATOR = 2;
     private const _LENGTH_DIVISOR = 5;
 
-    //! The sun marks, finer and shorter than the hour marks they sit among
-    private const _SUN_WIDTH_NUMERATOR = 1;
-    private const _SUN_WIDTH_DIVISOR = 50;
-    private const _SUN_LENGTH_NUMERATOR = 2;
-    private const _SUN_LENGTH_DIVISOR = 5;
-
     //! The color the marks are drawn in when the sun is not known
     private var _color as Number = Graphics.COLOR_WHITE;
 
@@ -60,11 +50,6 @@ class RimMarks {
     //! clip test is the only thing that still wants the width in degrees.
     private var _widthDegrees as Float = 0.0;
 
-    //! The sun marks' size, resolved in prepare() the same way
-    private var _sunLength as Number = 0;
-    private var _sunWidth as Number = _MIN_WIDTH;
-    private var _sunWidthDegrees as Float = 0.0;
-
     //! Constructor
     //! @param daylight Where the sun is through the day
     function initialize(daylight as Daylight) {
@@ -81,15 +66,6 @@ class RimMarks {
         }
 
         _widthDegrees = Math.toDegrees(_width.toFloat() / Dial.rim).toFloat();
-
-        _sunLength = Dial.ringDepth * _SUN_LENGTH_NUMERATOR / _SUN_LENGTH_DIVISOR;
-        _sunWidth = Dial.rim * _SUN_WIDTH_NUMERATOR / _SUN_WIDTH_DIVISOR;
-
-        if (_sunWidth < _MIN_WIDTH) {
-            _sunWidth = _MIN_WIDTH;
-        }
-
-        _sunWidthDegrees = Math.toDegrees(_sunWidth.toFloat() / Dial.rim).toFloat();
     }
 
     //! How far in from the rim a mark comes, for whatever sits against its end
@@ -104,15 +80,12 @@ class RimMarks {
         _color = color;
     }
 
-    //! Draw every mark, with today's sun
+    //! Draw every mark
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
         for (var mark = 0; mark < Dial.HOUR_MARKS; mark++) {
             paint(dc, mark);
         }
-
-        paintSun(dc, _daylight.sunrise(), Palette.AMBER);
-        paintSun(dc, _daylight.sunset(), Palette.SKY);
     }
 
     //! Put back the marks the hand is passing, if it is passing any at all.
@@ -124,9 +97,6 @@ class RimMarks {
                 paint(dc, mark);
             }
         }
-
-        redrawSun(dc, _daylight.sunrise(), Palette.AMBER);
-        redrawSun(dc, _daylight.sunset(), Palette.SKY);
     }
 
     //! Draw one mark
@@ -142,34 +112,6 @@ class RimMarks {
     //! @return The color to draw in
     private function colorOf(mark as Number) as Number {
         return _daylight.colorAt(mark * Clock.MINUTES_PER_HOUR, _color);
-    }
-
-    //! Draw one sun mark, if the sun is known
-    //! @param dc The drawing context
-    //! @param minutes When, as minutes past midnight, null if not known
-    //! @param color The color to draw in
-    private function paintSun(dc as Dc, minutes as Number?, color as Number) as Void {
-        if (minutes == null) {
-            return;
-        }
-
-        RimPainter.drawRadial(dc, Dial.positionOfMinute(minutes), color, _sunWidth, _sunLength);
-    }
-
-    //! Put one sun mark back, if the hand is passing it
-    //! @param dc The drawing context
-    //! @param minutes When, as minutes past midnight, null if not known
-    //! @param color The color to draw in
-    private function redrawSun(dc as Dc, minutes as Number?, color as Number) as Void {
-        if (minutes == null) {
-            return;
-        }
-
-        var position = Dial.positionOfMinute(minutes);
-
-        if (ClipRegion.reaches(position, _sunWidthDegrees)) {
-            RimPainter.drawRadial(dc, position, color, _sunWidth, _sunLength);
-        }
     }
 
     //! Where a mark sits on the dial

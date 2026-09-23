@@ -42,18 +42,6 @@ class Daylight {
         _sunset = minutesOf(_sunsetId);
     }
 
-    //! When the sun rises today
-    //! @return Minutes past local midnight, or null when not known
-    function sunrise() as Number? {
-        return _sunrise;
-    }
-
-    //! When the sun sets today
-    //! @return Minutes past local midnight, or null when not known
-    function sunset() as Number? {
-        return _sunset;
-    }
-
     //! The color of a moment of the day: by whether the sun is up then, or
     //! the given fallback while the sun is not known
     //! @param minutes Minutes past midnight

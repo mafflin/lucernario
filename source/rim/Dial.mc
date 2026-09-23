@@ -57,8 +57,8 @@ module Dial {
     }
 
     //! Where a minute of the day sits on the dial. A float: a minute is a
-    //! quarter of a degree, and the hour hand and the sun marks stand at the
-    //! minute, between the hour marks.
+    //! quarter of a degree, and the hour hand stands at the minute, between
+    //! the hour marks.
     //! @param minutes Minutes past midnight
     //! @return The value in degrees, clockwise from midnight
     function positionOfMinute(minutes as Number) as Float {

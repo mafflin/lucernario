@@ -36,7 +36,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
-| `source/rim/RimMarks.mc` | The hour marks, colored by daylight, and the sunrise and sunset marks |
+| `source/rim/RimMarks.mc` | The hour marks, colored by daylight |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/rim/RimNumerals.mc` | The 24, 6, 12 and 18 numerals against the quarter marks |
 | `source/rim/HourHand.mc` | The hour hand, an arrow on the inner edge of the ring |
