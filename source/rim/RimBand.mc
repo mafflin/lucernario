@@ -1,14 +1,16 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! The rim filled with the day: amber from the minute the sun rises to the
-//! minute it sets, sky blue the rest of the way round. As deep as the hour
+//! The rim filled with the day: dark amber from the minute the sun rises to
+//! the minute it sets, dark sky blue the rest of the way round. As deep as the hour
 //! marks drawn over it. The seconds hand keeps clear of it, so a partial
 //! update never has it to put back. Until the sun is known the rim is left
 //! bare.
 class RimBand {
 
-    private const _DAY_COLOR = Palette.AMBER;
+    //! Dark enough for the marks drawn over them to read in the data color:
+    //! white on plain amber was too faint.
+    private const _DAY_COLOR = Palette.DARK_AMBER;
     private const _NIGHT_COLOR = Palette.DARK_SKY;
 
     //! Where the sun is through the day. The view's, refreshed by it once per

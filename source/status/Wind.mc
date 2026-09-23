@@ -21,6 +21,10 @@ import Toybox.Weather;
 //! and they are smoothed by the same setAntiAlias the rim marks rely on.
 class Wind extends Icon {
 
+    //! The bearing is where the wind comes from; the arrow points where it
+    //! goes, half a turn on
+    private const _DOWNWIND_DEGREES = 180;
+
     //! The API reports metres per second; the limits below read as km/h.
     private const _KMH_PER_MS = 3.6;
     private const _LIGHT_LIMIT_KMH = 20;
@@ -61,7 +65,7 @@ class Wind extends Icon {
     private const _WING_X = 4;
     private const _WING_Y = 20;
 
-    //! A compass bearing, which the arrow reads as a clock angle: north up
+    //! The compass bearing the wind blows from, north up
     private var _bearing as Number? = null;
 
     //! Which of the three steps the strength calls for
@@ -143,7 +147,7 @@ class Wind extends Icon {
         return Icon.tint();
     }
 
-    //! Fill the arrow, pointing along the bearing.
+    //! Fill the arrow, pointing the way the wind blows.
     //!
     //! Smoothed by the setAntiAlias the view asserts once per draw, which a
     //! triangle has more to gain from than anything square: all three of its
@@ -183,7 +187,7 @@ class Wind extends Icon {
     }
 
     //! The three corners, in pixels from the middle of the square, turned so
-    //! the arrow points along the bearing.
+    //! the arrow points downwind: a wind from the south, 180, points up.
     //! @param bearing The compass bearing in degrees, null before a reading
     //! @return The corners, apex first
     private function cornersFor(bearing as Number?) as Array< Array<Float> > {
@@ -192,7 +196,7 @@ class Wind extends Icon {
         var angle = 0.0;
 
         if (bearing != null) {
-            angle = Math.toRadians(bearing).toFloat();
+            angle = Math.toRadians(bearing + _DOWNWIND_DEGREES).toFloat();
         }
 
         var sine = Math.sin(angle).toFloat();

@@ -36,7 +36,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
-| `source/rim/RimBand.mc` | The rim filled amber from sunrise to sunset, sky blue after, as deep as the marks |
+| `source/rim/RimBand.mc` | The rim filled dark amber from sunrise to sunset, dark sky blue after, as deep as the marks |
 | `source/rim/RimMarks.mc` | The hour marks |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/rim/RimNumeral.mc` | The 24 against the midnight mark |
@@ -63,8 +63,8 @@ not Connect IQ app settings. Currently configurable:
 - **Data color** — everything else: the time, the hour marks, the rim
   numeral, the hour hand, the status icons and the data container.
 
-The band under the marks, as deep as they are, is not configurable: amber from the exact minute the
-sun rises to the minute it sets and sky blue the rest of the day, from the
+The band under the marks, as deep as they are, is not configurable: dark amber from the exact
+minute the sun rises to the minute it sets and dark sky blue the rest of the day, from the
 sunrise and sunset complications, the same numbers the data container shows.
 Until the sun is known the rim is left bare.
 
@@ -154,7 +154,8 @@ The marks are hour marks only at one size, and the
 row carries battery, phone, alarm, wind and AM/PM with the cat,
 notifications, do not disturb and GPS icons left behind. The wind is
 electric's too, where it is a triangle standing on the rim; here it is one
-arrow in the row, turned to the bearing, with the strength said in color: the
+arrow in the row, pointing downwind (the bearing is where the wind comes from,
+so a southerly, 180, points up), with the strength said in color: the
 data color up to 20 km/h, orange above that, red above 40. None of them have
 a setting: each icon shows whenever the thing it reports is worth reporting.
 

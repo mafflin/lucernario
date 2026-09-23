@@ -1,14 +1,14 @@
 Lucernario is a digital watch face built around one idea: the time, centered, in
 the largest font the watch has. Everything else sits on the rim, out of its way.
 
-**The rim** carries a 24-hour dial. The ring is amber from sunrise to sunset
-and sky blue through the night, so a glance at it tells you how much daylight
+**The rim** carries a 24-hour dial. The ring is dark amber from sunrise to
+sunset and deep blue through the night, so a glance at it tells you how much daylight
 is left. An arrow tracks the hour, and a dot counts the seconds just inside
 the ring — it keeps going in low power mode on watches whose budget allows it.
 
 **Above the time**, a status row shows only what is worth reporting: battery,
-phone connection, alarm, AM/PM, and wind — one arrow turned to the bearing,
-turning orange and then red as it picks up.
+phone connection, alarm, AM/PM, and wind — one arrow pointing the way it
+blows, turning orange and then red as it picks up.
 
 **Below the time**, one data field you choose from 26 built-in complications:
 steps, heart rate, body battery, stress, calories, floors, intensity minutes,

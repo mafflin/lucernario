@@ -8,6 +8,6 @@ import Toybox.Lang;
 //! cannot read a value out of, so what the code needs is repeated here and
 //! must stay in step with it.
 module Palette {
-    const AMBER = 0xFFAA00;
+    const DARK_AMBER = 0xAA5500;
     const DARK_SKY = 0x0055AA;
 }
