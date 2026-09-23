@@ -5,23 +5,18 @@ import Toybox.Lang;
 //! out at the hour on the 24 hour dial.
 //!
 //! Lifted from the electric watch face, without its setting to turn it on and
-//! its own color: it is always on here, and it is colored as the hour marks
-//! are, by whether the sun is up at the moment it points at. Once round a day
-//! rather than twice, so it moves a quarter of a degree a minute.
+//! its own color: it is always on here, and in the data color as the hour
+//! marks are, standing out against the day and night band its point reaches
+//! into. Once round a day rather than twice, so it moves a quarter of a
+//! degree a minute.
 class HourHand {
 
     //! The span at its base. Equilateral, so this is the whole of its size: a
     //! wider hand is a longer one.
     private const _WIDTH_DEGREES = 7;
 
-    //! The color the hand is drawn in when the sun is not known
+    //! The color the hand is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
-
-    //! Where the sun is through the day. The view's, shared with the marks.
-    private var _daylight as Daylight;
-
-    //! The color the hand was last drawn in, so the tick refills it the same
-    private var _drawnColor as Number = Graphics.COLOR_WHITE;
 
     //! Where the hand stood at the last full draw, and the corners it was
     //! drawn with. Null when it is not on screen.
@@ -29,12 +24,10 @@ class HourHand {
     private var _points as Array<[Numeric, Numeric]>? = null;
 
     //! Constructor
-    //! @param daylight Where the sun is through the day
-    function initialize(daylight as Daylight) {
-        _daylight = daylight;
+    function initialize() {
     }
 
-    //! Set the color the hand is drawn in until the sun is known
+    //! Set the color the hand is drawn in
     //! @param color The color to use
     function setColor(color as Number) as Void {
         _color = color;
@@ -43,15 +36,13 @@ class HourHand {
     //! Draw the hand where it stands now
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
-        var minutes = currentMinute();
-        var position = Dial.positionOfMinute(minutes);
+        var position = Dial.positionOfMinute(currentMinute());
         var points = RimPainter.arrowPoints(position, _WIDTH_DEGREES);
 
         _position = position;
         _points = points;
-        _drawnColor = _daylight.colorAt(minutes, _color);
 
-        RimPainter.fill(dc, points, _drawnColor);
+        RimPainter.fill(dc, points, _color);
     }
 
     //! Put the hand back where the seconds hand has cut into it. From the
@@ -70,7 +61,7 @@ class HourHand {
             return;
         }
 
-        RimPainter.fill(dc, points, _drawnColor);
+        RimPainter.fill(dc, points, _color);
     }
 
     //! The moment the hand points at: the hour, carried on by however much

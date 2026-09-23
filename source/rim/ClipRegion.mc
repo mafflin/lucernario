@@ -1,24 +1,19 @@
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Math;
 
 //! What a partial update is allowed to touch: one box around the seconds
-//! hand, and the test that tells the rim marks whether any of them fall
-//! inside it. A partial update has a budget, and the cheapest draw is the one
+//! hand, and the tests that tell what is drawn under it whether it falls
+//! inside. A partial update has a budget, and the cheapest draw is the one
 //! never issued.
 module ClipRegion {
 
-    //! Absorbs what the corners of the box miss: arc bulge, truncation, pen
-    //! ends. The bulge scales with the radius; the floor is what the small
-    //! screens, the ones running partial updates, already had.
-    const CLIP_PADDING_DIVISOR = 5;
-    const MIN_CLIP_PADDING = 4;
+    //! Pixels past the dot on every side, for its smoothed edge. Its center
+    //! is a whole pixel already, so there is no rounding to cover.
+    const PADDING = 1;
 
-    //! The box's own reach. It is a rectangle around the hand's arc, so how
-    //! far it actually reaches varies with where it sits.
+    //! The box's own reach. It is a square around the dot, a few degrees
+    //! either side of it at the ring; this is comfortably more.
     const SLOP_DEGREES = 9;
-
-    var padding as Number = MIN_CLIP_PADDING;
 
     //! The last box, so callers can test it without allocating
     var boxX as Number = 0;
@@ -27,38 +22,18 @@ module ClipRegion {
     var boxHeight as Number = 0;
     var centerDegrees as Numeric = 0;
 
-    //! Size the padding off the ring. Run after Dial.setup().
-    function setup() as Void {
-        padding = Dial.ringDepth / CLIP_PADDING_DIVISOR;
-
-        if (padding < MIN_CLIP_PADDING) {
-            padding = MIN_CLIP_PADDING;
-        }
-    }
-
-    //! Restrict drawing to one hand position
+    //! Restrict drawing to the square around one position of the dot
     //! @param dc The drawing context
-    //! @param valueDegrees Where the hand sits, clockwise from noon
-    //! @param angularWidthDegrees How wide the hand is
-    //! @param radialLength How far in from the rim it reaches
-    function clip(dc as Dc, valueDegrees as Numeric, angularWidthDegrees as Numeric, radialLength as Number) as Void {
-        var outer = Dial.rim;
-        var inner = outer - radialLength;
-        var half = angularWidthDegrees / 2.0;
-        var from = Dial.radiansOf(valueDegrees + half);
-        var to = Dial.radiansOf(valueDegrees - half);
-
-        var fromX = Math.cos(from);
-        var toX = Math.cos(to);
-
-        // Screen y grows downward, so the sine of the angle is negated.
-        var fromY = -Math.sin(from);
-        var toY = -Math.sin(to);
-
-        var x1 = (Dial.centerX + lowEdge(fromX, toX, inner, outer)).toNumber() - padding;
-        var y1 = (Dial.centerY + lowEdge(fromY, toY, inner, outer)).toNumber() - padding;
-        var x2 = (Dial.centerX + highEdge(fromX, toX, inner, outer)).toNumber() + padding;
-        var y2 = (Dial.centerY + highEdge(fromY, toY, inner, outer)).toNumber() + padding;
+    //! @param x The dot's center
+    //! @param y The dot's center
+    //! @param radius The dot's radius
+    //! @param valueDegrees Where the dot sits, clockwise from noon
+    function clip(dc as Dc, x as Number, y as Number, radius as Number, valueDegrees as Numeric) as Void {
+        var reach = radius + PADDING;
+        var x1 = x - reach;
+        var y1 = y - reach;
+        var x2 = x + reach + 1;
+        var y2 = y + reach + 1;
 
         if (x1 < 0) { x1 = 0; }
         if (y1 < 0) { y1 = 0; }
@@ -72,32 +47,6 @@ module ClipRegion {
         centerDegrees = valueDegrees;
 
         dc.setClip(boxX, boxY, boxWidth, boxHeight);
-    }
-
-    //! How far the arc reaches to the low side of one axis. Each end has a
-    //! corner at both radii; a negative component flips which of the two sits
-    //! on which side.
-    //! @param from The component at one end of the arc
-    //! @param to The component at the other end
-    //! @param inner The inner radius of the shape
-    //! @param outer The outer radius of the shape
-    //! @return The reach in pixels, signed
-    function lowEdge(from as Numeric, to as Numeric, inner as Number, outer as Number) as Numeric {
-        var edge = (from < to) ? from : to;
-
-        return edge * ((edge < 0) ? outer : inner);
-    }
-
-    //! How far the arc reaches to the high side of one axis
-    //! @param from The component at one end of the arc
-    //! @param to The component at the other end
-    //! @param inner The inner radius of the shape
-    //! @param outer The outer radius of the shape
-    //! @return The reach in pixels, signed
-    function highEdge(from as Numeric, to as Numeric, inner as Number, outer as Number) as Numeric {
-        var edge = (from > to) ? from : to;
-
-        return edge * ((edge < 0) ? inner : outer);
     }
 
     //! Can something at this angle land inside the last box? Cheaper than

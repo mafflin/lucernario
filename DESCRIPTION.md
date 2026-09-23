@@ -7,10 +7,10 @@ Store description for the Connect IQ Store listing.
 Lucernario is a digital watch face built around one idea: the time, centered, in
 the largest font the watch has. Everything else sits on the rim, out of its way.
 
-**The rim** carries a 24-hour dial. Each hour mark is amber while the sun is up
-at that hour and sky blue while it is down, so a glance at the ring tells you
-how much daylight is left. An arrow tracks the hour, and the seconds hand
-sweeps the glass — it keeps sweeping in low power mode on watches whose budget allows it.
+**The rim** carries a 24-hour dial. The ring is amber from sunrise to sunset
+and sky blue through the night, so a glance at it tells you how much daylight
+is left. An arrow tracks the hour, and a dot counts the seconds just inside
+the ring — it keeps going in low power mode on watches whose budget allows it.
 
 **Above the time**, a status row shows only what is worth reporting: battery,
 phone connection, alarm, AM/PM, and wind — one arrow turned to the bearing,

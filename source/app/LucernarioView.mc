@@ -22,9 +22,11 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The time in the center of the screen
     private var _time as TimeDisplay;
 
-    //! Where the sun is through the day, which colors the marks and the hour
-    //! hand. Owned here so both read the same reading.
+    //! Where the sun is through the day, which the band fills the ring with
     private var _daylight as Daylight;
+
+    //! The rim filled with day and night, under the marks
+    private var _rimBand as RimBand;
 
     //! The hour marks around the rim
     private var _rimMarks as RimMarks;
@@ -78,10 +80,11 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _time = new TimeDisplay();
         _daylight = new Daylight();
-        _rimMarks = new RimMarks(_daylight);
-        _numeral = new RimNumeral(_daylight);
+        _rimBand = new RimBand(_daylight);
+        _rimMarks = new RimMarks();
+        _numeral = new RimNumeral();
         _hand = new SecondsHand();
-        _hourHand = new HourHand(_daylight);
+        _hourHand = new HourHand();
         _statusBar = new StatusBar();
 
         _centerField = new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
@@ -98,11 +101,11 @@ class LucernarioView extends WatchUi.WatchFace {
         _canSmooth = (dc has :setAntiAlias);
 
         Dial.setup(dc);
-        ClipRegion.setup();
 
         _rimMarks.prepare();
+        _rimBand.prepare(_rimMarks.reach());
         _numeral.prepare(dc, _rimMarks.reach());
-        _hand.prepare();
+        _hand.prepare(_rimMarks.reach());
 
         placeFields(dc);
 
@@ -153,6 +156,7 @@ class LucernarioView extends WatchUi.WatchFace {
         dc.setColor(_background, _background);
         dc.clear();
 
+        _rimBand.draw(dc);
         _rimMarks.draw(dc);
         _numeral.draw(dc);
         _statusBar.draw(dc);
@@ -188,7 +192,6 @@ class LucernarioView extends WatchUi.WatchFace {
         dc.setColor(_background, _background);
         dc.clear();
 
-        _rimMarks.redraw(dc);
         _numeral.redraw(dc);
         _statusBar.redraw(dc);
         _hourHand.redraw(dc);

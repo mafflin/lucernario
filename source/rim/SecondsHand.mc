@@ -1,86 +1,123 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! The seconds hand sweeping the rim.
+//! The seconds hand: a dot going round inside the day and night band.
 //!
-//! Lifted from the electric watch face, cut down to the one size. It ticks in
-//! low power mode through partial updates, repainting only the pixels it
-//! vacates.
+//! Set in far enough that the box a partial update clips to around it never
+//! reaches the band, at any angle, so a tick has neither the band nor the
+//! hour marks to put back - both lie wholly within it. The box is square, so
+//! its corners reach furthest on the diagonals, by the root of two.
+//!
+//! It ticks in low power mode through partial updates, repainting only the
+//! pixels it vacates.
 class SecondsHand {
 
-    //! How wide the hand is. The widest anything on the ring is drawn.
-    private const _WIDTH_DEGREES = 4;
+    //! How big the dot is, as a share of the ring
+    private const _RADIUS_DIVISOR = 4;
+    private const _MIN_RADIUS = 3;
 
-    //! The color the hand is drawn in
+    //! Air between the band and the furthest corner of the clip box: the
+    //! band's smoothed inner edge spills about a pixel inward, and the
+    //! corner's own pixel reaches up to one more
+    private const _BAND_GAP = 2;
+
+    //! The root of two, a little over, as a number rather than a call
+    private const _DIAGONAL = 1.415;
+
+    //! The color the dot is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
 
-    //! How far in from the rim the hand reaches. The whole ring.
-    private var _length as Number = 0;
+    //! The dot's radius, and how far its center stands from the dial's,
+    //! resolved in prepare()
+    private var _radius as Number = _MIN_RADIUS;
+    private var _orbit as Number = 0;
 
-    //! Where the hand was last drawn, or null when it is not on screen
-    private var _position as Numeric? = null;
+    //! Which second the dot was last drawn at and where, or null when it is
+    //! not on screen. The center rather than the angle, so lifting it off
+    //! takes no trig.
+    private var _second as Number? = null;
+    private var _x as Number = 0;
+    private var _y as Number = 0;
 
     //! Constructor
     function initialize() {
     }
 
-    //! Size the hand off the ring. Run after Dial.setup().
-    function prepare() as Void {
-        _length = Dial.ringDepth;
-        _position = null;
+    //! Size the dot off the ring. Run after Dial.setup().
+    //! @param bandReach How far in from the rim the day and night band comes
+    function prepare(bandReach as Number) as Void {
+        _radius = Dial.ringDepth / _RADIUS_DIVISOR;
+
+        if (_radius < _MIN_RADIUS) {
+            _radius = _MIN_RADIUS;
+        }
+
+        var corner = ((_radius + ClipRegion.PADDING) * _DIAGONAL).toNumber() + 1;
+
+        _orbit = Dial.rim - bandReach - _BAND_GAP - corner;
+        _second = null;
     }
 
-    //! Set the color the hand is drawn in
+    //! Set the color the dot is drawn in
     //! @param color The color to use
     function setColor(color as Number) as Void {
         _color = color;
     }
 
-    //! Forget where the hand was, so the next partial update does not try to
+    //! Forget where the dot was, so the next partial update does not try to
     //! lift it off a screen that has since been repainted
     function forget() as Void {
-        _position = null;
+        _second = null;
     }
 
-    //! Draw the hand where it stands now
+    //! Draw the dot where it stands now
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
-        _position = currentPosition();
-
-        RimPainter.drawArc(dc, _position, _color, _WIDTH_DEGREES, _length);
+        place(Clock.now().sec);
+        paint(dc);
     }
 
-    //! Repaint just the pixels the hand vacates. Where it is going needs
-    //! nothing put back: the hand is opaque and covers whatever it lands on.
+    //! Repaint just the pixels the dot vacates. Where it is going needs
+    //! nothing put back: the dot is opaque and covers whatever it lands on.
     //! @param dc The drawing context
     //! @param restoreRim Puts the rim back under the old position, called
     //!        with that position already clipped
     function drawPartial(dc as Dc, restoreRim as Method(dc as Dc) as Void) as Void {
-        var next = currentPosition();
-        var previous = _position;
+        var second = Clock.now().sec;
+        var previous = _second;
 
-        if (next == previous) {
+        if (second == previous) {
             return;
         }
 
-        // Where it was: lift the hand off and put the rim back underneath.
+        // Where it was: lift the dot off and put the rim back underneath.
         if (previous != null) {
-            ClipRegion.clip(dc, previous, _WIDTH_DEGREES, _length);
+            ClipRegion.clip(dc, _x, _y, _radius, previous * Dial.DEGREES_PER_SECOND);
             restoreRim.invoke(dc);
         }
 
         // Where it is going: the box bounds the draw and nothing more.
-        ClipRegion.clip(dc, next, _WIDTH_DEGREES, _length);
-        RimPainter.drawArc(dc, next, _color, _WIDTH_DEGREES, _length);
+        place(second);
+        ClipRegion.clip(dc, _x, _y, _radius, second * Dial.DEGREES_PER_SECOND);
+        paint(dc);
 
         dc.clearClip();
-
-        _position = next;
     }
 
-    //! Where the hand stands right now
-    //! @return The position in degrees, clockwise from noon
-    private function currentPosition() as Numeric {
-        return Clock.now().sec * Dial.DEGREES_PER_SECOND;
+    //! Work out where the dot stands at a second
+    //! @param second The second, 0 to 59
+    private function place(second as Number) as Void {
+        var radians = Dial.radiansOf(second * Dial.DEGREES_PER_SECOND);
+
+        _second = second;
+        _x = Dial.pointX(radians, _orbit);
+        _y = Dial.pointY(radians, _orbit);
+    }
+
+    //! Draw the dot where it was last placed
+    //! @param dc The drawing context
+    private function paint(dc as Dc) as Void {
+        dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(_x, _y, _radius);
     }
 }

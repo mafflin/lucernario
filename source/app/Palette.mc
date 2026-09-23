@@ -9,5 +9,5 @@ import Toybox.Lang;
 //! must stay in step with it.
 module Palette {
     const AMBER = 0xFFAA00;
-    const SKY = 0x00AAFF;
+    const DARK_SKY = 0x0055AA;
 }

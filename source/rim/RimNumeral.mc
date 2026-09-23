@@ -4,10 +4,9 @@ import Toybox.Lang;
 //! The numeral on the rim: 24, at midnight, the top of the dial.
 //!
 //! In the smallest system font, sat right against the inner end of its
-//! mark, inside the ring the hand sweeps, and colored as the marks are: by
-//! whether the sun is up at that hour. The hand's clip reaches past the
-//! ring by its padding, so a partial update passing the mark has to put the
-//! numeral back too.
+//! mark, inside the ring the hand sweeps, and in the data color as the marks
+//! are. The hand's clip reaches past the ring by its padding, so a partial
+//! update passing the mark has to put the numeral back too.
 class RimNumeral {
 
     //! Air between the end of the mark and the digits. The mark is smoothed,
@@ -29,16 +28,11 @@ class RimNumeral {
     private var _width as Number = 0;
     private var _height as Number = 0;
 
-    //! The color the numeral is drawn in when the sun is not known
+    //! The color the numeral is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
 
-    //! Where the sun is through the day. The view's, shared with the marks.
-    private var _daylight as Daylight;
-
     //! Constructor
-    //! @param daylight Where the sun is through the day
-    function initialize(daylight as Daylight) {
-        _daylight = daylight;
+    function initialize() {
         _text = Dial.HOUR_MARKS.toString();
     }
 
@@ -54,7 +48,7 @@ class RimNumeral {
         _y = Dial.centerY - Dial.rim + markReach + _GAP;
     }
 
-    //! Set the color the numeral is drawn in until the sun is known
+    //! Set the color the numeral is drawn in
     //! @param color The color to use
     function setColor(color as Number) as Void {
         _color = color;
@@ -63,7 +57,7 @@ class RimNumeral {
     //! Draw the numeral
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
-        dc.setColor(_daylight.colorAt(0, _color), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
         dc.drawText(_x, _y, _FONT, _text, Graphics.TEXT_JUSTIFY_CENTER);
     }
 

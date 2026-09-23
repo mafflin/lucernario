@@ -2,12 +2,14 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! Draws the shapes that sit on the rim: the hour marks, the seconds hand and
-//! the hour hand.
+//! Draws the shapes that sit on the rim: the day and night band, the hour
+//! marks and the hour hand.
 //!
-//! The seconds hand is an arc as wide as the pen is thick, which is the shape
-//! it was lifted as. The marks are lines running inward from the rim, because
-//! an arc cannot be made narrow enough - see drawRadial. The hour hand is a
+//! The band is arcs running in from the rim, from one moment of the day to
+//! another.
+//!
+//! The marks are lines running inward from the rim, because an arc cannot be
+//! made narrow enough - see drawRadial. The hour hand is a
 //! triangle standing on the inner edge of the ring.
 //!
 //! All want the smoothing the view turns on once per update. A mark is a
@@ -22,7 +24,7 @@ module RimPainter {
     //! A mark on the rim drawn as a line running inward from the rim, as wide
     //! as the pen is thick.
     //!
-    //! The arc below cannot draw a narrow mark: drawArc takes its span in
+    //! An arc cannot draw a narrow mark: drawArc takes its span in
     //! degrees and the renderer works in whole ones, so every width between
     //! one degree and two comes out as the same mark. A line is measured in
     //! pixels and steps one pixel at a time, which at the rim is finer than a
@@ -52,18 +54,21 @@ module RimPainter {
         );
     }
 
-    //! A mark on the rim: an arc as wide as the pen is thick.
+    //! A stretch of the rim filled from one value on the dial to another,
+    //! clockwise
     //! @param dc The drawing context
-    //! @param valueDegrees Where on the dial it sits, clockwise from noon
-    //! @param color The color to draw in
-    //! @param angularWidthDegrees How wide the mark is
+    //! @param fromDegrees Where it starts, clockwise from noon
+    //! @param toDegrees Where it ends, clockwise from noon
+    //! @param color The color to fill with
     //! @param radialLength How far in from the rim it reaches
-    function drawArc(dc as Dc, valueDegrees as Numeric, color as Number, angularWidthDegrees as Numeric, radialLength as Number) as Void {
-        var position = Dial.positionOf(valueDegrees);
+    function drawBand(dc as Dc, fromDegrees as Numeric, toDegrees as Numeric, color as Number, radialLength as Number) as Void {
+        var from = Dial.wrap(Dial.positionOf(fromDegrees));
+        var to = Dial.wrap(Dial.positionOf(toDegrees));
 
-        // Float: a one degree mark would otherwise start and end on the same
-        // integer degree, and drawArc renders a spanless arc as a full circle.
-        var half = angularWidthDegrees / 2.0;
+        // drawArc renders a spanless arc as a full circle.
+        if (from == to) {
+            return;
+        }
 
         dc.setPenWidth(radialLength);
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
@@ -72,8 +77,8 @@ module RimPainter {
             Dial.centerY,
             Dial.rim - (radialLength / 2),
             Graphics.ARC_CLOCKWISE,
-            Dial.wrap(position + half),
-            Dial.wrap(position - half)
+            from,
+            to
         );
     }
 

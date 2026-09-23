@@ -36,11 +36,12 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
-| `source/rim/RimMarks.mc` | The hour marks, colored by daylight |
+| `source/rim/RimBand.mc` | The rim filled amber from sunrise to sunset, sky blue after, as deep as the marks |
+| `source/rim/RimMarks.mc` | The hour marks |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/rim/RimNumeral.mc` | The 24 against the midnight mark |
 | `source/rim/HourHand.mc` | The hour hand, an arrow on the inner edge of the ring |
-| `source/rim/SecondsHand.mc` | The seconds hand sweeping the rim |
+| `source/rim/SecondsHand.mc` | The seconds hand, a dot circling clear of the band |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
 | `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
@@ -59,12 +60,13 @@ not Connect IQ app settings. Currently configurable:
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
-- **Data color** — everything else: the time, the rim numeral, the status
-  icons and the data container. The hour marks, the rim numeral and the hour
-  hand take it only until the sun is known; then each mark and numeral is
-  amber if the sun is up at its hour and sky blue if not, and the hand likewise
-  for the minute it points at, from the sunrise and sunset complications, the
-  same numbers the data container shows.
+- **Data color** — everything else: the time, the hour marks, the rim
+  numeral, the hour hand, the status icons and the data container.
+
+The band under the marks, as deep as they are, is not configurable: amber from the exact minute the
+sun rises to the minute it sets and sky blue the rest of the day, from the
+sunrise and sunset complications, the same numbers the data container shows.
+Until the sun is known the rim is left bare.
 
 Both offer the same thirty named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
@@ -132,21 +134,23 @@ is kept as it is when the style changes.
 
 The hand keeps sweeping in low power mode through
 `LucernarioView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
-puts the rim back there, then clips to where it is going and draws it. If that
+puts the rim back there, then clips to where it is going and draws it. The
+hand is a dot set in far enough that even the corners of its clip box stay
+off the day and night band, so a tick never repaints the band or the hour
+marks, which lie wholly within it: only the 24, the status row and the hour
+hand, and only when the box has cut into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
 
 The rim marks are drawn as lines running inward from the rim, with the width
-as a pen width in pixels, while the hand stays the arc it was lifted as. An
-arc cannot be made narrow enough: `drawArc` takes its span in degrees and the
+as a pen width in pixels. An arc cannot be made narrow enough: `drawArc` takes its span in degrees and the
 renderer works in whole ones, so every width from one degree to two came out
 as the same mark. A pixel at the rim is roughly a quarter of a degree, which
-is a useful step on a shape this small. `ClipRegion.reaches()` still wants an
-angle, so `RimMarks` keeps the width in both units.
+is a useful step on a shape this small.
 
-The rim marks, the hand and the status bar are lifted from the electric watch
-face. The marks are hour marks only at one size, the hand is one size, and the
+The rim marks and the status bar are lifted from the electric watch face.
+The marks are hour marks only at one size, and the
 row carries battery, phone, alarm, wind and AM/PM with the cat,
 notifications, do not disturb and GPS icons left behind. The wind is
 electric's too, where it is a triangle standing on the rim; here it is one

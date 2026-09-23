@@ -1,6 +1,5 @@
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Math;
 
 //! The twenty four hour marks around the rim, midnight at the top.
 //!
@@ -8,15 +7,11 @@ import Toybox.Math;
 //! size. There is no setting of its own: the marks come and go with the style
 //! that shows the seconds hand, which is what they are there to read against.
 //!
-//! Each mark stands for an hour of the day and is colored by where the sun is
-//! then: amber through daylight, sky blue through the night. Until the sun is
-//! known they take the face's data color.
+//! Drawn in the face's data color, on top of the day and night band.
 class RimMarks {
 
     //! How wide a mark is, as a share of the rim radius rather than a fixed
-    //! count, so it holds its proportions on every screen. Narrower than the
-    //! hand that sweeps over them, which is what tells the two apart at a
-    //! glance.
+    //! count, so it holds its proportions on every screen.
     //!
     //! Pixels, not degrees of arc: a mark is about a degree wide, and drawArc
     //! renders in whole degrees, so every width from one degree to two came
@@ -33,12 +28,8 @@ class RimMarks {
     private const _LENGTH_NUMERATOR = 2;
     private const _LENGTH_DIVISOR = 5;
 
-    //! The color the marks are drawn in when the sun is not known
+    //! The color the marks are drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
-
-    //! Where the sun is through the day. The view's, refreshed by it once per
-    //! full update and shared with the hour hand.
-    private var _daylight as Daylight;
 
     //! How far in a mark reaches, resolved in prepare()
     private var _length as Number = 0;
@@ -46,14 +37,8 @@ class RimMarks {
     //! How wide a mark is in pixels, resolved in prepare()
     private var _width as Number = _MIN_WIDTH;
 
-    //! The same width as an angle: the arc a mark subtends at the rim. The
-    //! clip test is the only thing that still wants the width in degrees.
-    private var _widthDegrees as Float = 0.0;
-
     //! Constructor
-    //! @param daylight Where the sun is through the day
-    function initialize(daylight as Daylight) {
-        _daylight = daylight;
+    function initialize() {
     }
 
     //! Size the marks off the ring. Run after Dial.setup().
@@ -64,8 +49,6 @@ class RimMarks {
         if (_width < _MIN_WIDTH) {
             _width = _MIN_WIDTH;
         }
-
-        _widthDegrees = Math.toDegrees(_width.toFloat() / Dial.rim).toFloat();
     }
 
     //! How far in from the rim a mark comes, for whatever sits against its end
@@ -88,30 +71,11 @@ class RimMarks {
         }
     }
 
-    //! Put back the marks the hand is passing, if it is passing any at all.
-    //! Only the ones inside the clip are worth issuing a draw for.
-    //! @param dc The drawing context
-    function redraw(dc as Dc) as Void {
-        for (var mark = 0; mark < Dial.HOUR_MARKS; mark++) {
-            if (ClipRegion.reaches(positionOf(mark), _widthDegrees)) {
-                paint(dc, mark);
-            }
-        }
-    }
-
     //! Draw one mark
     //! @param dc The drawing context
     //! @param mark Which mark, counting clockwise from noon
     private function paint(dc as Dc, mark as Number) as Void {
-        RimPainter.drawRadial(dc, positionOf(mark), colorOf(mark), _width, _length);
-    }
-
-    //! The color of one mark, by whether the sun is up at its hour. The mark
-    //! at the top is midnight, so the mark's index is its hour.
-    //! @param mark Which mark, counting clockwise from midnight
-    //! @return The color to draw in
-    private function colorOf(mark as Number) as Number {
-        return _daylight.colorAt(mark * Clock.MINUTES_PER_HOUR, _color);
+        RimPainter.drawRadial(dc, positionOf(mark), _color, _width, _length);
     }
 
     //! Where a mark sits on the dial
