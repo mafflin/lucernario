@@ -19,6 +19,14 @@ import Toybox.Math;
 //! Anything that keeps clear of a line, or boxes it, counts that in.
 module RimPainter {
 
+    //! How far past the rim a mark's line starts, in mark lengths. The
+    //! renderer lands each end of a line on a whole pixel, and on a mark a
+    //! few pixels long that pixel turns it by several degrees - more than
+    //! the gap between two minor marks. Started out past the glass, where the
+    //! round screen hides it, the outer end's pixel is spread over a line
+    //! four times as long.
+    const OVERSHOOT_LENGTHS = 3;
+
     //! A mark on the rim drawn as a line running inward from the rim, as wide
     //! as the pen is thick.
     //!
@@ -27,6 +35,9 @@ module RimPainter {
     //! one degree and two comes out as the same mark. A line is measured in
     //! pixels and steps one pixel at a time, which at the rim is finer than a
     //! degree by a factor of about four.
+    //!
+    //! Only the inner end is seen, rounded to the nearest pixel; the outer
+    //! one lies off the glass - see OVERSHOOT_LENGTHS.
     //! @param dc The drawing context
     //! @param valueDegrees Where on the dial it sits, clockwise from the top
     //! @param color The color to draw in
@@ -39,16 +50,16 @@ module RimPainter {
         // Screen y grows downward, so the sine of the angle is negated.
         var acrossY = -Math.sin(radians);
 
-        var outer = Dial.rim;
-        var inner = outer - radialLength;
+        var outer = Dial.rim + (radialLength * OVERSHOOT_LENGTHS);
+        var inner = Dial.rim - radialLength;
 
         dc.setPenWidth(widthPixels);
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.drawLine(
-            Dial.centerX + (outer * acrossX),
-            Dial.centerY + (outer * acrossY),
-            Dial.centerX + (inner * acrossX),
-            Dial.centerY + (inner * acrossY)
+            pixel(Dial.centerX + (outer * acrossX)),
+            pixel(Dial.centerY + (outer * acrossY)),
+            pixel(Dial.centerX + (inner * acrossX)),
+            pixel(Dial.centerY + (inner * acrossY))
         );
     }
 
@@ -59,5 +70,13 @@ module RimPainter {
     function fill(dc as Dc, points as Array<[Numeric, Numeric]>, color as Number) as Void {
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(points);
+    }
+
+    //! The nearest whole pixel. Rounded rather than left to the renderer,
+    //! which truncates and so leans every mark the same way.
+    //! @param value The coordinate to place
+    //! @return The pixel it lands on
+    function pixel(value as Decimal) as Number {
+        return Math.round(value).toNumber();
     }
 }
