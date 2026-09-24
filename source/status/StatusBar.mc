@@ -1,7 +1,6 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
-import Toybox.System;
 
 //! The row of status icons above the time.
 //!
@@ -210,7 +209,7 @@ class StatusBar {
     //! Work out which icons have something to report this draw
     //! @return How many are showing
     private function markVisible() as Number {
-        var settings = System.getDeviceSettings();
+        var settings = Clock.settings();
         var total = 0;
 
         for (var i = 0; i < _icons.size(); i++) {

@@ -151,7 +151,7 @@ module ComplicationFormat {
     function altitude(value as Complications.Value) as String {
         var height = decimal(value);
 
-        if (System.getDeviceSettings().elevationUnits == System.UNIT_STATUTE) {
+        if (Clock.settings().elevationUnits == System.UNIT_STATUTE) {
             return rounded(height * FEET_PER_METER) + FOOT;
         }
 
@@ -192,7 +192,7 @@ module ComplicationFormat {
     function distance(value as Complications.Value) as String {
         var meters = decimal(value);
 
-        if (System.getDeviceSettings().distanceUnits == System.UNIT_STATUTE) {
+        if (Clock.settings().distanceUnits == System.UNIT_STATUTE) {
             return (meters / METERS_PER_MILE).format(DISTANCE_FORMAT) + MILE;
         }
 
@@ -222,7 +222,7 @@ module ComplicationFormat {
     function temperature(value as Complications.Value) as String {
         var degrees = decimal(value);
 
-        if (System.getDeviceSettings().temperatureUnits == System.UNIT_STATUTE) {
+        if (Clock.settings().temperatureUnits == System.UNIT_STATUTE) {
             degrees = (degrees * FAHRENHEIT_PER_CELSIUS) + FAHRENHEIT_AT_ZERO;
         }
 

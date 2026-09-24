@@ -173,13 +173,12 @@ not the numerals: the 24, and one more mark for each hour, hour and minor
 marks alike, clockwise from it - 1 hour colors the 24 and the minor mark
 after it, 20 hours the marks from the 24 through the 4. The whole dial is
 119 hours, and more than that colors every mark. With none left, none are
-colored. Read
-on every full update; the marks are never touched by a partial one.
+colored. Read once a minute; the marks are never touched by a partial one.
 
 While an activity is under way the system draws its own indicator at the top
 of the screen, over the 24, so the 24 is left off then. `ActivityTimer` reads
-that off `Activity.Info.timerState`, which not every watch hands a watch
-face; where it does not, the 24 stays. The stopwatch has no API at all and
+that off `Activity.Info.timerState` once a minute, which not every watch
+hands a watch face; where it does not, the 24 stays. The stopwatch has no API at all and
 is not covered.
 
 The status row carries battery, phone, alarm, wind and AM/PM. The wind is one

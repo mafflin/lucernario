@@ -46,6 +46,13 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The wind as a bearing on the dial, on the style that asks for it
     private var _windBearing as WindBearing;
 
+    //! Whether an activity is under way, for the 24 the system's indicator
+    //! sits over
+    private var _activityTimer as ActivityTimer;
+
+    //! The hours left to recover, for the rim marks
+    private var _recovery as Recovery;
+
     //! Whether the rim shows the hours left to recover, which the style
     //! decides
     private var _recoveryShown as Boolean = false;
@@ -97,6 +104,8 @@ class LucernarioView extends WatchUi.WatchFace {
         _hourHand = new HourHand();
         _windReading = new WindReading();
         _windBearing = new WindBearing(_windReading);
+        _activityTimer = new ActivityTimer();
+        _recovery = new Recovery();
         _statusBar = new StatusBar(_windReading);
 
         _centerField = new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
@@ -171,15 +180,17 @@ class LucernarioView extends WatchUi.WatchFace {
         Clock.read();
         _daylight.refresh();
         _windReading.refresh();
+        _activityTimer.refresh();
+        _recovery.refresh();
         _dayColors.refresh();
-        _rimMarks.setRecoveryHours(_recoveryShown ? Recovery.hoursLeft() : null);
+        _rimMarks.setRecoveryHours(_recoveryShown ? _recovery.hoursLeft() : null);
         smooth(dc);
 
         dc.setColor(_background, _background);
         dc.clear();
 
         _rimMarks.draw(dc);
-        _numerals.draw(dc, ActivityTimer.isRunning());
+        _numerals.draw(dc, _activityTimer.isRunning());
         _windBearing.draw(dc);
         _statusBar.draw(dc);
         _time.draw(dc);
