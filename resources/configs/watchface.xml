@@ -4,6 +4,7 @@
         <styles>
             <style id="1" label="@Strings.styleDark" default="true"/>
             <style id="2" label="@Strings.styleLight"/>
+            <style id="3" label="@Strings.styleDarkComplicated"/>
         </styles>
         <!-- An explicit palette rather than allowAny: the editor wants a
              label per color, and with allowAny the fenix 8 Solar filled its

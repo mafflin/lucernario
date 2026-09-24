@@ -42,9 +42,10 @@ class StatusBar {
     private var _rowHeight as Number = 0;
 
     //! Constructor
-    function initialize() {
+    //! @param wind The wind, shared with the bearing on the dial
+    function initialize(wind as WindReading) {
         _battery = new Battery();
-        _wind = new Wind();
+        _wind = new Wind(wind);
 
         _icons = [
             _battery,
@@ -60,6 +61,12 @@ class StatusBar {
     //! @param y The top of the data container
     function mirror(y as Number) as Void {
         _mirrorY = y;
+    }
+
+    //! Whether the row carries the wind arrow
+    //! @param shown false while the dial shows the bearing instead
+    function setWindShown(shown as Boolean) as Void {
+        _wind.setEnabled(shown);
     }
 
     //! Set the color the icons are drawn in

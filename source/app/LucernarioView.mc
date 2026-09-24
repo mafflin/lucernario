@@ -40,6 +40,12 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The hour hand, a broad mark reaching past the hour marks
     private var _hourHand as HourHand;
 
+    //! The wind, shared by the status row and the bearing on the dial
+    private var _windReading as WindReading;
+
+    //! The wind as a bearing on the dial, on the style that asks for it
+    private var _windBearing as WindBearing;
+
     //! The row of status icons above the time
     private var _statusBar as StatusBar;
 
@@ -85,7 +91,9 @@ class LucernarioView extends WatchUi.WatchFace {
         _numerals = new RimNumerals(_dayColors);
         _hand = new SecondsHand();
         _hourHand = new HourHand();
-        _statusBar = new StatusBar();
+        _windReading = new WindReading();
+        _windBearing = new WindBearing(_windReading);
+        _statusBar = new StatusBar(_windReading);
 
         _centerField = new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
         _fields = [_centerField];
@@ -111,6 +119,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _numerals.prepare(dc, markReach);
         _hand.prepare(markReach, _rimMarks.width());
+        _windBearing.prepare(_hand.baseWidth());
         _hourHand.prepare(_rimMarks.width(), markReach);
 
         placeFields(dc);
@@ -157,6 +166,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         Clock.read();
         _daylight.refresh();
+        _windReading.refresh();
         _dayColors.refresh();
         smooth(dc);
 
@@ -165,6 +175,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _rimMarks.draw(dc);
         _numerals.draw(dc, ActivityTimer.isRunning());
+        _windBearing.draw(dc);
         _statusBar.draw(dc);
         _time.draw(dc);
         drawFields(dc);
@@ -201,6 +212,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _numerals.redraw(dc, second);
         _statusBar.redraw(dc);
+        _windBearing.redraw(dc);
         _hourHand.redraw(dc);
     }
 
@@ -399,16 +411,22 @@ class LucernarioView extends WatchUi.WatchFace {
         _style = style;
         _background = Styles.backgroundOf(style);
         _dayColors.setLight(Styles.isLight(style));
+
+        var windBearing = Styles.showsWindBearing(style);
+
+        _windBearing.setEnabled(windBearing);
+        _statusBar.setWindShown(!windBearing);
     }
 
-    //! Apply the chosen accent color to the hands, the things on the face
-    //! that are meant to stand apart from the rest
+    //! Apply the chosen accent color to the hands and the wind bearing, the
+    //! things on the face that are meant to stand apart from the rest
     //! @param accentColor The color chosen in the editor, null if unset
     private function applyAccentColor(accentColor as WatchFaceConfig.Color?) as Void {
         var color = colorOf(accentColor);
 
         _hand.setColor(color);
         _hourHand.setColor(color);
+        _windBearing.setColor(color);
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the

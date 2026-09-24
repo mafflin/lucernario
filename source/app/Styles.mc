@@ -9,7 +9,8 @@ import Toybox.Lang;
 module Styles {
     enum Value {
         DARK = 1,
-        LIGHT = 2
+        LIGHT = 2,
+        DARK_COMPLICATED = 3
     }
 
     //! The style used when the editor has not set one
@@ -36,5 +37,13 @@ module Styles {
     //! @return true for the light style
     function isLight(style as Number) as Boolean {
         return (style == LIGHT);
+    }
+
+    //! Whether this style shows the wind as a bearing on the dial rather
+    //! than as an arrow in the status row
+    //! @param style The selected style
+    //! @return true for the Dark Complicated style
+    function showsWindBearing(style as Number) as Boolean {
+        return (style == DARK_COMPLICATED);
     }
 }

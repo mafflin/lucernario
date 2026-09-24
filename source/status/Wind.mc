@@ -2,12 +2,12 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 import Toybox.System;
-import Toybox.Weather;
 
 //! The wind, as an arrow in the status bar.
 //!
-//! The reading is a bearing and a strength in three steps: one arrow is
-//! turned to the bearing, and the strength is said with color.
+//! The reading is a bearing and a strength in three steps - see WindReading:
+//! one arrow is turned to the bearing, and the strength is said with color.
+//! Left out of the row on the style that shows the bearing on the dial.
 //!
 //! The one item in the row with no artwork behind it. A bitmap turned by
 //! drawBitmap2 needs the bilinear filter, the filter makes part opaque pixels
@@ -21,21 +21,6 @@ class Wind extends Icon {
     //! The bearing is where the wind comes from; the arrow points where it
     //! goes, half a turn on
     private const _DOWNWIND_DEGREES = 180;
-
-    //! The API reports metres per second; the limits below read as km/h.
-    private const _KMH_PER_MS = 3.6;
-    private const _LIGHT_LIMIT_KMH = 20;
-    private const _MODERATE_LIMIT_KMH = 40;
-
-    private const _LIGHT = 0;
-    private const _MODERATE = 1;
-    private const _STRONG = 2;
-
-    //! Colors the two harder steps are drawn in, whatever the face's own
-    //! color is. A light wind is left in the face's color: it is the ordinary
-    //! case, and nothing worth calling out.
-    private const _MODERATE_COLOR = Graphics.COLOR_ORANGE;
-    private const _STRONG_COLOR = Graphics.COLOR_RED;
 
     //! The arrow's corners on the same 24 unit grid the SVGs are drawn on,
     //! scaled to whatever square the row gives this icon. Only the left wing
@@ -62,11 +47,11 @@ class Wind extends Icon {
     private const _WING_X = 4;
     private const _WING_Y = 20;
 
-    //! The compass bearing the wind blows from, north up
-    private var _bearing as Number? = null;
+    //! The wind, shared with the bearing on the dial
+    private var _wind as WindReading;
 
-    //! Which of the three steps the strength calls for
-    private var _strength as Number = _LIGHT;
+    //! Whether the row carries the arrow at all
+    private var _enabled as Boolean = true;
 
     //! The square the row has given this icon to fill
     private var _square as Number = 0;
@@ -77,28 +62,27 @@ class Wind extends Icon {
     //! bearing moves once an hour at best.
     private var _corners as Array< Array<Float> >? = null;
 
-    //! Once a minute: the phone refills the weather by the hour at best, and
-    //! the row asks every draw.
-    private var _reading as MinuteGate;
+    //! The bearing the corners were turned to
+    private var _cornersBearing as Number? = null;
 
     //! Constructor. No resource: this icon draws itself.
-    function initialize() {
+    //! @param wind The wind, shared with the bearing on the dial
+    function initialize(wind as WindReading) {
         Icon.initialize(null);
-        _reading = new MinuteGate();
+        _wind = wind;
     }
 
-    //! Shown once there is a bearing to point at. A watch with no weather
-    //! never reads the clock.
+    //! Whether the row carries the arrow at all
+    //! @param enabled false while the dial shows the bearing instead
+    function setEnabled(enabled as Boolean) as Void {
+        _enabled = enabled;
+    }
+
+    //! Shown once there is a bearing to point at, unless the dial has it
     //! @param settings The device settings
     //! @return true when there is a wind to show
     function on(settings as System.DeviceSettings) as Boolean {
-        if (!(Toybox has :Weather)) {
-            return false;
-        }
-
-        readWind();
-
-        return (_bearing != null);
+        return _enabled && (_wind.bearing() != null);
     }
 
     //! The square this icon fills, which the row hands over.
@@ -133,15 +117,7 @@ class Wind extends Icon {
     //! color the rest of the time
     //! @return The color to draw in
     protected function tint() as Number {
-        if (_strength == _STRONG) {
-            return _STRONG_COLOR;
-        }
-
-        if (_strength == _MODERATE) {
-            return _MODERATE_COLOR;
-        }
-
-        return Icon.tint();
+        return _wind.colorFor(Icon.tint());
     }
 
     //! Fill the arrow, pointing the way the wind blows.
@@ -158,8 +134,11 @@ class Wind extends Icon {
             return;
         }
 
-        if (_corners == null) {
-            _corners = cornersFor(_bearing);
+        var bearing = _wind.bearing();
+
+        if ((_corners == null) || (bearing != _cornersBearing)) {
+            _corners = cornersFor(bearing);
+            _cornersBearing = bearing;
         }
 
         var corners = _corners as Array< Array<Float> >;
@@ -218,53 +197,5 @@ class Wind extends Icon {
             (dx * cosine) - (dy * sine),
             (dx * sine) + (dy * cosine)
         ];
-    }
-
-    //! The bearing the wind blows from, and how hard
-    private function readWind() as Void {
-        if (!_reading.opens()) {
-            return;
-        }
-
-        _bearing = null;
-        _corners = null;
-        _strength = _LIGHT;
-
-        var conditions = Weather.getCurrentConditions();
-
-        if (conditions == null) {
-            return;
-        }
-
-        var bearing = conditions.windBearing;
-
-        if (bearing == null) {
-            return;
-        }
-
-        _bearing = bearing;
-        _strength = strengthFor(conditions.windSpeed);
-    }
-
-    //! A bearing but no speed still counts as light: direction known,
-    //! strength not.
-    //! @param speed The wind speed in metres per second, null if unknown
-    //! @return Which of the three steps the wind is in
-    private function strengthFor(speed as Numeric?) as Number {
-        if (speed == null) {
-            return _LIGHT;
-        }
-
-        var kmh = speed * _KMH_PER_MS;
-
-        if (kmh <= _LIGHT_LIMIT_KMH) {
-            return _LIGHT;
-        }
-
-        if (kmh <= _MODERATE_LIMIT_KMH) {
-            return _MODERATE;
-        }
-
-        return _STRONG;
     }
 }

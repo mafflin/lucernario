@@ -72,6 +72,12 @@ class SecondsHand {
         _second = null;
     }
 
+    //! How wide the base is, for whatever is sized to match
+    //! @return The width in pixels
+    function baseWidth() as Float {
+        return _halfBase * 2;
+    }
+
     //! Set the color the arrow is drawn in
     //! @param color The color to use
     function setColor(color as Number) as Void {

@@ -42,9 +42,11 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimMarks.mc` | The hour marks and four minor marks between each |
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
 | `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer |
+| `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the Dark Complicated style |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
+| `source/status/WindReading.mc` | The wind's bearing and strength, shared by the row's arrow and the dial |
 | `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
 | `source/complications/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
 | `source/complications/FieldLocation.mc` | The container slot id, mirroring `watchface.xml` |
@@ -57,11 +59,12 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
-- **Style** — `Dark` (default) or `Light`. The editor has no background
+- **Style** — `Dark` (default), `Light`, or `Dark Complicated`, which
+  moves the wind out of the status row and onto the dial. The editor has no background
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
-- **Accent color** — the hour and seconds hands, the things meant to stand
-  apart.
+- **Accent color** — the hour and seconds hands, and the wind bearing in a
+  light wind: the things meant to stand apart.
 - **Data color** — the time, the status icons and the data container, and
   the rim marks and numerals until the sun is known.
 - **Data container** — one complication slot centered below the time. The
@@ -142,9 +145,9 @@ The seconds hand keeps sweeping in low power mode through
 puts the rim back there, then clips to where it is going and draws it. The
 hand is an arrow set in far enough that even the corners of its clip box
 stay off the marks, round pen ends included, so a tick never repaints
-them: only the numeral nearest the hand's last position, the status row and
-the hour hand, which reaches a third past the marks, and only when the box
-has cut into them. If that
+them: only the numeral nearest the hand's last position, the status row, the
+wind bearing and the hour hand, both of which reach past the marks, and only
+when the box has cut into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
@@ -172,6 +175,13 @@ arrow in the row, pointing downwind (the bearing is where the wind comes from,
 so a southerly, 180, points up), with the strength said in color: the
 data color up to 20 km/h, orange above that, red above 40. None of them have
 a setting: each icon shows whenever the thing it reports is worth reporting.
+
+On the `Dark Complicated` style the wind leaves the row for the dial: an
+equilateral triangle the size of the seconds hand, standing on the rim at
+the bearing the wind blows from and pointing the way it blows, north at the
+top. It takes the accent color in a light wind and the same orange and red
+above that. It reaches past the marks, so a partial update puts it back when
+the seconds hand's clip cuts into it, as it does the hour hand.
 
 The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
 and tinted to the data color; untinted it would be invisible on the light
