@@ -90,23 +90,4 @@ module Dial {
     function radiansOf(valueDegrees as Numeric) as Decimal {
         return Math.toRadians(positionOf(valueDegrees));
     }
-
-    //! Into one turn and never below zero: an arc ending where it starts is a
-    //! spanless one, which drawArc renders as a full circle. A mark
-    //! straddling three o'clock must not collapse into that.
-    //! @param degrees The angle to normalize
-    //! @return The same angle within one turn
-    function wrap(degrees as Numeric) as Numeric {
-        var turn = degrees;
-
-        while (turn < 0) {
-            turn += DEGREES_PER_CIRCLE;
-        }
-
-        while (turn >= DEGREES_PER_CIRCLE) {
-            turn -= DEGREES_PER_CIRCLE;
-        }
-
-        return turn;
-    }
 }

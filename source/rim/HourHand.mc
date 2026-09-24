@@ -6,8 +6,8 @@ import Toybox.Lang;
 //! as they do, in the data color. Once round a day rather than twice, so it
 //! moves a quarter of a degree a minute.
 //!
-//! It lies wholly within the day and night band, where the seconds hand's
-//! clip never reaches, so a partial update never has it to put back.
+//! It lies wholly within the ring the marks reach over, where the seconds
+//! hand's clip never reaches, so a partial update never has it to put back.
 class HourHand {
 
     //! How much wider than an hour mark it is

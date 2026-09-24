@@ -7,7 +7,7 @@ import Toybox.Lang;
 //! container shows, so the two can never disagree. The system works them out
 //! from the watch's own position, with or without weather from the phone.
 //! Refreshed once a minute at most, which is far more often than the answer
-//! moves: the band asks on every full update.
+//! moves: DayColors asks on every full update.
 class Daylight {
 
     //! No reading yet, or none available: a watch that does not carry the

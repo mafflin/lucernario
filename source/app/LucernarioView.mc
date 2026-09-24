@@ -22,22 +22,22 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The time in the center of the screen
     private var _time as TimeDisplay;
 
-    //! Where the sun is through the day, which the band fills the ring with
+    //! Where the sun is through the day, which colors the rim
     private var _daylight as Daylight;
 
-    //! The rim filled with day and night, under the marks
-    private var _rimBand as RimBand;
+    //! The colors of the day, shared by the marks and the numerals
+    private var _dayColors as DayColors;
 
-    //! The hour marks around the rim
+    //! The hour and minor marks around the rim
     private var _rimMarks as RimMarks;
 
     //! The numerals every four hours, against the ends of their marks
     private var _numerals as RimNumerals;
 
-    //! The seconds hand, an arrow inside the band
+    //! The seconds hand, an arrow inside the marks
     private var _hand as SecondsHand;
 
-    //! The hour hand, a broad mark in the band
+    //! The hour hand, a broad mark among the hour marks
     private var _hourHand as HourHand;
 
     //! The row of status icons above the time
@@ -80,9 +80,9 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _time = new TimeDisplay();
         _daylight = new Daylight();
-        _rimBand = new RimBand(_daylight);
-        _rimMarks = new RimMarks();
-        _numerals = new RimNumerals();
+        _dayColors = new DayColors(_daylight);
+        _rimMarks = new RimMarks(_dayColors);
+        _numerals = new RimNumerals(_dayColors);
         _hand = new SecondsHand();
         _hourHand = new HourHand();
         _statusBar = new StatusBar();
@@ -102,13 +102,13 @@ class LucernarioView extends WatchUi.WatchFace {
 
         Dial.setup(dc);
 
-        // The marks size the rest of the rim: the band is as deep as they
-        // reach, and the hour hand is measured in mark widths.
+        // The marks size the rest of the rim: the numerals and the seconds
+        // hand sit inside their reach, and the hour hand is measured in mark
+        // widths.
         _rimMarks.prepare();
 
         var markReach = _rimMarks.reach();
 
-        _rimBand.prepare(markReach);
         _numerals.prepare(dc, markReach);
         _hand.prepare(markReach);
         _hourHand.prepare(_rimMarks.width(), markReach);
@@ -157,12 +157,12 @@ class LucernarioView extends WatchUi.WatchFace {
 
         Clock.read();
         _daylight.refresh();
+        _dayColors.refresh();
         smooth(dc);
 
         dc.setColor(_background, _background);
         dc.clear();
 
-        _rimBand.draw(dc);
         _rimMarks.draw(dc);
         _numerals.draw(dc);
         _statusBar.draw(dc);
@@ -396,6 +396,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _style = style;
         _background = Styles.backgroundOf(style);
+        _dayColors.setLight(Styles.isLight(style));
     }
 
     //! Apply the chosen accent color to the seconds hand, the one thing on
@@ -406,16 +407,15 @@ class LucernarioView extends WatchUi.WatchFace {
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the
-    //! time, the hour marks and numerals, the status icons and the data
-    //! containers
+    //! time, the hour hand, the status icons and the data containers, and
+    //! the rim marks and numerals until the sun is known
     //! @param dataColor The color chosen in the editor, null if unset
     private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
         var color = colorOf(dataColor);
 
         _time.setColor(color);
-        _rimMarks.setColor(color);
+        _dayColors.setColor(color);
         _hourHand.setColor(color);
-        _numerals.setColor(color);
         _statusBar.setColor(color);
 
         for (var i = 0; i < _fields.size(); i++) {

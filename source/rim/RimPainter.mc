@@ -2,11 +2,8 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! Draws the shapes that sit on the rim: the day and night band, the hour
-//! marks, the hour hand and the seconds hand.
-//!
-//! The band is arcs running in from the rim, from one moment of the day to
-//! another.
+//! Draws the shapes that sit on the rim: the marks, the hour hand and the
+//! seconds hand.
 //!
 //! The marks and the hour hand are lines running inward from the rim,
 //! because an arc cannot be made narrow enough - see drawRadial. The seconds
@@ -48,34 +45,6 @@ module RimPainter {
             Dial.centerY + (outer * acrossY),
             Dial.centerX + (inner * acrossX),
             Dial.centerY + (inner * acrossY)
-        );
-    }
-
-    //! A stretch of the rim filled from one value on the dial to another,
-    //! clockwise
-    //! @param dc The drawing context
-    //! @param fromDegrees Where it starts, clockwise from noon
-    //! @param toDegrees Where it ends, clockwise from noon
-    //! @param color The color to fill with
-    //! @param radialLength How far in from the rim it reaches
-    function drawBand(dc as Dc, fromDegrees as Numeric, toDegrees as Numeric, color as Number, radialLength as Number) as Void {
-        var from = Dial.wrap(Dial.positionOf(fromDegrees));
-        var to = Dial.wrap(Dial.positionOf(toDegrees));
-
-        // drawArc renders a spanless arc as a full circle.
-        if (from == to) {
-            return;
-        }
-
-        dc.setPenWidth(radialLength);
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.drawArc(
-            Dial.centerX,
-            Dial.centerY,
-            Dial.rim - (radialLength / 2),
-            Graphics.ARC_CLOCKWISE,
-            from,
-            to
         );
     }
 

@@ -36,12 +36,12 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
-| `source/rim/RimBand.mc` | The rim filled dark amber from sunrise to sunset, dark sky blue after, as deep as the marks |
-| `source/rim/RimMarks.mc` | The hour marks |
+| `source/rim/DayColors.mc` | Amber from sunrise to sunset, sky blue after, shaded to the style: the rim's colors |
+| `source/rim/RimMarks.mc` | The hour marks and four minor marks between each |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
 | `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks |
-| `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the band |
+| `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
 | `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
@@ -60,13 +60,15 @@ not Connect IQ app settings. Currently configurable:
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
 - **Accent color** — the seconds hand, the one thing meant to stand apart.
-- **Data color** — everything else: the time, the hour marks, the rim
-  numerals, the hour hand, the status icons and the data container.
+- **Data color** — everything else: the time, the hour hand, the status
+  icons and the data container, and the rim marks and numerals until the
+  sun is known.
 
-The band under the marks, as deep as they are, is not configurable: dark amber from the exact
-minute the sun rises to the minute it sets and dark sky blue the rest of the day, from the
+The color of the rim marks and numerals is not configurable: amber from the exact
+minute the sun rises to the minute it sets and sky blue the rest of the day
+(bright on the dark style, dark on the light one), from the
 sunrise and sunset complications, the same numbers the data container shows.
-Until the sun is known the rim is left bare.
+Until the sun is known they are drawn in the data color.
 
 Both offer the same thirty named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
@@ -136,8 +138,8 @@ The hand keeps sweeping in low power mode through
 `LucernarioView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
 puts the rim back there, then clips to where it is going and draws it. The
 hand is an arrow set in far enough that even the corners of its clip box
-stay off the day and night band, so a tick never repaints the band, the hour
-marks or the hour hand, which lie wholly within it: only the numeral nearest
+stay off the ring the marks reach over, so a tick never repaints the marks
+or the hour hand, which lie wholly within it: only the numeral nearest
 the hand's last position and the status row, and only when the box has cut
 into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
@@ -248,8 +250,8 @@ under `launcherIcon`.
 The time is drawn in `FONT_NUMBER_THAI_HOT`, the largest numeric system font,
 which Garmin sizes per device. The rim numerals are turned to follow the
 marks, which takes a vector font and `drawAngledText`: the first of a few
-Roboto and Swiss 721 faces the watch carries, at 80% of `FONT_XTINY`'s height.
-A watch without them draws the numerals upright in `FONT_XTINY` itself.
+Roboto and Swiss 721 faces the watch carries, at 80% of `FONT_TINY`'s height.
+A watch without them draws the numerals upright in `FONT_TINY` itself.
 Nothing is fitted at runtime.
 
 `Fonts.inkHeightOf(dc, font)` is the height of the glyphs rather than the font

@@ -2,16 +2,16 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! The seconds hand: an arrow inside the day and night band, pointing out at
-//! the second - equilateral, with a base of seven degrees measured at the
+//! The seconds hand: an arrow inside the marks, pointing out at
+//! the second - equilateral, with a base of eight degrees measured at the
 //! ring's inner edge.
 //!
 //! Set in far enough that the box a partial update clips to around it never
-//! reaches the band, at any angle, so a tick has neither the band, the hour
-//! marks nor the hour hand to put back - all three lie wholly within it.
+//! reaches the marks, at any angle, so a tick has neither the marks nor the
+//! hour hand to put back - both lie wholly within the ring the marks reach over.
 //! The box is the upright rectangle round the three corners, and on the
 //! diagonals a base corner pokes out past the tip, which is what holds the
-//! tip a few pixels off the band.
+//! tip a few pixels off the marks.
 //!
 //! It ticks in low power mode through partial updates, repainting only the
 //! pixels it vacates.
@@ -19,16 +19,16 @@ class SecondsHand {
 
     //! The span of the base, measured at the ring's inner edge. Equilateral,
     //! so this is the whole of its size.
-    private const _WIDTH_DEGREES = 7;
+    private const _WIDTH_DEGREES = 8;
 
     //! Half the square root of three: an equilateral triangle's height over
     //! its base
     private const _EQUILATERAL_HEIGHT = 0.866;
 
-    //! Air between the tip and the band: what the clip box reaches past the
-    //! tip on the diagonals, the band's smoothed edge spilling about a pixel
+    //! Air between the tip and the marks: what the clip box reaches past the
+    //! tip on the diagonals, their smoothed ends spilling about a pixel
     //! inward, and one more for the corners' own pixels
-    private const _BAND_GAP = 5;
+    private const _MARK_GAP = 5;
 
     //! The color the arrow is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
@@ -57,11 +57,11 @@ class SecondsHand {
     }
 
     //! Size the arrow off the ring. Run after Dial.setup().
-    //! @param bandReach How far in from the rim the day and night band comes
-    function prepare(bandReach as Number) as Void {
+    //! @param markReach How far in from the rim the marks come
+    function prepare(markReach as Number) as Void {
         var base = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(_WIDTH_DEGREES / 2.0));
 
-        _tip = Dial.rim - bandReach - _BAND_GAP;
+        _tip = Dial.rim - markReach - _MARK_GAP;
         _base = (_tip - (base * _EQUILATERAL_HEIGHT)).toFloat();
         _halfBase = (base / 2).toFloat();
         _second = null;
