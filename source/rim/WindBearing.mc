@@ -14,10 +14,6 @@ import Toybox.Math;
 //! the clip has cut into it: a tick or two a minute.
 class WindBearing {
 
-    //! Pixels past the corners for the smoothed edges, on the box a partial
-    //! update tests it against
-    private const _BOX_PADDING = 1;
-
     //! The wind, shared with the arrow in the status row
     private var _wind as WindReading;
 
@@ -37,10 +33,7 @@ class WindBearing {
     private var _shown as Boolean = false;
     private var _points as Array<[Numeric, Numeric]>;
     private var _drawnColor as Number = Graphics.COLOR_WHITE;
-    private var _left as Number = 0;
-    private var _top as Number = 0;
-    private var _boxWidth as Number = 0;
-    private var _boxHeight as Number = 0;
+    private var _box as Box;
 
     //! The bearing the corners were worked out for
     private var _pointsBearing as Number? = null;
@@ -50,6 +43,7 @@ class WindBearing {
     function initialize(wind as WindReading) {
         _wind = wind;
         _points = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
+        _box = new Box();
     }
 
     //! Size the triangle. Run after Dial.setup().
@@ -98,7 +92,7 @@ class WindBearing {
     //! Put the triangle back if the clip of a partial update has cut into it
     //! @param dc The drawing context
     function redraw(dc as Dc) as Void {
-        if (_shown && ClipRegion.covers(_left, _top, _boxWidth, _boxHeight)) {
+        if (_shown && ClipRegion.covers(_box)) {
             paint(dc);
         }
     }
@@ -130,34 +124,6 @@ class WindBearing {
         _points[2] = [tipX, tipY];
         _pointsBearing = bearing;
 
-        var minX = min3(leftX, rightX, tipX) - _BOX_PADDING;
-        var minY = min3(leftY, rightY, tipY) - _BOX_PADDING;
-
-        _left = minX;
-        _top = minY;
-        _boxWidth = max3(leftX, rightX, tipX) + _BOX_PADDING + 1 - minX;
-        _boxHeight = max3(leftY, rightY, tipY) + _BOX_PADDING + 1 - minY;
-    }
-
-    //! The least of three
-    //! @param a The first
-    //! @param b The second
-    //! @param c The third
-    //! @return The least
-    private function min3(a as Number, b as Number, c as Number) as Number {
-        var least = (a < b) ? a : b;
-
-        return (least < c) ? least : c;
-    }
-
-    //! The greatest of three
-    //! @param a The first
-    //! @param b The second
-    //! @param c The third
-    //! @return The greatest
-    private function max3(a as Number, b as Number, c as Number) as Number {
-        var most = (a > b) ? a : b;
-
-        return (most > c) ? most : c;
+        _box.aroundCorners(leftX, leftY, rightX, rightY, tipX, tipY);
     }
 }

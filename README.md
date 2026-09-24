@@ -45,7 +45,8 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer |
 | `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the Dark Complicated style |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
-| `source/rim/ClipRegion.mc` | The box a partial update may touch |
+| `source/rim/ClipRegion.mc` | The box a partial update may touch, and the test against it |
+| `source/rim/Box.mc` | The box around a shape, for that test |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
 | `source/status/WindReading.mc` | The wind's bearing and strength, shared by the row's arrow and the dial |
 | `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |

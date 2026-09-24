@@ -43,14 +43,12 @@ class SecondsHand {
     //! The corners it was last drawn with, filled in place rather than made
     //! anew each tick, and the box around them
     private var _points as Array<[Numeric, Numeric]>;
-    private var _left as Number = 0;
-    private var _top as Number = 0;
-    private var _right as Number = 0;
-    private var _bottom as Number = 0;
+    private var _box as Box;
 
     //! Constructor
     function initialize() {
         _points = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
+        _box = new Box();
     }
 
     //! Size the arrow off the ring. Run after Dial.setup().
@@ -105,13 +103,13 @@ class SecondsHand {
 
         // Where it was: lift the arrow off and put the rim back underneath.
         if (previous != null) {
-            ClipRegion.clip(dc, _left, _top, _right, _bottom);
+            ClipRegion.clip(dc, _box);
             restoreRim.invoke(dc, previous);
         }
 
         // Where it is going: the box bounds the draw and nothing more.
         place(second);
-        ClipRegion.clip(dc, _left, _top, _right, _bottom);
+        ClipRegion.clip(dc, _box);
         paint(dc);
 
         dc.clearClip();
@@ -153,10 +151,7 @@ class SecondsHand {
         right[0] = rightX;
         right[1] = rightY;
 
-        _left = min3(tipX, leftX, rightX);
-        _right = max3(tipX, leftX, rightX);
-        _top = min3(tipY, leftY, rightY);
-        _bottom = max3(tipY, leftY, rightY);
+        _box.aroundCorners(tipX, tipY, leftX, leftY, rightX, rightY);
         _second = second;
     }
 
@@ -164,27 +159,5 @@ class SecondsHand {
     //! @param dc The drawing context
     private function paint(dc as Dc) as Void {
         RimPainter.fill(dc, _points, _color);
-    }
-
-    //! The least of three
-    //! @param a The first
-    //! @param b The second
-    //! @param c The third
-    //! @return The least
-    private function min3(a as Number, b as Number, c as Number) as Number {
-        var least = (a < b) ? a : b;
-
-        return (least < c) ? least : c;
-    }
-
-    //! The greatest of three
-    //! @param a The first
-    //! @param b The second
-    //! @param c The third
-    //! @return The greatest
-    private function max3(a as Number, b as Number, c as Number) as Number {
-        var most = (a > b) ? a : b;
-
-        return (most > c) ? most : c;
     }
 }

@@ -7,27 +7,26 @@ import Toybox.Lang;
 //! never issued.
 module ClipRegion {
 
-    //! Pixels past the hand on every side, for its smoothed edges. Its
-    //! corners are whole pixels already, so there is no rounding to cover.
+    //! Pixels past a shape on every side, for its smoothed edges. Shapes are
+    //! placed on whole pixels already, so there is no rounding to cover.
     const PADDING = 1;
 
-    //! The last box, so callers can test it without allocating
+    //! The last clip, kept as four numbers rather than a Box so the module
+    //! has nothing to construct
     var boxX as Number = 0;
     var boxY as Number = 0;
     var boxWidth as Number = 0;
     var boxHeight as Number = 0;
 
-    //! Restrict drawing to the box around one position of the hand
+    //! Restrict drawing to the box around one position of the hand, cut down
+    //! to the screen
     //! @param dc The drawing context
-    //! @param left The hand's leftmost pixel
-    //! @param top The hand's topmost pixel
-    //! @param right The hand's rightmost pixel
-    //! @param bottom The hand's bottommost pixel
-    function clip(dc as Dc, left as Number, top as Number, right as Number, bottom as Number) as Void {
-        var x1 = left - PADDING;
-        var y1 = top - PADDING;
-        var x2 = right + PADDING + 1;
-        var y2 = bottom + PADDING + 1;
+    //! @param shape The box around the hand, padded already
+    function clip(dc as Dc, shape as Box) as Void {
+        var x1 = shape.left;
+        var y1 = shape.top;
+        var x2 = shape.left + shape.width;
+        var y2 = shape.top + shape.height;
 
         if (x1 < 0) { x1 = 0; }
         if (y1 < 0) { y1 = 0; }
@@ -42,17 +41,18 @@ module ClipRegion {
         dc.setClip(boxX, boxY, boxWidth, boxHeight);
     }
 
-    //! Whether the last box overlaps the given rectangle. Lets anything drawn
+    //! Whether the last clip overlaps a shape's box. Lets anything drawn
     //! inside the rim ask once whether a partial update has cut into it.
-    //! @param x The left edge
-    //! @param y The top edge
-    //! @param width The width
-    //! @param height The height
-    //! @return true when the two overlap
-    function covers(x as Number, y as Number, width as Number, height as Number) as Boolean {
-        return (x < (boxX + boxWidth))
-            && ((x + width) > boxX)
-            && (y < (boxY + boxHeight))
-            && ((y + height) > boxY);
+    //! @param shape The box around the shape
+    //! @return true when the two share a pixel
+    function covers(shape as Box) as Boolean {
+        if (shape.isEmpty()) {
+            return false;
+        }
+
+        return (shape.left < (boxX + boxWidth))
+            && ((shape.left + shape.width) > boxX)
+            && (shape.top < (boxY + boxHeight))
+            && ((shape.top + shape.height) > boxY);
     }
 }

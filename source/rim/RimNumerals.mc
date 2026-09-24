@@ -53,10 +53,7 @@ class RimNumerals {
     private var _xs as Array<Number>;
     private var _ys as Array<Number>;
     private var _angles as Array<Number>;
-    private var _lefts as Array<Number>;
-    private var _tops as Array<Number>;
-    private var _widths as Array<Number>;
-    private var _heights as Array<Number>;
+    private var _boxes as Array<Box>;
 
     //! The colors of the day, shared with the marks
     private var _dayColors as DayColors;
@@ -77,16 +74,14 @@ class RimNumerals {
         _xs = new [_COUNT] as Array<Number>;
         _ys = new [_COUNT] as Array<Number>;
         _angles = new [_COUNT] as Array<Number>;
-        _lefts = new [_COUNT] as Array<Number>;
-        _tops = new [_COUNT] as Array<Number>;
-        _widths = new [_COUNT] as Array<Number>;
-        _heights = new [_COUNT] as Array<Number>;
+        _boxes = new [_COUNT] as Array<Box>;
 
         for (var i = 0; i < _COUNT; i++) {
             // Midnight reads as the full count rather than zero.
             var hour = (i == 0) ? Dial.HOUR_MARKS : (i * _HOURS_APART);
 
             _texts[i] = hour.toString();
+            _boxes[i] = new Box();
         }
     }
 
@@ -147,7 +142,7 @@ class RimNumerals {
     function redraw(dc as Dc, second as Number) as Void {
         var i = ((second + (_SECONDS_APART / 2)) / _SECONDS_APART) % _COUNT;
 
-        if (isShown(i) && ClipRegion.covers(_lefts[i], _tops[i], _widths[i], _heights[i])) {
+        if (isShown(i) && ClipRegion.covers(_boxes[i])) {
             paint(dc, i);
         }
     }
@@ -236,12 +231,12 @@ class RimNumerals {
         var radians = Math.toRadians(_angles[i]);
         var cosine = Math.cos(radians).abs();
         var sine = Math.sin(radians).abs();
-        var boxWidth = ((width * cosine) + (height * sine)).toNumber() + 1;
-        var boxHeight = ((width * sine) + (height * cosine)).toNumber() + 1;
 
-        _lefts[i] = _xs[i] - (boxWidth / 2);
-        _tops[i] = _ys[i] - (boxHeight / 2);
-        _widths[i] = boxWidth;
-        _heights[i] = boxHeight;
+        _boxes[i].aroundCenter(
+            _xs[i],
+            _ys[i],
+            Dial.pixel((width * cosine) + (height * sine)),
+            Dial.pixel((width * sine) + (height * cosine))
+        );
     }
 }

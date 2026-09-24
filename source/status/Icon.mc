@@ -11,9 +11,8 @@ class Icon {
     //! No bitmap out of a set has been loaded yet
     private const _NONE_CHOSEN = -1;
 
-    //! Where the last full draw put this icon, null if it was not drawn
-    private var _lastX as Number? = null;
-    private var _lastY as Number? = null;
+    //! Where the last full draw put this icon, empty if it was not drawn
+    private var _box as Box;
 
     //! The resource this icon draws, for the icons that have just the one
     private var _resourceId as ResourceId?;
@@ -40,6 +39,7 @@ class Icon {
     //!        a set and overrides bitmap()
     function initialize(resourceId as ResourceId?) {
         _resourceId = resourceId;
+        _box = new Box();
     }
 
     //! Whether this icon has anything to report. Overridden per icon.
@@ -96,8 +96,7 @@ class Icon {
     //! Forget where this icon was, so a partial update does not put it back
     //! somewhere the screen has since been repainted
     function forget() as Void {
-        _lastX = null;
-        _lastY = null;
+        _box.clear();
     }
 
     //! Draw the icon, remembering where it went
@@ -105,27 +104,18 @@ class Icon {
     //! @param x The left edge
     //! @param y The top edge
     function draw(dc as Dc, x as Number, y as Number) as Void {
-        _lastX = x;
-        _lastY = y;
-
+        _box.set(x, y, width(), height());
         paint(dc, x, y);
     }
 
     //! Put the icon back if the clip has cut into it
     //! @param dc The drawing context
     function redraw(dc as Dc) as Void {
-        var x = _lastX;
-        var y = _lastY;
-
-        if ((x == null) || (y == null)) {
+        if (!ClipRegion.covers(_box)) {
             return;
         }
 
-        if (!ClipRegion.covers(x, y, width(), height())) {
-            return;
-        }
-
-        paint(dc, x, y);
+        paint(dc, _box.left, _box.top);
     }
 
     //! The bitmap to draw. Overridden by the icons that pick from a set.

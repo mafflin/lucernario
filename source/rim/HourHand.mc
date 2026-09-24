@@ -17,10 +17,6 @@ class HourHand {
     private const _LENGTH_NUMERATOR = 4;
     private const _LENGTH_DIVISOR = 3;
 
-    //! Pixels past the pen's reach for its smoothed edges, on the box a
-    //! partial update tests it against
-    private const _BOX_PADDING = 1;
-
     //! The color the hand is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
 
@@ -28,16 +24,14 @@ class HourHand {
     private var _width as Number = 0;
     private var _length as Number = 0;
 
-    //! Where the hand was last drawn, and the upright box around it, taken
-    //! in draw() so a partial update can test and redraw it as it stands
+    //! Where the hand was last drawn, and the box around it, taken in
+    //! draw() so a partial update can test and redraw it as it stands
     private var _position as Float = 0.0;
-    private var _left as Number = 0;
-    private var _top as Number = 0;
-    private var _boxWidth as Number = 0;
-    private var _boxHeight as Number = 0;
+    private var _box as Box;
 
     //! Constructor
     function initialize() {
+        _box = new Box();
     }
 
     //! Size the hand off the marks. Run after the marks are prepared.
@@ -65,7 +59,7 @@ class HourHand {
     //! Put the hand back if the clip of a partial update has cut into it
     //! @param dc The drawing context
     function redraw(dc as Dc) as Void {
-        if (ClipRegion.covers(_left, _top, _boxWidth, _boxHeight)) {
+        if (ClipRegion.covers(_box)) {
             paint(dc);
         }
     }
@@ -76,25 +70,21 @@ class HourHand {
         RimPainter.drawRadial(dc, _position, _color, _width, _length);
     }
 
-    //! The upright box around the hand: its two ends, and the pen's reach
-    //! on every side
+    //! The box around the hand: from the rim to its inner end, with the
+    //! pen's reach on every side. The line itself starts off the glass - see
+    //! RimPainter.OVERSHOOT_LENGTHS - but nothing inside the rim can be cut
+    //! into out there.
     //! @param position Where it points, clockwise from midnight
     private function boxAround(position as Float) as Void {
         var radians = Dial.radiansOf(position);
-        var outerX = Dial.pointX(radians, Dial.rim);
-        var outerY = Dial.pointY(radians, Dial.rim);
-        var innerX = Dial.pointX(radians, Dial.rim - _length);
-        var innerY = Dial.pointY(radians, Dial.rim - _length);
-        var reach = RimPainter.penRadius(_width) + _BOX_PADDING;
-        var left = (outerX < innerX) ? outerX : innerX;
-        var top = (outerY < innerY) ? outerY : innerY;
-        var right = (outerX > innerX) ? outerX : innerX;
-        var bottom = (outerY > innerY) ? outerY : innerY;
 
-        _left = left - reach;
-        _top = top - reach;
-        _boxWidth = (right - left) + (2 * reach) + 1;
-        _boxHeight = (bottom - top) + (2 * reach) + 1;
+        _box.aroundLine(
+            Dial.pointX(radians, Dial.rim),
+            Dial.pointY(radians, Dial.rim),
+            Dial.pointX(radians, Dial.rim - _length),
+            Dial.pointY(radians, Dial.rim - _length),
+            RimPainter.penRadius(_width)
+        );
     }
 
     //! The moment the hand points at: the hour, carried on by however much

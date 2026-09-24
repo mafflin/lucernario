@@ -35,17 +35,15 @@ class StatusBar {
     private var _mirrorY as Number = 0;
 
     //! Where the last full draw put the row, so one box answers for every
-    //! item before any is asked about itself.
-    private var _rowX as Number = 0;
-    private var _rowY as Number = 0;
-    private var _rowWidth as Number = 0;
-    private var _rowHeight as Number = 0;
+    //! item before any is asked about itself. Empty while nothing shows.
+    private var _row as Box;
 
     //! Constructor
     //! @param wind The wind, shared with the bearing on the dial
     function initialize(wind as WindReading) {
         _battery = new Battery();
         _wind = new Wind(wind);
+        _row = new Box();
 
         _icons = [
             _battery,
@@ -82,7 +80,7 @@ class StatusBar {
     function draw(dc as Dc) as Void {
         var total = markVisible();
 
-        _rowHeight = 0;
+        _row.clear();
 
         if (total == 0) {
             return;
@@ -100,10 +98,7 @@ class StatusBar {
         var rowWidth = items + ((total - 1) * gap);
         var x = (dc.getWidth() - rowWidth) / 2;
 
-        _rowX = x;
-        _rowY = centerY - (tall / 2);
-        _rowWidth = rowWidth;
-        _rowHeight = tall;
+        _row.set(x, centerY - (tall / 2), rowWidth, tall);
 
         for (var i = 0; i < _icons.size(); i++) {
             if (!_icons[i].shown()) {
@@ -120,11 +115,7 @@ class StatusBar {
     //! back only if the clip reaches it.
     //! @param dc The drawing context
     function redraw(dc as Dc) as Void {
-        if (_rowHeight == 0) {
-            return;
-        }
-
-        if (!ClipRegion.covers(_rowX, _rowY, _rowWidth, _rowHeight)) {
+        if (!ClipRegion.covers(_row)) {
             return;
         }
 
