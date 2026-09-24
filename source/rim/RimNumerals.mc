@@ -61,6 +61,9 @@ class RimNumerals {
     //! The colors of the day, shared with the marks
     private var _dayColors as DayColors;
 
+    //! Whether the top numeral is left off, set in draw()
+    private var _topHidden as Boolean = false;
+
     //! Each numeral's color, taken in draw() so a partial update puts one
     //! back as it was without working it out again
     private var _colors as Array<Number>;
@@ -123,10 +126,17 @@ class RimNumerals {
 
     //! Draw every numeral
     //! @param dc The drawing context
-    function draw(dc as Dc) as Void {
+    //! @param hideTop Whether to leave off the 24, for the system's activity
+    //!        indicator that sits over it
+    function draw(dc as Dc, hideTop as Boolean) as Void {
+        _topHidden = hideTop;
+
         for (var i = 0; i < _COUNT; i++) {
             _colors[i] = _dayColors.colorAt(positionOf(i));
-            paint(dc, i);
+
+            if (isShown(i)) {
+                paint(dc, i);
+            }
         }
     }
 
@@ -137,9 +147,16 @@ class RimNumerals {
     function redraw(dc as Dc, second as Number) as Void {
         var i = ((second + (_SECONDS_APART / 2)) / _SECONDS_APART) % _COUNT;
 
-        if (ClipRegion.covers(_lefts[i], _tops[i], _widths[i], _heights[i])) {
+        if (isShown(i) && ClipRegion.covers(_lefts[i], _tops[i], _widths[i], _heights[i])) {
             paint(dc, i);
         }
+    }
+
+    //! Whether a numeral is on screen as of the last draw()
+    //! @param i Which numeral, counting clockwise from the top
+    //! @return true unless it is the top one and that is left off
+    private function isShown(i as Number) as Boolean {
+        return (i != 0) || !_topHidden;
     }
 
     //! Draw one numeral in its color

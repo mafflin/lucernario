@@ -35,6 +35,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
+| `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 24 |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after, shaded to the style |
@@ -159,6 +160,12 @@ end; every clearance and clip box counts that in.
 The rim is 24 hour marks with four thin minor marks between each pair, one
 every twelve minutes, and the numerals 24, 4, 8, 12, 16 and 20 against the
 inner ends of their marks.
+
+While an activity is under way the system draws its own indicator at the top
+of the screen, over the 24, so the 24 is left off then. `ActivityTimer` reads
+that off `Activity.Info.timerState`, which not every watch hands a watch
+face; where it does not, the 24 stays. The stopwatch has no API at all and
+is not covered.
 
 The status row carries battery, phone, alarm, wind and AM/PM. The wind is one
 arrow in the row, pointing downwind (the bearing is where the wind comes from,

@@ -164,7 +164,7 @@ class LucernarioView extends WatchUi.WatchFace {
         dc.clear();
 
         _rimMarks.draw(dc);
-        _numerals.draw(dc);
+        _numerals.draw(dc, ActivityTimer.isRunning());
         _statusBar.draw(dc);
         _time.draw(dc);
         drawFields(dc);
