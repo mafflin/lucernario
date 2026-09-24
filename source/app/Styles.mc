@@ -46,4 +46,11 @@ module Styles {
     function showsWindBearing(style as Number) as Boolean {
         return (style == DARK_COMPLICATED);
     }
+
+    //! Whether this style colors the hours left to recover on the rim
+    //! @param style The selected style
+    //! @return true for the Dark Complicated style
+    function showsRecovery(style as Number) as Boolean {
+        return (style == DARK_COMPLICATED);
+    }
 }

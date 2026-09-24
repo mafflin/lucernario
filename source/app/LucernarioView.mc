@@ -46,6 +46,10 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The wind as a bearing on the dial, on the style that asks for it
     private var _windBearing as WindBearing;
 
+    //! Whether the rim shows the hours left to recover, which the style
+    //! decides
+    private var _recoveryShown as Boolean = false;
+
     //! The row of status icons above the time
     private var _statusBar as StatusBar;
 
@@ -168,6 +172,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _daylight.refresh();
         _windReading.refresh();
         _dayColors.refresh();
+        _rimMarks.setRecoveryHours(_recoveryShown ? Recovery.hoursLeft() : null);
         smooth(dc);
 
         dc.setColor(_background, _background);
@@ -416,10 +421,12 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _windBearing.setEnabled(windBearing);
         _statusBar.setWindShown(!windBearing);
+        _recoveryShown = Styles.showsRecovery(style);
     }
 
-    //! Apply the chosen accent color to the hands and the wind bearing, the
-    //! things on the face that are meant to stand apart from the rest
+    //! Apply the chosen accent color to the hands, the wind bearing and the
+    //! recovery marks, the things on the face that are meant to stand apart
+    //! from the rest
     //! @param accentColor The color chosen in the editor, null if unset
     private function applyAccentColor(accentColor as WatchFaceConfig.Color?) as Void {
         var color = colorOf(accentColor);
@@ -427,6 +434,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _hand.setColor(color);
         _hourHand.setColor(color);
         _windBearing.setColor(color);
+        _rimMarks.setRecoveryColor(color);
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the

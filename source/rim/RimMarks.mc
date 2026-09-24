@@ -7,7 +7,9 @@ import Toybox.Lang;
 //! They have no setting of their own.
 //!
 //! Colored with the day, each mark by the moment it stands for - see
-//! DayColors.
+//! DayColors. On the style that asks for it, the hours left to recover take
+//! the accent color instead: the 24, and one more mark for each hour, hour
+//! and minor marks alike, clockwise from it. The whole dial is 119 hours.
 class RimMarks {
 
     //! How wide a mark is, as a share of the rim radius rather than a fixed
@@ -49,6 +51,11 @@ class RimMarks {
     //! The colors of the day, shared with the numerals
     private var _dayColors as DayColors;
 
+    //! How many marks the hours left to recover take, clockwise from the
+    //! 24, and the color they are drawn in. None at zero.
+    private var _recoveryMarks as Number = 0;
+    private var _recoveryColor as Number = Graphics.COLOR_WHITE;
+
     //! Constructor
     //! @param dayColors The colors of the day
     function initialize(dayColors as DayColors) {
@@ -79,6 +86,20 @@ class RimMarks {
         return _width;
     }
 
+    //! Set how many hours are left to recover. Once per full update.
+    //! @param hours The hours left, null when there are none or the style
+    //!        does not show them
+    function setRecoveryHours(hours as Number?) as Void {
+        // The 24 starts the count and each hour adds the mark after it.
+        _recoveryMarks = (hours == null) ? 0 : (hours + 1);
+    }
+
+    //! Set the color the recovery marks are drawn in
+    //! @param color The color to use
+    function setRecoveryColor(color as Number) as Void {
+        _recoveryColor = color;
+    }
+
     //! Draw every mark
     //! @param dc The drawing context
     function draw(dc as Dc) as Void {
@@ -86,14 +107,28 @@ class RimMarks {
 
         for (var mark = 0; mark < Dial.HOUR_MARKS; mark++) {
             var hour = positionOf(mark);
+            var first = mark * _MINOR_STEPS;
 
-            RimPainter.drawRadial(dc, hour, _dayColors.colorAt(hour), _width, _length);
+            RimPainter.drawRadial(dc, hour, colorAt(first, hour), _width, _length);
 
             for (var step = 1; step < _MINOR_STEPS; step++) {
                 var degrees = hour + (step * minorStep);
-                RimPainter.drawRadial(dc, degrees, _dayColors.colorAt(degrees), _MINOR_WIDTH, _minorLength);
+                RimPainter.drawRadial(dc, degrees, colorAt(first + step, degrees), _MINOR_WIDTH, _minorLength);
             }
         }
+    }
+
+    //! The color of a mark: the recovery color while it is among the hours
+    //! left to recover, the day's otherwise
+    //! @param index Which mark, hour and minor alike, clockwise from the 24
+    //! @param degrees Where the mark sits, clockwise from midnight
+    //! @return The color to draw it in
+    private function colorAt(index as Number, degrees as Numeric) as Number {
+        if (index < _recoveryMarks) {
+            return _recoveryColor;
+        }
+
+        return _dayColors.colorAt(degrees);
     }
 
     //! Where a mark sits on the dial

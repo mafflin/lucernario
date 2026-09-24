@@ -35,6 +35,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
+| `source/time/Recovery.mc` | Hours left to recover, off the activity monitor |
 | `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 24 |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
@@ -60,11 +61,12 @@ Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
 - **Style** — `Dark` (default), `Light`, or `Dark Complicated`, which
-  moves the wind out of the status row and onto the dial. The editor has no background
+  moves the wind out of the status row and onto the dial and shows the hours
+  left to recover on the rim. The editor has no background
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
-- **Accent color** — the hour and seconds hands, and the wind bearing in a
-  light wind: the things meant to stand apart.
+- **Accent color** — the hour and seconds hands, the wind bearing in a light
+  wind, and the recovery hours: the things meant to stand apart.
 - **Data color** — the time, the status icons and the data container, and
   the rim marks and numerals until the sun is known.
 - **Data container** — one complication slot centered below the time. The
@@ -163,6 +165,15 @@ end; every clearance and clip box counts that in.
 The rim is 24 hour marks with four thin minor marks between each pair, one
 every twelve minutes, and the numerals 24, 4, 8, 12, 16 and 20 against the
 inner ends of their marks.
+
+On the `Dark Complicated` style the hours left to recover
+(`ActivityMonitor.Info.timeToRecovery`) take the accent color on the marks,
+not the numerals: the 24, and one more mark for each hour, hour and minor
+marks alike, clockwise from it - 1 hour colors the 24 and the minor mark
+after it, 20 hours the marks from the 24 through the 4. The whole dial is
+119 hours, and more than that colors every mark. With none left, none are
+colored. Read
+on every full update; the marks are never touched by a partial one.
 
 While an activity is under way the system draws its own indicator at the top
 of the screen, over the 24, so the 24 is left off then. `ActivityTimer` reads
