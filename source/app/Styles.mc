@@ -39,18 +39,12 @@ module Styles {
         return (style == LIGHT);
     }
 
-    //! Whether this style shows the wind as a bearing on the dial rather
-    //! than as an arrow in the status row
+    //! Whether this style carries the complications the plain ones leave
+    //! off: the wind as a bearing on the dial rather than an arrow in the
+    //! status row, and the hours left to recover on the rim marks
     //! @param style The selected style
     //! @return true for the Dark Complicated style
-    function showsWindBearing(style as Number) as Boolean {
-        return (style == DARK_COMPLICATED);
-    }
-
-    //! Whether this style colors the hours left to recover on the rim
-    //! @param style The selected style
-    //! @return true for the Dark Complicated style
-    function showsRecovery(style as Number) as Boolean {
+    function isComplicated(style as Number) as Boolean {
         return (style == DARK_COMPLICATED);
     }
 }

@@ -51,6 +51,10 @@ class RimMarks {
     //! The colors of the day, shared with the numerals
     private var _dayColors as DayColors;
 
+    //! Whether the marks show the hours left to recover at all, which the
+    //! style decides
+    private var _recoveryShown as Boolean = false;
+
     //! How many marks the hours left to recover take, clockwise from the
     //! 24, and the color they are drawn in. None at zero.
     private var _recoveryMarks as Number = 0;
@@ -86,12 +90,22 @@ class RimMarks {
         return _width;
     }
 
+    //! Whether the marks show the hours left to recover
+    //! @param shown true on the style that asks for it
+    function setRecoveryShown(shown as Boolean) as Void {
+        _recoveryShown = shown;
+    }
+
     //! Set how many hours are left to recover. Once per full update.
-    //! @param hours The hours left, null when there are none or the style
-    //!        does not show them
+    //! @param hours The hours left, null when there are none
     function setRecoveryHours(hours as Number?) as Void {
+        if (!_recoveryShown || (hours == null)) {
+            _recoveryMarks = 0;
+            return;
+        }
+
         // The 24 starts the count and each hour adds the mark after it.
-        _recoveryMarks = (hours == null) ? 0 : (hours + 1);
+        _recoveryMarks = hours + 1;
     }
 
     //! Set the color the recovery marks are drawn in

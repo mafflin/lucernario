@@ -53,10 +53,6 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The hours left to recover, for the rim marks
     private var _recovery as Recovery;
 
-    //! Whether the rim shows the hours left to recover, which the style
-    //! decides
-    private var _recoveryShown as Boolean = false;
-
     //! The row of status icons above the time
     private var _statusBar as StatusBar;
 
@@ -183,7 +179,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _activityTimer.refresh();
         _recovery.refresh();
         _dayColors.refresh();
-        _rimMarks.setRecoveryHours(_recoveryShown ? _recovery.hoursLeft() : null);
+        _rimMarks.setRecoveryHours(_recovery.hoursLeft());
         smooth(dc);
 
         dc.setColor(_background, _background);
@@ -428,11 +424,13 @@ class LucernarioView extends WatchUi.WatchFace {
         _background = Styles.backgroundOf(style);
         _dayColors.setLight(Styles.isLight(style));
 
-        var windBearing = Styles.showsWindBearing(style);
+        // The complicated style moves the wind from the row to the dial and
+        // puts the recovery on the marks. Each element holds its own switch.
+        var complicated = Styles.isComplicated(style);
 
-        _windBearing.setEnabled(windBearing);
-        _statusBar.setWindShown(!windBearing);
-        _recoveryShown = Styles.showsRecovery(style);
+        _windBearing.setEnabled(complicated);
+        _statusBar.setWindShown(!complicated);
+        _rimMarks.setRecoveryShown(complicated);
     }
 
     //! Apply the chosen accent color to the hands, the wind bearing and the
