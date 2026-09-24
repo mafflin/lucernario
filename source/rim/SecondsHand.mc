@@ -7,11 +7,11 @@ import Toybox.Math;
 //! ring's inner edge.
 //!
 //! Set in far enough that the box a partial update clips to around it never
-//! reaches the marks, at any angle, so a tick has neither the marks nor the
-//! hour hand to put back - both lie wholly within the ring the marks reach over.
+//! reaches the marks, at any angle, so a tick has none of them to put back.
 //! The box is the upright rectangle round the three corners, and on the
 //! diagonals a base corner pokes out past the tip, which is what holds the
-//! tip a few pixels off the marks.
+//! tip a few pixels off the marks. The hour hand reaches past them, and is
+//! put back when the box cuts into it.
 //!
 //! It ticks in low power mode through partial updates, repainting only the
 //! pixels it vacates.
@@ -25,9 +25,10 @@ class SecondsHand {
     //! its base
     private const _EQUILATERAL_HEIGHT = 0.866;
 
-    //! Air between the tip and the marks: what the clip box reaches past the
-    //! tip on the diagonals, their smoothed ends spilling about a pixel
-    //! inward, and one more for the corners' own pixels
+    //! Air between the tip and the marks' ends: what the clip box reaches
+    //! past the tip on the diagonals, the ends' smoothed edges spilling about
+    //! a pixel inward, and one more for the corners' own pixels. Counted from
+    //! where the pen stops, which is half its width past where a line ends.
     private const _MARK_GAP = 5;
 
     //! The color the arrow is drawn in
@@ -58,10 +59,14 @@ class SecondsHand {
 
     //! Size the arrow off the ring. Run after Dial.setup().
     //! @param markReach How far in from the rim the marks come
-    function prepare(markReach as Number) as Void {
+    //! @param markWidth How wide an hour mark is
+    function prepare(markReach as Number, markWidth as Number) as Void {
         var base = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(_WIDTH_DEGREES / 2.0));
 
-        _tip = Dial.rim - markReach - _MARK_GAP;
+        // The pen is round and runs past the line's end by half its width.
+        var penRadius = (markWidth + 1) / 2;
+
+        _tip = Dial.rim - markReach - penRadius - _MARK_GAP;
         _base = (_tip - (base * _EQUILATERAL_HEIGHT)).toFloat();
         _halfBase = (base / 2).toFloat();
         _second = null;

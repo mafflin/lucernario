@@ -37,7 +37,7 @@ class LucernarioView extends WatchUi.WatchFace {
     //! The seconds hand, an arrow inside the marks
     private var _hand as SecondsHand;
 
-    //! The hour hand, a broad mark among the hour marks
+    //! The hour hand, a broad mark reaching past the hour marks
     private var _hourHand as HourHand;
 
     //! The row of status icons above the time
@@ -103,14 +103,14 @@ class LucernarioView extends WatchUi.WatchFace {
         Dial.setup(dc);
 
         // The marks size the rest of the rim: the numerals and the seconds
-        // hand sit inside their reach, and the hour hand is measured in mark
-        // widths.
+        // hand sit inside their reach, and the hour hand is measured in
+        // marks.
         _rimMarks.prepare();
 
         var markReach = _rimMarks.reach();
 
         _numerals.prepare(dc, markReach);
-        _hand.prepare(markReach);
+        _hand.prepare(markReach, _rimMarks.width());
         _hourHand.prepare(_rimMarks.width(), markReach);
 
         placeFields(dc);
@@ -201,6 +201,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _numerals.redraw(dc, second);
         _statusBar.redraw(dc);
+        _hourHand.redraw(dc);
     }
 
     //! Hand the editor the drawable for the container it is about to let the
@@ -399,15 +400,18 @@ class LucernarioView extends WatchUi.WatchFace {
         _dayColors.setLight(Styles.isLight(style));
     }
 
-    //! Apply the chosen accent color to the seconds hand, the one thing on
-    //! the face that is meant to stand apart from the rest
+    //! Apply the chosen accent color to the hands, the things on the face
+    //! that are meant to stand apart from the rest
     //! @param accentColor The color chosen in the editor, null if unset
     private function applyAccentColor(accentColor as WatchFaceConfig.Color?) as Void {
-        _hand.setColor(colorOf(accentColor));
+        var color = colorOf(accentColor);
+
+        _hand.setColor(color);
+        _hourHand.setColor(color);
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the
-    //! time, the hour hand, the status icons and the data containers, and
+    //! time, the status icons and the data containers, and
     //! the rim marks and numerals until the sun is known
     //! @param dataColor The color chosen in the editor, null if unset
     private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
@@ -415,7 +419,6 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _time.setColor(color);
         _dayColors.setColor(color);
-        _hourHand.setColor(color);
         _statusBar.setColor(color);
 
         for (var i = 0; i < _fields.size(); i++) {

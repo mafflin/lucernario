@@ -13,11 +13,8 @@ class RimMarks {
     //! How wide a mark is, as a share of the rim radius rather than a fixed
     //! count, so it holds its proportions on every screen.
     //!
-    //! Pixels, not degrees of arc: a mark is about a degree wide, and drawArc
-    //! renders in whole degrees, so every width from one degree to two came
-    //! out as the same mark. A quarter of a degree of movement is worth
-    //! having on a shape this small. A fortieth of the radius is where the
-    //! old one and a half degrees landed.
+    //! Pixels, not degrees of arc - see RimPainter.drawRadial. A fortieth of
+    //! the radius comes to about a degree and a half at the rim.
     private const _WIDTH_NUMERATOR = 1;
     private const _WIDTH_DIVISOR = 40;
 

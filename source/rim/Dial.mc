@@ -11,7 +11,7 @@ module Dial {
 
     const DEGREES_PER_CIRCLE = 360;
 
-    //! Noon at the top and values running clockwise, where the screen's own
+    //! Zero at the top and values running clockwise, where the screen's own
     //! zero sits at three o'clock and runs the other way.
     const TWELVE_OCLOCK_DEGREES = 90;
 
@@ -24,9 +24,9 @@ module Dial {
     const DEGREES_PER_HOUR_MARK = DEGREES_PER_CIRCLE / HOUR_MARKS;
     const MINUTES_PER_DAY = HOUR_MARKS * Clock.MINUTES_PER_HOUR;
 
-    //! The band of rim the marks occupy, as a share of the radius rather than
-    //! pixels: widths are in degrees and grow with the screen, so a fixed
-    //! depth would leave marks on a large screen wider than they are long.
+    //! The ring the rim is sized off - the marks' reach, the hour hand and
+    //! the gap to the numerals - as a share of the radius rather than
+    //! pixels, so it holds its proportions on every screen.
     const RING_DEPTH_NUMERATOR = 3;
     const RING_DEPTH_DIVISOR = 20;
 
@@ -50,7 +50,7 @@ module Dial {
     }
 
     //! A value on the dial as an angle on the screen
-    //! @param valueDegrees The value, clockwise from noon
+    //! @param valueDegrees The value, clockwise from the top
     //! @return The angle in screen degrees
     function positionOf(valueDegrees as Numeric) as Numeric {
         return TWELVE_OCLOCK_DEGREES - valueDegrees;
@@ -85,7 +85,7 @@ module Dial {
     //! the trig functions. Converted once per angle: the callers take both
     //! the cosine and the sine of it, and the partial update calls them every
     //! second. Screen y grows downward, so callers negate the sine.
-    //! @param valueDegrees The value, clockwise from noon
+    //! @param valueDegrees The value, clockwise from the top
     //! @return The angle in radians
     function radiansOf(valueDegrees as Numeric) as Decimal {
         return Math.toRadians(positionOf(valueDegrees));

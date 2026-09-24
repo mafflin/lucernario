@@ -14,7 +14,8 @@
              those screens. Black is added for the light style, which
              electric has no need of.
 
-             Accent colors the seconds hand, data everything else. -->
+             Accent colors the hands; data colors the time, the status row
+             and the data field, and the rim until the sun is known. -->
         <accentColors>
             <color label="@Strings.ColorWhite" default="true">0xFFFFFF</color>
             <color label="@Strings.ColorGray">0xAAAAAA</color>

@@ -34,13 +34,13 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
 | `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
+| `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
-| `source/rim/DayColors.mc` | Amber from sunrise to sunset, sky blue after, shaded to the style: the rim's colors |
+| `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after, shaded to the style |
 | `source/rim/RimMarks.mc` | The hour marks and four minor marks between each |
-| `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
-| `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks |
+| `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
@@ -59,23 +59,10 @@ not Connect IQ app settings. Currently configurable:
 - **Style** — `Dark` (default) or `Light`. The editor has no background
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
-- **Accent color** — the seconds hand, the one thing meant to stand apart.
-- **Data color** — everything else: the time, the hour hand, the status
-  icons and the data container, and the rim marks and numerals until the
-  sun is known.
-
-The color of the rim marks and numerals is not configurable: amber from the exact
-minute the sun rises to the minute it sets and sky blue the rest of the day
-(bright on the dark style, dark on the light one), from the
-sunrise and sunset complications, the same numbers the data container shows.
-Until the sun is known they are drawn in the data color.
-
-Both offer the same thirty named colors, declared explicitly in
-`watchface.xml` rather than with `allowAny`: the editor wants a label per
-color, and with `allowAny` the fēnix 8 Solar filled its picker with garbled
-entries. The list is the electric watch face's, where every channel is 00,
-55, AA or FF — the 64 color MIP palette — so none of them dither on those
-screens. Black is added for the light style.
+- **Accent color** — the hour and seconds hands, the things meant to stand
+  apart.
+- **Data color** — the time, the status icons and the data container, and
+  the rim marks and numerals until the sun is known.
 - **Data container** — one complication slot centered below the time. The
   types it offers are listed one by one in `watchface.xml` rather than opened
   up with `allowAny`, which keeps the picker to what reads well in a slot this
@@ -86,6 +73,24 @@ screens. Black is added for the light style.
   and the type handed to `ComplicationField` in `LucernarioView` is what the slot
   holds until the editor has said anything at all. Requires the
   `ComplicationSubscriber` permission.
+
+Both colors offer the same thirty named colors, declared explicitly in
+`watchface.xml` rather than with `allowAny`: the editor wants a label per
+color, and with `allowAny` the fēnix 8 Solar filled its picker with garbled
+entries. The list is the electric watch face's, where every channel is 00,
+55, AA or FF — the 64 color MIP palette — so none of them dither on those
+screens. Black is added for the light style.
+
+Left unset, both fall back to whatever reads against the style's background:
+white on the dark style, black on the light one. A color the user has chosen
+is kept as it is when the style changes.
+
+The color of the rim marks and numerals is not configurable: amber from the
+exact minute the sun rises to the minute it sets and sky blue the rest of the
+day — Amber and Sky on the dark style, Dark Amber and Dark Sky on the light
+one — from the sunrise and sunset complications, the same numbers the data
+container shows. Each mark and numeral takes the color of the moment it
+stands for. Until the sun is known they are drawn in the data color.
 
 The container is placed off `TimeDisplay.inkBottomIn()` rather than a fixed
 height, so it follows the time wherever it ends up on a given screen.
@@ -130,30 +135,31 @@ There are no pictograms to use instead: `Complication.getIcon()` is documented
 as working only for user complications, meaning ones published by other
 Connect IQ apps, and returns null for the built-in types.
 
-Left unset, both fall back to whatever reads against the style's background:
-white on the dark style, black on the light one. A color the user has chosen
-is kept as it is when the style changes.
-
-The hand keeps sweeping in low power mode through
+The seconds hand keeps sweeping in low power mode through
 `LucernarioView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
 puts the rim back there, then clips to where it is going and draws it. The
 hand is an arrow set in far enough that even the corners of its clip box
-stay off the ring the marks reach over, so a tick never repaints the marks
-or the hour hand, which lie wholly within it: only the numeral nearest
-the hand's last position and the status row, and only when the box has cut
-into them. If that
+stay off the marks, round pen ends included, so a tick never repaints
+them: only the numeral nearest the hand's last position, the status row and
+the hour hand, which reaches a third past the marks, and only when the box
+has cut into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
 
-The rim marks are drawn as lines running inward from the rim, with the width
-as a pen width in pixels. An arc cannot be made narrow enough: `drawArc` takes
-its span in degrees and the renderer works in whole ones, so every width from
-one degree to two came out as the same mark. A pixel at the rim is roughly a quarter of a degree, which
-is a useful step on a shape this small.
+The rim marks and the hour hand are drawn as lines running inward from the
+rim, with the width as a pen width in pixels. An arc cannot be made narrow
+enough: `drawArc` takes its span in degrees and the renderer works in whole
+ones, so every width from one degree to two comes out as the same mark. A
+pixel at the rim is roughly a quarter of a degree, which is a useful step on
+a shape this small. The pen is round, so a line runs half its width past each
+end; every clearance and clip box counts that in.
 
-The rim marks and the status bar are lifted from the electric watch face.
-The marks are hour marks only at one size, and the
+The rim is 24 hour marks with four thin minor marks between each pair, one
+every twelve minutes, and the numerals 24, 4, 8, 12, 16 and 20 against the
+inner ends of their marks.
+
+The rim marks and the status bar are lifted from the electric watch face. The
 row carries battery, phone, alarm, wind and AM/PM with the cat,
 notifications, do not disturb and GPS icons left behind. The wind is
 electric's too, where it is a triangle standing on the rim; here it is one
@@ -163,7 +169,7 @@ data color up to 20 km/h, orange above that, red above 40. None of them have
 a setting: each icon shows whenever the thing it reports is worth reporting.
 
 The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
-and tinted to the accent color; untinted it would be invisible on the light
+and tinted to the data color; untinted it would be invisible on the light
 style. The battery overrides that for its two lowest levels, which stay red
 and orange.
 
@@ -239,8 +245,8 @@ left cropped to the ratio.
 placed, for the reason above. The file stays as the drawing its corners were
 taken off.
 
-The launcher icon is 65x65, which is what fenix847mm asks for. Devices that want another size scale the
-image and emit a build warning; to silence one, drop a correctly sized copy in
+The launcher icon is 65x65, which is what fenix847mm asks for. Devices that
+want another size scale the image and emit a build warning; to silence one, drop a correctly sized copy in
 `resources-<device>/drawables/`. Each device's required size is in the SDK at
 `~/Library/Application Support/Garmin/ConnectIQ/Devices/<device>/compiler.json`
 under `launcherIcon`.

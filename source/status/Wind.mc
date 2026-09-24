@@ -11,14 +11,13 @@ import Toybox.Weather;
 //! steps. Here one arrow is turned to the bearing, and the strength is said
 //! with color rather than with size.
 //!
-//! The one item in the row with no artwork behind it. It used to draw the
-//! same kind of bitmap as the rest, turned by drawBitmap2, and on the MIP
-//! devices that made it the worst looking thing on the face: turning a bitmap
-//! needs the bilinear filter, the filter makes part opaque pixels out of an
-//! arrow that had none, and a MIP panel cannot composite those - it keeps or
-//! drops each one as it draws, so the tail thickened and thinned with the
-//! bearing. Three corners turned in code and filled have nothing to sample,
-//! and they are smoothed by the same setAntiAlias the rim marks rely on.
+//! The one item in the row with no artwork behind it. A bitmap turned by
+//! drawBitmap2 needs the bilinear filter, the filter makes part opaque pixels
+//! out of an arrow that had none, and a MIP panel cannot composite those - it
+//! keeps or drops each one as it draws, so the tail thickens and thins with
+//! the bearing. Three corners turned in code and filled have nothing to
+//! sample, and they are smoothed by the same setAntiAlias the rim marks rely
+//! on.
 class Wind extends Icon {
 
     //! The bearing is where the wind comes from; the arrow points where it
