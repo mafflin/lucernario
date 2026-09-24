@@ -3,9 +3,9 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.WatchUi;
 
-//! One item in the status bar. Lifted from the electric watch face, with the
-//! per icon settings dropped: every icon this face carries is on, and shows
-//! whenever the thing it reports is worth reporting.
+//! One item in the status bar. There are no per icon settings: every icon
+//! this face carries is on, and shows whenever the thing it reports is worth
+//! reporting.
 class Icon {
 
     //! No bitmap out of a set has been loaded yet

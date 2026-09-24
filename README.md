@@ -77,9 +77,8 @@ not Connect IQ app settings. Currently configurable:
 Both colors offer the same thirty named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
 color, and with `allowAny` the fēnix 8 Solar filled its picker with garbled
-entries. The list is the electric watch face's, where every channel is 00,
-55, AA or FF — the 64 color MIP palette — so none of them dither on those
-screens. Black is added for the light style.
+entries. Every channel is 00, 55, AA or FF — the 64 color MIP palette — so
+none of them dither on those screens. Black is there for the light style.
 
 Left unset, both fall back to whatever reads against the style's background:
 white on the dark style, black on the light one. A color the user has chosen
@@ -92,8 +91,10 @@ one — from the sunrise and sunset complications, the same numbers the data
 container shows. Each mark and numeral takes the color of the moment it
 stands for. Until the sun is known they are drawn in the data color.
 
-The container is placed off `TimeDisplay.inkBottomIn()` rather than a fixed
-height, so it follows the time wherever it ends up on a given screen.
+The container's top sits at 66% of the screen height. The status row mirrors
+it: the row's bottom sits as far from the top of the screen as the
+container's top is from the bottom, lifted by a twenty second of the height to even the pair up by eye,
+so the two frame the time on every screen.
 
 The system hands over a raw value and almost never formats it, so
 `ComplicationFormat` does. Most types are a count that `Complication.unit`
@@ -159,10 +160,7 @@ The rim is 24 hour marks with four thin minor marks between each pair, one
 every twelve minutes, and the numerals 24, 4, 8, 12, 16 and 20 against the
 inner ends of their marks.
 
-The rim marks and the status bar are lifted from the electric watch face. The
-row carries battery, phone, alarm, wind and AM/PM with the cat,
-notifications, do not disturb and GPS icons left behind. The wind is
-electric's too, where it is a triangle standing on the rim; here it is one
+The status row carries battery, phone, alarm, wind and AM/PM. The wind is one
 arrow in the row, pointing downwind (the bearing is where the wind comes from,
 so a southerly, 180, points up), with the strength said in color: the
 data color up to 20 km/h, orange above that, red above 40. None of them have
@@ -262,7 +260,8 @@ Nothing is fitted at runtime.
 
 `Fonts.inkHeightOf(dc, font)` is the height of the glyphs rather than the font
 box: digits stand on the baseline, so the descent the font reserves is empty
-space. It is what places the data container under the digits.
+space. It is what centers the rim numerals' digits in their stretch of the
+ring.
 
 ## License
 

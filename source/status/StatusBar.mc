@@ -5,17 +5,14 @@ import Toybox.System;
 
 //! The row of status icons above the time.
 //!
-//! Lifted from the electric watch face without the cat, the notifications,
-//! the do not disturb and the GPS icons, and without the setting that turned
-//! the row off: every icon this face carries is on, and shows whenever the
-//! thing it reports is worth reporting. The wind joins it here, which on
-//! electric is a triangle on the rim rather than a row item.
+//! There is no setting for the row or its icons: every icon this face
+//! carries is on, and shows whenever the thing it reports is worth
+//! reporting.
 class StatusBar {
 
-    //! Where the row sits, as a fraction of the screen height. Electric
-    //! mirrors this against its date; this face has none, so it is placed
-    //! outright, clear of both the rim and the top of the time.
-    private const _CENTER_Y_RATIO = 0.22;
+    //! Neither the data container nor the time fills its font box evenly;
+    //! this much of the screen height evens the pair up by eye.
+    private const _LIFT_DIVISOR = 22;
 
     //! Half an icon of air between items, down to _MIN_GAP where the row
     //! would run off a round screen. Taken from the icons, so it grows with
@@ -32,6 +29,10 @@ class StatusBar {
 
     //! The wind, kept to hand because it has to be told its size
     private var _wind as Wind;
+
+    //! The y this row is placed opposite, so it and the data container
+    //! frame the time: the container's top, set by mirror()
+    private var _mirrorY as Number = 0;
 
     //! Where the last full draw put the row, so one box answers for every
     //! item before any is asked about itself.
@@ -52,6 +53,13 @@ class StatusBar {
             _wind,
             new Meridiem()
         ] as Array<Icon>;
+    }
+
+    //! Sit as far above the middle of the screen as the data container sits
+    //! below it. Run once per layout, after the container is placed.
+    //! @param y The top of the data container
+    function mirror(y as Number) as Void {
+        _mirrorY = y;
     }
 
     //! Set the color the icons are drawn in
@@ -79,7 +87,7 @@ class StatusBar {
         _wind.setSquare(_battery.height());
 
         var tall = tallest();
-        var centerY = middle(dc);
+        var centerY = middle(dc, tall);
         var items = itemsWidth();
         var gap = gapFor(total, centerY, items, tall);
         var rowWidth = items + ((total - 1) * gap);
@@ -118,11 +126,15 @@ class StatusBar {
         }
     }
 
-    //! The row holds its vertical center whatever the tallest item is
+    //! Where the row is centered: its bottom as far from the top of the
+    //! screen as the container's top is from the bottom, lifted a touch
     //! @param dc The drawing context
+    //! @param tall The height of the tallest icon
     //! @return The y the row is centered on
-    private function middle(dc as Dc) as Number {
-        return (dc.getHeight() * _CENTER_Y_RATIO).toNumber();
+    private function middle(dc as Dc, tall as Number) as Number {
+        var height = dc.getHeight();
+
+        return height - _mirrorY - (tall / 2) - (height / _LIFT_DIVISOR);
     }
 
     //! The width of every showing icon, before any gaps

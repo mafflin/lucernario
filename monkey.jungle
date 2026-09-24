@@ -2,7 +2,7 @@ project.manifest = manifest.xml
 project.typecheck = strict
 
 # Status bar icons come in two sizes: 24px in resources/, 36px in
-# resources-large-icons/. Both were lifted from the electric watch face.
+# resources-large-icons/.
 #
 # The split is by screen size rather than by display technology, because that
 # is what the build system can see.

@@ -4,7 +4,7 @@ import Toybox.Lang;
 //! The twenty four hour marks around the rim, midnight at the top, and four
 //! minor marks between each pair, one every twelve minutes.
 //!
-//! Lifted from the electric watch face, with no setting of their own.
+//! They have no setting of their own.
 //!
 //! Colored with the day, each mark by the moment it stands for - see
 //! DayColors.

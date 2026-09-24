@@ -9,10 +9,9 @@
              label per color, and with allowAny the fenix 8 Solar filled its
              picker with garbled entries.
 
-             The list is the electric watch face's. Every channel is 00, 55,
-             AA or FF - the 64 color MIP palette - so none of these dither on
-             those screens. Black is added for the light style, which
-             electric has no need of.
+             Every channel is 00, 55, AA or FF - the 64 color MIP palette -
+             so none of these dither on those screens. Black is there for
+             the light style.
 
              Accent colors the hands; data colors the time, the status row
              and the data field, and the rim until the sun is known. -->

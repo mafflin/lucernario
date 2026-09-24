@@ -8,9 +8,9 @@ import Toybox.WatchUi;
 //! that styles them.
 class LucernarioView extends WatchUi.WatchFace {
 
-    //! How far below the digits the data container sits, as a fraction of
-    //! the screen height
-    private const _FIELD_GAP_RATIO = 0.02;
+    //! Where the top of the data container sits, as a fraction of the screen
+    //! height
+    private const _FIELD_TOP_RATIO = 0.66;
 
     //! The style chosen in the editor, which decides the background and the
     //! color everything falls back to
@@ -285,16 +285,17 @@ class LucernarioView extends WatchUi.WatchFace {
         }
     }
 
-    //! Put the container on the centerline below the digits
+    //! Put the container on the centerline below the time
     //! @param dc The drawing context
     private function placeFields(dc as Dc) as Void {
-        var gap = (dc.getHeight() * _FIELD_GAP_RATIO).toNumber();
-
-        // Sit it just under the time rather than at a fixed height: the time
-        // is sized to the device, so where it ends moves with it.
-        var rowCenterY = _time.inkBottomIn(dc) + gap + (_centerField.heightIn(dc) / 2);
+        var top = (dc.getHeight() * _FIELD_TOP_RATIO).toNumber();
+        var rowCenterY = top + (_centerField.heightIn(dc) / 2);
 
         _centerField.prepare(dc, dc.getWidth() / 2, rowCenterY);
+
+        // Frame the time: the status row sits as far above the middle as the
+        // container sits below it.
+        _statusBar.mirror(_centerField.locY.toNumber());
     }
 
     //! Draw the containers, leaving out the one the editor is pulsing

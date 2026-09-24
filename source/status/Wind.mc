@@ -6,10 +6,8 @@ import Toybox.Weather;
 
 //! The wind, as an arrow in the status bar.
 //!
-//! Lifted from the electric watch face, which draws it as a triangle standing
-//! on the rim. The reading is the same: a bearing, and a strength in three
-//! steps. Here one arrow is turned to the bearing, and the strength is said
-//! with color rather than with size.
+//! The reading is a bearing and a strength in three steps: one arrow is
+//! turned to the bearing, and the strength is said with color.
 //!
 //! The one item in the row with no artwork behind it. A bitmap turned by
 //! drawBitmap2 needs the bilinear filter, the filter makes part opaque pixels
