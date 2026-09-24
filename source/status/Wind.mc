@@ -18,10 +18,6 @@ import Toybox.System;
 //! on.
 class Wind extends Icon {
 
-    //! The bearing is where the wind comes from; the arrow points where it
-    //! goes, half a turn on
-    private const _DOWNWIND_DEGREES = 180;
-
     //! The arrow's corners on the same 24 unit grid the SVGs are drawn on,
     //! scaled to whatever square the row gives this icon. Only the left wing
     //! is named: the right one mirrors it about the middle.
@@ -147,19 +143,10 @@ class Wind extends Icon {
 
         dc.setColor(tint(), Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon([
-            [pixel(middleX + corners[0][0]), pixel(middleY + corners[0][1])],
-            [pixel(middleX + corners[1][0]), pixel(middleY + corners[1][1])],
-            [pixel(middleX + corners[2][0]), pixel(middleY + corners[2][1])]
+            [Dial.pixel(middleX + corners[0][0]), Dial.pixel(middleY + corners[0][1])],
+            [Dial.pixel(middleX + corners[1][0]), Dial.pixel(middleY + corners[1][1])],
+            [Dial.pixel(middleX + corners[2][0]), Dial.pixel(middleY + corners[2][1])]
         ]);
-    }
-
-    //! The nearest whole pixel. Rounded rather than truncated: truncation
-    //! pulls every corner the same way, which at a bearing off the quarters
-    //! drags the whole arrow up and to the left by most of a pixel.
-    //! @param value The coordinate to place
-    //! @return The pixel it lands on
-    private function pixel(value as Float) as Number {
-        return Math.round(value).toNumber();
     }
 
     //! The three corners, in pixels from the middle of the square, turned so
@@ -171,8 +158,10 @@ class Wind extends Icon {
         // which is the way a compass counts.
         var angle = 0.0;
 
+        // The bearing is where the wind comes from; the arrow points where
+        // it goes, half a turn on.
         if (bearing != null) {
-            angle = Math.toRadians(bearing + _DOWNWIND_DEGREES).toFloat();
+            angle = Math.toRadians(bearing + Dial.HALF_TURN).toFloat();
         }
 
         var sine = Math.sin(angle).toFloat();

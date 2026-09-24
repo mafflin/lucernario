@@ -124,7 +124,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _numerals.prepare(dc, markReach);
         _hand.prepare(markReach, _rimMarks.width());
         _windBearing.prepare(_hand.baseWidth());
-        _hourHand.prepare(_rimMarks.width(), markReach);
+        _hourHand.prepare(markReach, _rimMarks.width());
 
         placeFields(dc);
 
@@ -305,10 +305,10 @@ class LucernarioView extends WatchUi.WatchFace {
     //! Put the container on the centerline below the time
     //! @param dc The drawing context
     private function placeFields(dc as Dc) as Void {
-        var top = (dc.getHeight() * _FIELD_TOP_RATIO).toNumber();
+        var top = (Dial.screenHeight * _FIELD_TOP_RATIO).toNumber();
         var rowCenterY = top + (_centerField.heightIn(dc) / 2);
 
-        _centerField.prepare(dc, dc.getWidth() / 2, rowCenterY);
+        _centerField.prepare(dc, Dial.centerX, rowCenterY);
 
         // Frame the time: the status row sits as far above the middle as the
         // container sits below it.
@@ -438,8 +438,8 @@ class LucernarioView extends WatchUi.WatchFace {
     }
 
     //! Apply the chosen data color to everything the hand sweeps over: the
-    //! time, the status icons and the data containers, and
-    //! the rim marks and numerals until the sun is known
+    //! time, the status icons and the data containers, and the rim marks and
+    //! numerals until the sun is known
     //! @param dataColor The color chosen in the editor, null if unset
     private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
         var color = colorOf(dataColor);

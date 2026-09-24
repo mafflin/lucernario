@@ -17,8 +17,8 @@ class HourHand {
     private const _LENGTH_NUMERATOR = 4;
     private const _LENGTH_DIVISOR = 3;
 
-    //! Pixels past the line's own half width for its smoothed edges, on the
-    //! box a partial update tests it against
+    //! Pixels past the pen's reach for its smoothed edges, on the box a
+    //! partial update tests it against
     private const _BOX_PADDING = 1;
 
     //! The color the hand is drawn in
@@ -41,9 +41,9 @@ class HourHand {
     }
 
     //! Size the hand off the marks. Run after the marks are prepared.
-    //! @param markWidth How wide an hour mark is
     //! @param markReach How far in from the rim the marks come
-    function prepare(markWidth as Number, markReach as Number) as Void {
+    //! @param markWidth How wide an hour mark is
+    function prepare(markReach as Number, markWidth as Number) as Void {
         _width = markWidth * _WIDTH_FACTOR;
         _length = markReach * _LENGTH_NUMERATOR / _LENGTH_DIVISOR;
     }
@@ -76,8 +76,8 @@ class HourHand {
         RimPainter.drawRadial(dc, _position, _color, _width, _length);
     }
 
-    //! The upright box around the hand: its two ends, and half its width
-    //! either side for the pen
+    //! The upright box around the hand: its two ends, and the pen's reach
+    //! on every side
     //! @param position Where it points, clockwise from midnight
     private function boxAround(position as Float) as Void {
         var radians = Dial.radiansOf(position);
@@ -85,7 +85,7 @@ class HourHand {
         var outerY = Dial.pointY(radians, Dial.rim);
         var innerX = Dial.pointX(radians, Dial.rim - _length);
         var innerY = Dial.pointY(radians, Dial.rim - _length);
-        var reach = (_width / 2) + _BOX_PADDING;
+        var reach = RimPainter.penRadius(_width) + _BOX_PADDING;
         var left = (outerX < innerX) ? outerX : innerX;
         var top = (outerY < innerY) ? outerY : innerY;
         var right = (outerX > innerX) ? outerX : innerX;

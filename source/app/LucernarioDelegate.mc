@@ -1,6 +1,5 @@
 import Toybox.Application.WatchFaceConfig;
 import Toybox.Lang;
-import Toybox.System;
 import Toybox.WatchUi;
 
 //! Receives watch face events from the system: edits made in the native watch
@@ -61,9 +60,6 @@ class LucernarioDelegate extends WatchUi.WatchFaceDelegate {
     //! calling it after this, so the view has to stop relying on it.
     //! @param powerInfo How much time was used against the limit
     function onPowerBudgetExceeded(powerInfo as WatchFacePowerInfo) as Void {
-        System.println("Partial update over budget: " + powerInfo.executionTimeAverage
-            + " of " + powerInfo.executionTimeLimit);
-
         _view.turnPartialUpdatesOff();
     }
 }

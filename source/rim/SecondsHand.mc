@@ -21,10 +21,6 @@ class SecondsHand {
     //! so this is the whole of its size.
     private const _WIDTH_DEGREES = 8;
 
-    //! Half the square root of three: an equilateral triangle's height over
-    //! its base
-    private const _EQUILATERAL_HEIGHT = 0.866;
-
     //! Air between the tip and the marks' ends: what the clip box reaches
     //! past the tip on the diagonals, the ends' smoothed edges spilling about
     //! a pixel inward, and one more for the corners' own pixels. Counted from
@@ -34,11 +30,11 @@ class SecondsHand {
     //! The color the arrow is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
 
-    //! How far out the tip and the base stand, and half the base, resolved in
-    //! prepare()
+    //! How far out the tip and the base stand, and half the base's width,
+    //! resolved in prepare()
     private var _tip as Number = 0;
-    private var _base as Float = 0.0;
-    private var _halfBase as Float = 0.0;
+    private var _baseRadius as Float = 0.0;
+    private var _halfWidth as Float = 0.0;
 
     //! Which second the arrow was last drawn at, or null when it is not on
     //! screen
@@ -61,21 +57,18 @@ class SecondsHand {
     //! @param markReach How far in from the rim the marks come
     //! @param markWidth How wide an hour mark is
     function prepare(markReach as Number, markWidth as Number) as Void {
-        var base = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(_WIDTH_DEGREES / 2.0));
+        var width = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(_WIDTH_DEGREES / 2.0));
 
-        // The pen is round and runs past the line's end by half its width.
-        var penRadius = (markWidth + 1) / 2;
-
-        _tip = Dial.rim - markReach - penRadius - _MARK_GAP;
-        _base = (_tip - (base * _EQUILATERAL_HEIGHT)).toFloat();
-        _halfBase = (base / 2).toFloat();
+        _tip = Dial.rim - markReach - RimPainter.penRadius(markWidth) - _MARK_GAP;
+        _baseRadius = (_tip - (width * RimPainter.EQUILATERAL_HEIGHT)).toFloat();
+        _halfWidth = (width / 2).toFloat();
         _second = null;
     }
 
     //! How wide the base is, for whatever is sized to match
     //! @return The width in pixels
     function baseWidth() as Float {
-        return _halfBase * 2;
+        return _halfWidth * 2;
     }
 
     //! Set the color the arrow is drawn in
@@ -134,11 +127,14 @@ class SecondsHand {
         var outY = -Math.sin(radians);
 
         // Across the arrow is out turned a quarter: (-outY, outX).
-        var acrossX = -outY * _halfBase;
-        var acrossY = outX * _halfBase;
-        var baseX = Dial.centerX + (_base * outX);
-        var baseY = Dial.centerY + (_base * outY);
+        var acrossX = -outY * _halfWidth;
+        var acrossY = outX * _halfWidth;
+        var baseX = Dial.centerX + (_baseRadius * outX);
+        var baseY = Dial.centerY + (_baseRadius * outY);
 
+        // Truncated rather than rounded, unlike everything that stands still:
+        // this runs every second, and a corner half a pixel off is nothing on
+        // a shape whose every edge is smoothed.
         var tipX = (Dial.centerX + (_tip * outX)).toNumber();
         var tipY = (Dial.centerY + (_tip * outY)).toNumber();
         var leftX = (baseX + acrossX).toNumber();

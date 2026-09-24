@@ -10,10 +10,12 @@ import Toybox.Math;
 module Dial {
 
     const DEGREES_PER_CIRCLE = 360;
+    const HALF_TURN = DEGREES_PER_CIRCLE / 2;
+    const QUARTER_TURN = DEGREES_PER_CIRCLE / 4;
 
     //! Zero at the top and values running clockwise, where the screen's own
     //! zero sits at three o'clock and runs the other way.
-    const TWELVE_OCLOCK_DEGREES = 90;
+    const TOP_DEGREES = 90;
 
     //! A full circle is a minute of seconds round
     const SECONDS_PER_TURN = 60;
@@ -49,13 +51,6 @@ module Dial {
         ringDepth = rim * RING_DEPTH_NUMERATOR / RING_DEPTH_DIVISOR;
     }
 
-    //! A value on the dial as an angle on the screen
-    //! @param valueDegrees The value, clockwise from the top
-    //! @return The angle in screen degrees
-    function positionOf(valueDegrees as Numeric) as Numeric {
-        return TWELVE_OCLOCK_DEGREES - valueDegrees;
-    }
-
     //! Where a minute of the day sits on the dial. A float: a minute is a
     //! quarter of a degree, and the hour hand stands at the minute, between
     //! the hour marks.
@@ -65,20 +60,29 @@ module Dial {
         return minutes.toFloat() * DEGREES_PER_CIRCLE / MINUTES_PER_DAY;
     }
 
-    //! The pixel at an angle and radius. Screen y grows downward, so the sine
-    //! is subtracted rather than added.
+    //! The pixel at an angle and radius, rounded to the nearest one. Screen
+    //! y grows downward, so the sine is subtracted rather than added.
     //! @param radians The angle on the screen, as radiansOf() gives it
     //! @param radius How far from the center
     //! @return The x coordinate
     function pointX(radians as Decimal, radius as Numeric) as Number {
-        return (centerX + (radius * Math.cos(radians))).toNumber();
+        return pixel(centerX + (radius * Math.cos(radians)));
     }
 
     //! @param radians The angle on the screen, as radiansOf() gives it
     //! @param radius How far from the center
     //! @return The y coordinate
     function pointY(radians as Decimal, radius as Numeric) as Number {
-        return (centerY - (radius * Math.sin(radians))).toNumber();
+        return pixel(centerY - (radius * Math.sin(radians)));
+    }
+
+    //! The nearest whole pixel. Rounded rather than truncated: truncation
+    //! pulls every point the same way, which drags a shape up and to the
+    //! left by most of a pixel and turns a short line by several degrees.
+    //! @param value The coordinate to place
+    //! @return The pixel it lands on
+    function pixel(value as Decimal) as Number {
+        return Math.round(value).toNumber();
     }
 
     //! A value on the dial as an angle on the screen, in radians, ready for
@@ -88,6 +92,6 @@ module Dial {
     //! @param valueDegrees The value, clockwise from the top
     //! @return The angle in radians
     function radiansOf(valueDegrees as Numeric) as Decimal {
-        return Math.toRadians(positionOf(valueDegrees));
+        return Math.toRadians(TOP_DEGREES - valueDegrees);
     }
 }

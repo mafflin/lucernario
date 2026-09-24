@@ -15,9 +15,14 @@ import Toybox.Math;
 //! tick. A triangle is all sloping sides, where a hard edge shows as a
 //! staircase.
 //!
-//! The pen is round, so a line runs past each of its ends by half its width.
-//! Anything that keeps clear of a line, or boxes it, counts that in.
+//! The pen is round, so a line runs past each of its ends by half its width
+//! - see penRadius. Anything that keeps clear of a line, or boxes it, counts
+//! that in.
 module RimPainter {
+
+    //! Half the square root of three: an equilateral triangle's height over
+    //! its base, for the hands drawn as one
+    const EQUILATERAL_HEIGHT = 0.866;
 
     //! How far past the rim a mark's line starts, in mark lengths. The
     //! renderer lands each end of a line on a whole pixel, and on a mark a
@@ -36,8 +41,8 @@ module RimPainter {
     //! pixels and steps one pixel at a time, which at the rim is finer than a
     //! degree by a factor of about four.
     //!
-    //! Only the inner end is seen, rounded to the nearest pixel; the outer
-    //! one lies off the glass - see OVERSHOOT_LENGTHS.
+    //! Only the inner end is seen, on the nearest pixel; the outer one lies
+    //! off the glass - see OVERSHOOT_LENGTHS.
     //! @param dc The drawing context
     //! @param valueDegrees Where on the dial it sits, clockwise from the top
     //! @param color The color to draw in
@@ -56,11 +61,19 @@ module RimPainter {
         dc.setPenWidth(widthPixels);
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.drawLine(
-            pixel(Dial.centerX + (outer * acrossX)),
-            pixel(Dial.centerY + (outer * acrossY)),
-            pixel(Dial.centerX + (inner * acrossX)),
-            pixel(Dial.centerY + (inner * acrossY))
+            Dial.pixel(Dial.centerX + (outer * acrossX)),
+            Dial.pixel(Dial.centerY + (outer * acrossY)),
+            Dial.pixel(Dial.centerX + (inner * acrossX)),
+            Dial.pixel(Dial.centerY + (inner * acrossY))
         );
+    }
+
+    //! How far past a line's end its round pen reaches: half the width,
+    //! rounded up so an odd pen is not counted short
+    //! @param widthPixels How wide the pen is
+    //! @return The reach in pixels
+    function penRadius(widthPixels as Number) as Number {
+        return (widthPixels + 1) / 2;
     }
 
     //! Fill a shape from its corners
@@ -70,13 +83,5 @@ module RimPainter {
     function fill(dc as Dc, points as Array<[Numeric, Numeric]>, color as Number) as Void {
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(points);
-    }
-
-    //! The nearest whole pixel. Rounded rather than left to the renderer,
-    //! which truncates and so leans every mark the same way.
-    //! @param value The coordinate to place
-    //! @return The pixel it lands on
-    function pixel(value as Decimal) as Number {
-        return Math.round(value).toNumber();
     }
 }

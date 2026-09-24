@@ -14,10 +14,6 @@ import Toybox.Math;
 //! the clip has cut into it: a tick or two a minute.
 class WindBearing {
 
-    //! Half the square root of three: an equilateral triangle's height over
-    //! its base
-    private const _EQUILATERAL_HEIGHT = 0.866;
-
     //! Pixels past the corners for the smoothed edges, on the box a partial
     //! update tests it against
     private const _BOX_PADDING = 1;
@@ -120,7 +116,7 @@ class WindBearing {
         var point = Dial.radiansOf(bearing);
         var left = point + _halfSpread;
         var right = point - _halfSpread;
-        var tipRadius = Dial.rim - (_base * _EQUILATERAL_HEIGHT);
+        var tipRadius = Dial.rim - (_base * RimPainter.EQUILATERAL_HEIGHT);
 
         var leftX = Dial.pointX(left, Dial.rim);
         var leftY = Dial.pointY(left, Dial.rim);

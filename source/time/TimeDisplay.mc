@@ -33,8 +33,8 @@ class TimeDisplay {
     function draw(dc as Dc) as Void {
         dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
-            dc.getWidth() / 2,
-            dc.getHeight() / 2,
+            Dial.centerX,
+            Dial.centerY,
             _FONT,
             currentTime(),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER

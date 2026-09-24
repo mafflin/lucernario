@@ -20,10 +20,10 @@ import Toybox.Math;
 //! out of the clip's reach.
 class RimNumerals {
 
-    //! Every fourth hour: six numerals, one per ten seconds of the hand
+    //! Six numerals: every fourth hour, one per ten seconds of the hand
     private const _COUNT = 6;
-    private const _HOURS_APART = 4;
-    private const _SECONDS_APART = 10;
+    private const _HOURS_APART = Dial.HOUR_MARKS / _COUNT;
+    private const _SECONDS_APART = Dial.SECONDS_PER_TURN / _COUNT;
 
     //! Air between the marks and the digits, as a share of the ring so it
     //! holds its proportions on every screen
@@ -185,9 +185,7 @@ class RimNumerals {
     //! @param degrees Where it sits, clockwise from midnight
     //! @return true when it wants flipping
     private function isUpsideDown(degrees as Number) as Boolean {
-        var quarter = Dial.DEGREES_PER_CIRCLE / 4;
-
-        return (degrees > quarter) && (degrees < (Dial.DEGREES_PER_CIRCLE - quarter));
+        return (degrees > Dial.QUARTER_TURN) && (degrees < (Dial.DEGREES_PER_CIRCLE - Dial.QUARTER_TURN));
     }
 
     //! How far to turn a numeral: counterclockwise, the way drawAngledText
@@ -201,7 +199,7 @@ class RimNumerals {
         var angle = Dial.DEGREES_PER_CIRCLE - degrees;
 
         if (flipped) {
-            angle += Dial.DEGREES_PER_CIRCLE / 2;
+            angle += Dial.HALF_TURN;
         }
 
         return angle % Dial.DEGREES_PER_CIRCLE;
