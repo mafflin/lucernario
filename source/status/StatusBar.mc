@@ -2,43 +2,32 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! The row of status icons above the time.
-//!
-//! There is no setting for the row or its icons: every icon this face
-//! carries is on, and shows whenever the thing it reports is worth
-//! reporting.
+//! The row of status icons above the time. No settings: every icon shows
+//! whenever it has something to report.
 class StatusBar {
 
-    //! Neither the data container nor the time fills its font box evenly;
-    //! this much of the screen height evens the pair up by eye.
+    //! Lifts the row so it and the data container frame the time by eye
     private const _LIFT_DIVISOR = 22;
 
-    //! Half an icon of air between items, down to _MIN_GAP where the row
-    //! would run off a round screen. Taken from the icons, so it grows with
-    //! them.
+    //! Half an icon of air between items, down to _MIN_GAP on a round screen
     private const _GAP_DIVISOR = 2;
     private const _MIN_GAP = 2;
     private const _MARGIN = 2;
 
     private var _icons as Array<Icon>;
 
-    //! The battery, kept to hand as the one item always on screen: it is what
-    //! the wind is measured against. See draw().
+    //! Always on screen, so its artwork is the row's measure
     private var _battery as Battery;
 
-    //! The wind, kept to hand because it has to be told its size
+    //! Has to be told its size
     private var _wind as Wind;
 
-    //! The y this row is placed opposite, so it and the data container
-    //! frame the time: the container's top, set by mirror()
+    //! The data container's top, which the row sits opposite
     private var _mirrorY as Number = 0;
 
-    //! Where the last full draw put the row, so one box answers for every
-    //! item before any is asked about itself. Empty while nothing shows.
+    //! One box answers for the whole row. Empty while nothing shows.
     private var _row as Box;
 
-    //! Constructor
-    //! @param wind The wind, shared with the bearing on the dial
     function initialize(wind as WindReading) {
         _battery = new Battery();
         _wind = new Wind(wind);
@@ -53,29 +42,22 @@ class StatusBar {
         ] as Array<Icon>;
     }
 
-    //! Sit as far above the middle of the screen as the data container sits
-    //! below it. Run once per layout, after the container is placed.
-    //! @param y The top of the data container
+    //! Once per layout, after the container is placed
     function mirror(y as Number) as Void {
         _mirrorY = y;
     }
 
-    //! Whether the row carries the wind arrow
-    //! @param shown false while the dial shows the bearing instead
+    //! false while the dial shows the bearing instead
     function setWindShown(shown as Boolean) as Void {
         _wind.setEnabled(shown);
     }
 
-    //! Set the color the icons are drawn in
-    //! @param color The color to use
     function setColor(color as Number) as Void {
         for (var i = 0; i < _icons.size(); i++) {
             _icons[i].setTint(color);
         }
     }
 
-    //! Draw the row
-    //! @param dc The drawing context
     function draw(dc as Dc) as Void {
         var total = markVisible();
 
@@ -85,9 +67,7 @@ class StatusBar {
             return;
         }
 
-        // The wind fills its square rather than placing a bitmap in it, so it
-        // has no size of its own to report. The battery is the one item that
-        // is always on screen, which makes its artwork the row's measure.
+        // The wind has no bitmap to measure; it fills the battery's square.
         _wind.setSquare(_battery.height());
 
         var tall = tallest();
@@ -109,10 +89,7 @@ class StatusBar {
         }
     }
 
-    //! Put the row back where a partial update has cut into it. One test for
-    //! the whole row instead of one per item; past it, each item puts itself
-    //! back only if the clip reaches it.
-    //! @param dc The drawing context
+    //! One test for the row; past it, each item tests itself
     function redraw(dc as Dc) as Void {
         if (!ClipRegion.covers(_row)) {
             return;
@@ -123,19 +100,14 @@ class StatusBar {
         }
     }
 
-    //! Where the row is centered: its bottom as far from the top of the
-    //! screen as the container's top is from the bottom, lifted a touch
-    //! @param dc The drawing context
-    //! @param tall The height of the tallest icon
-    //! @return The y the row is centered on
+    //! The row's bottom as far from the top as the container's top is from
+    //! the bottom, lifted a touch
     private function middle(dc as Dc, tall as Number) as Number {
         var height = dc.getHeight();
 
         return height - _mirrorY - (tall / 2) - (height / _LIFT_DIVISOR);
     }
 
-    //! The width of every showing icon, before any gaps
-    //! @return The width in pixels
     private function itemsWidth() as Number {
         var width = 0;
 
@@ -148,8 +120,6 @@ class StatusBar {
         return width;
     }
 
-    //! The height of the tallest showing icon
-    //! @return The height in pixels
     private function tallest() as Number {
         var height = 0;
 
@@ -163,11 +133,6 @@ class StatusBar {
     }
 
     //! The gap gives way before the outermost item runs off the glass
-    //! @param total How many icons are showing
-    //! @param centerY The y the row is centered on
-    //! @param items The width of the icons themselves
-    //! @param tall The height of the tallest icon
-    //! @return The gap in pixels
     private function gapFor(total as Number, centerY as Number, items as Number, tall as Number) as Number {
         var gap = tall / _GAP_DIVISOR;
 
@@ -188,10 +153,7 @@ class StatusBar {
         return gap;
     }
 
-    //! The chord of the screen at the row edge furthest from the middle
-    //! @param centerY The y the row is centered on
-    //! @param tall The height of the tallest icon
-    //! @return The width available in pixels
+    //! The chord of the screen at the row's far edge
     private function available(centerY as Number, tall as Number) as Number {
         var rim = Dial.rim;
         var edge = Dial.centerY - centerY + (tall / 2);
@@ -206,8 +168,7 @@ class StatusBar {
         return (chord < Dial.screenWidth) ? chord : Dial.screenWidth;
     }
 
-    //! Work out which icons have something to report this draw
-    //! @return How many are showing
+    //! How many icons show this draw
     private function markVisible() as Number {
         var settings = Clock.settings();
         var total = 0;

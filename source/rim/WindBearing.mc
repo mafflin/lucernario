@@ -2,74 +2,53 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! The wind on the dial: a triangle standing on the rim at the bearing the
-//! wind blows from, pointing in the way it blows. North is at the top.
-//!
-//! Equilateral and always the one size, the seconds hand's. The strength is
-//! said with color: the accent color for a light wind, then orange and red
-//! as it picks up - see WindReading.
-//!
-//! Only on the style that asks for it. It reaches past the marks, into the
-//! clip of a seconds hand passing it, so a partial update puts it back when
-//! the clip has cut into it: a tick or two a minute.
+//! The wind on the dial: an equilateral triangle the size of the seconds
+//! hand, standing on the rim at the bearing, pointing the way it blows.
+//! Accent color for a light wind, then orange and red - see WindReading.
+//! Reaching past the marks, it is put back when the seconds hand's clip
+//! cuts into it.
 class WindBearing {
 
-    //! The wind, shared with the arrow in the status row
     private var _wind as WindReading;
-
-    //! Whether the dial shows the bearing at all
     private var _enabled as Boolean = false;
 
-    //! The color a light wind is drawn in
+    //! For a light wind
     private var _color as Number = Graphics.COLOR_WHITE;
 
-    //! How wide the base is, and how far either side of the bearing its ends
-    //! sit on the rim, resolved in prepare()
+    //! Base width, and half the angle its ends span on the rim
     private var _base as Float = 0.0;
     private var _halfSpread as Float = 0.0;
 
-    //! The corners it was last drawn with, the color, and the box around
-    //! them, taken in draw() so a partial update can put it back as it was
+    //! As last drawn, so a partial update can put it back
     private var _shown as Boolean = false;
     private var _points as Array<[Numeric, Numeric]>;
     private var _drawnColor as Number = Graphics.COLOR_WHITE;
     private var _box as Box;
-
-    //! The bearing the corners were worked out for
     private var _pointsBearing as Number? = null;
 
-    //! Constructor
-    //! @param wind The wind, shared with the arrow in the status row
     function initialize(wind as WindReading) {
         _wind = wind;
         _points = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
         _box = new Box();
     }
 
-    //! Size the triangle. Run after Dial.setup().
-    //! @param base How wide its base is, in pixels
+    //! After Dial.setup()
     function prepare(base as Float) as Void {
         _base = base;
 
-        // The ends of the base sit on the rim: the chord of this width.
+        // The base is a chord of the rim.
         _halfSpread = Math.asin(base / (2 * Dial.rim)).toFloat();
         _pointsBearing = null;
     }
 
-    //! Whether the dial shows the bearing
-    //! @param enabled true on the style that asks for it
     function setEnabled(enabled as Boolean) as Void {
         _enabled = enabled;
     }
 
-    //! Set the color a light wind is drawn in
-    //! @param color The color to use
     function setColor(color as Number) as Void {
         _color = color;
     }
 
-    //! Draw the triangle at the bearing, if there is one to show
-    //! @param dc The drawing context
     function draw(dc as Dc) as Void {
         var bearing = _wind.bearing();
 
@@ -89,23 +68,18 @@ class WindBearing {
         paint(dc);
     }
 
-    //! Put the triangle back if the clip of a partial update has cut into it
-    //! @param dc The drawing context
+    //! Put it back if the clip has cut into it
     function redraw(dc as Dc) as Void {
         if (_shown && ClipRegion.covers(_box)) {
             paint(dc);
         }
     }
 
-    //! Fill the triangle at its last corners
-    //! @param dc The drawing context
     private function paint(dc as Dc) as Void {
         RimPainter.fill(dc, _points, _drawnColor);
     }
 
-    //! Work out the corners at a bearing, and the box around them
-    //! @param bearing The compass bearing, which the dial reads as clockwise
-    //!        from the top
+    //! A compass bearing reads as clockwise from the top of the dial
     private function place(bearing as Number) as Void {
         var point = Dial.radiansOf(bearing);
         var left = point + _halfSpread;

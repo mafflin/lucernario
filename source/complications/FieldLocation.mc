@@ -1,8 +1,5 @@
-//! The data container below the time.
-//!
-//! This value is the unique identifier the native watch face editor uses for
-//! the slot, so it must match the <complication> id in
-//! resources/configs/watchface.xml.
+//! The data container's slot id. Must match the <complication> id in
+//! watchface.xml.
 module FieldLocation {
     enum Value {
         CENTER = 1

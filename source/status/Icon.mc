@@ -3,58 +3,43 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.WatchUi;
 
-//! One item in the status bar. There are no per icon settings: every icon
-//! this face carries is on, and shows whenever the thing it reports is worth
-//! reporting.
+//! One status bar item. No settings: it shows whenever it has something to
+//! report.
 class Icon {
 
-    //! No bitmap out of a set has been loaded yet
     private const _NONE_CHOSEN = -1;
 
-    //! Where the last full draw put this icon, empty if it was not drawn
+    //! Where the last full draw put it, empty if it was not drawn
     private var _box as Box;
 
-    //! The resource this icon draws, for the icons that have just the one
+    //! For icons with just the one bitmap
     private var _resourceId as ResourceId?;
 
-    //! The loaded bitmap, held on to across draws
     private var _resource as BitmapResource? = null;
 
-    //! Which of a set is loaded, for the icons that pick from several
+    //! For icons that pick from a set
     private var _chosenIndex as Number = _NONE_CHOSEN;
 
-    //! Sizes differ by device, so they are asked of the bitmap once: the
-    //! partial update asks every second, and loading is not free.
+    //! Asked of the bitmap once: loading is not free
     private var _measuredWidth as Number? = null;
     private var _measuredHeight as Number? = null;
 
-    //! Whether this icon has anything to report right now
     private var _visible as Boolean = false;
-
-    //! The color the icon is drawn in
     private var _tint as Number = Graphics.COLOR_WHITE;
 
-    //! Constructor
-    //! @param resourceId The bitmap to draw, or null when the icon picks from
-    //!        a set and overrides bitmap()
+    //! resourceId is null for icons that override bitmap()
     function initialize(resourceId as ResourceId?) {
         _resourceId = resourceId;
         _box = new Box();
     }
 
-    //! Whether this icon has anything to report. Overridden per icon.
-    //! @param settings The device settings
-    //! @return true when the icon should be shown
+    //! Whether there is anything to report. Overridden per icon.
     function on(settings as System.DeviceSettings) as Boolean {
         return true;
     }
 
-    //! Work out whether this icon is showing this draw.
-    //!
-    //! Compared rather than tested: a setting like alarmCount comes back null
-    //! on a device without the feature, and the row wants a plain answer.
-    //! @param settings The device settings
-    //! @return true when the icon is showing
+    //! Settle whether the icon shows this draw. Compared to true: a setting
+    //! like alarmCount is null on a watch without the feature.
     function mark(settings as System.DeviceSettings) as Boolean {
         _visible = (on(settings) == true);
 
@@ -65,51 +50,37 @@ class Icon {
         return _visible;
     }
 
-    //! Whether this icon is showing
-    //! @return true when it is
     function shown() as Boolean {
         return _visible;
     }
 
-    //! Set the color the icon is drawn in
-    //! @param tint The color to use
     function setTint(tint as Number) as Void {
         _tint = tint;
     }
 
-    //! The width of the icon in pixels
-    //! @return The width
     function width() as Number {
         measure();
 
         return _measuredWidth as Number;
     }
 
-    //! The height of the icon in pixels
-    //! @return The height
     function height() as Number {
         measure();
 
         return _measuredHeight as Number;
     }
 
-    //! Forget where this icon was, so a partial update does not put it back
-    //! somewhere the screen has since been repainted
+    //! So a partial update does not put it back on a repainted screen
     function forget() as Void {
         _box.clear();
     }
 
-    //! Draw the icon, remembering where it went
-    //! @param dc The drawing context
-    //! @param x The left edge
-    //! @param y The top edge
     function draw(dc as Dc, x as Number, y as Number) as Void {
         _box.set(x, y, width(), height());
         paint(dc, x, y);
     }
 
-    //! Put the icon back if the clip has cut into it
-    //! @param dc The drawing context
+    //! Put it back if the clip has cut into it
     function redraw(dc as Dc) as Void {
         if (!ClipRegion.covers(_box)) {
             return;
@@ -118,8 +89,7 @@ class Icon {
         paint(dc, _box.left, _box.top);
     }
 
-    //! The bitmap to draw. Overridden by the icons that pick from a set.
-    //! @return The bitmap
+    //! Overridden by icons that pick from a set
     protected function bitmap() as BitmapResource {
         if (_resource == null) {
             _resource = WatchUi.loadResource(_resourceId as ResourceId) as BitmapResource;
@@ -128,18 +98,12 @@ class Icon {
         return _resource as BitmapResource;
     }
 
-    //! The color to draw in. Overridden by the battery and the wind, which
-    //! say something with color that the rest of the row does not.
-    //! @return The color
+    //! Overridden by the battery and the wind, which say something with color
     protected function tint() as Number {
         return _tint;
     }
 
-    //! One bitmap out of a set, held on to until the choice moves. The row
-    //! asks for the size several times a draw and loading is not free.
-    //! @param images The set to choose from
-    //! @param index Which one
-    //! @return The bitmap
+    //! One of a set, held until the choice moves
     protected function choose(images as Array<ResourceId>, index as Number) as BitmapResource {
         if (index != _chosenIndex) {
             _chosenIndex = index;
@@ -149,17 +113,9 @@ class Icon {
         return _resource as BitmapResource;
     }
 
-    //! Put the bitmap on the screen in the icon's color.
-    //!
-    //! The artwork is white on transparent, so it is tinted rather than drawn
-    //! as it is: on the light style an untinted icon would be invisible.
-    //!
-    //! Always at its own size, where every source pixel lands on one output
-    //! pixel and sampling has nothing to decide. Overridden by the wind,
-    //! which has no artwork to place: it draws its arrow.
-    //! @param dc The drawing context
-    //! @param x The left edge
-    //! @param y The top edge
+    //! The artwork is white on transparent, so it is tinted: untinted it
+    //! would vanish on the light style. Overridden by the wind, which draws
+    //! itself.
     protected function paint(dc as Dc, x as Number, y as Number) as Void {
         if (!(dc has :drawBitmap2)) {
             dc.drawBitmap(x, y, bitmap());
@@ -169,7 +125,6 @@ class Icon {
         dc.drawBitmap2(x, y, bitmap(), { :tintColor => tint() });
     }
 
-    //! Ask the bitmap its size, the first time either dimension is wanted
     private function measure() as Void {
         if (_measuredWidth != null) {
             return;

@@ -1,26 +1,14 @@
 import Toybox.Complications;
 import Toybox.Lang;
 
-//! A short name for each complication type.
-//!
-//! The system's own shortLabel runs too long for a container this size, so
-//! the face carries its own. Keep these to about four characters, so the
-//! label and the value together stay inside the slot.
-//!
-//! One case per type offered in resources/configs/watchface.xml, in the same
-//! order: a type dropped there should lose its case here as well. A type
-//! above the face's minApiLevel cannot be named here at all, which is what
-//! keeps sleep score off both lists. The types
-//! whose value already reads as what it is - the date, the weekday, the
-//! training status and the high and low - get no label.
+//! A short name per complication type: the system's shortLabel runs too
+//! long. One case per type in watchface.xml, same order. A type above
+//! minApiLevel cannot be named here, which keeps sleep score off both lists.
+//! Types whose value reads as what it is get no label.
 module ComplicationLabel {
 
-    //! What to show for a type with no label of its own
     const NOTHING = "";
 
-    //! The short name for a complication type
-    //! @param type The complication type, null if the system did not say
-    //! @return The label, or an empty string
     function of(type as Complications.Type?) as String {
         if (type == null) {
             return NOTHING;

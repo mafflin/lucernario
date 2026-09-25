@@ -1,72 +1,48 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! The twenty four hour marks around the rim, midnight at the top, and four
-//! minor marks between each pair, one every twelve minutes.
-//!
-//! They have no setting of their own.
-//!
-//! Colored with the day, each mark by the moment it stands for - see
-//! DayColors. On the style that asks for it, the hours left to recover take
-//! the accent color instead: the 24, and one more mark for each hour, hour
-//! and minor marks alike, clockwise from it. The whole dial is 119 hours.
+//! 24 hour marks, midnight at the top, with four minor marks between each
+//! pair. Colored with the day - see DayColors. On the complicated style the
+//! hours left to recover take the accent color: the 24, then one mark per
+//! hour clockwise, hour and minor alike. The whole dial is 119 hours.
 class RimMarks {
 
-    //! How wide a mark is, as a share of the rim radius rather than a fixed
-    //! count, so it holds its proportions on every screen.
-    //!
-    //! Pixels, not degrees of arc - see RimPainter.drawRadial. A fortieth of
-    //! the radius comes to about a degree and a half at the rim.
+    //! Width as a share of the radius, in pixels - see RimPainter.drawRadial
     private const _WIDTH_NUMERATOR = 1;
     private const _WIDTH_DIVISOR = 40;
-
-    //! A mark thinner than this is not a mark
     private const _MIN_WIDTH = 1;
 
-    //! How far in from the rim a mark reaches, as a share of the ring
+    //! Reach as a share of the ring
     private const _LENGTH_NUMERATOR = 2;
     private const _LENGTH_DIVISOR = 5;
 
-    //! Minor marks between each pair of hour marks, splitting the hour into
-    //! twelve minute steps
+    //! Minor marks between hour marks: twelve minute steps
     private const _MINOR_MARKS = 4;
     private const _MINOR_STEPS = _MINOR_MARKS + 1;
 
-    //! How far in a minor mark reaches, as a share of an hour mark's reach
+    //! Minor reach as a share of an hour mark's
     private const _MINOR_LENGTH_NUMERATOR = 2;
     private const _MINOR_LENGTH_DIVISOR = 3;
-
-    //! A minor mark is as thin as the pen draws
     private const _MINOR_WIDTH = 1;
 
-    //! How far in a mark reaches, resolved in prepare()
+    //! Resolved in prepare()
     private var _length as Number = 0;
-
-    //! How wide a mark is in pixels, resolved in prepare()
     private var _width as Number = _MIN_WIDTH;
-
-    //! How far in a minor mark reaches, resolved in prepare()
     private var _minorLength as Number = 0;
 
-    //! The colors of the day, shared with the numerals
     private var _dayColors as DayColors;
 
-    //! Whether the marks show the hours left to recover at all, which the
-    //! style decides
     private var _recoveryShown as Boolean = false;
 
-    //! How many marks the hours left to recover take, clockwise from the
-    //! 24, and the color they are drawn in. None at zero.
+    //! Marks in the recovery color, clockwise from the 24; none at zero
     private var _recoveryMarks as Number = 0;
     private var _recoveryColor as Number = Graphics.COLOR_WHITE;
 
-    //! Constructor
-    //! @param dayColors The colors of the day
     function initialize(dayColors as DayColors) {
         _dayColors = dayColors;
     }
 
-    //! Size the marks off the ring. Run after Dial.setup().
+    //! After Dial.setup()
     function prepare() as Void {
         _length = Dial.ringDepth * _LENGTH_NUMERATOR / _LENGTH_DIVISOR;
         _width = Dial.rim * _WIDTH_NUMERATOR / _WIDTH_DIVISOR;
@@ -78,44 +54,34 @@ class RimMarks {
         _minorLength = _length * _MINOR_LENGTH_NUMERATOR / _MINOR_LENGTH_DIVISOR;
     }
 
-    //! How far in from the rim a mark comes, for whatever sits against its end
-    //! @return The reach in pixels
+    //! How far in from the rim an hour mark comes
     function reach() as Number {
         return _length;
     }
 
-    //! How wide a mark is, for whatever is sized to match
-    //! @return The width in pixels
     function width() as Number {
         return _width;
     }
 
-    //! Whether the marks show the hours left to recover
-    //! @param shown true on the style that asks for it
     function setRecoveryShown(shown as Boolean) as Void {
         _recoveryShown = shown;
     }
 
-    //! Set how many hours are left to recover. Once per full update.
-    //! @param hours The hours left, null when there are none
+    //! Once per full update; null when there are none
     function setRecoveryHours(hours as Number?) as Void {
         if (!_recoveryShown || (hours == null)) {
             _recoveryMarks = 0;
             return;
         }
 
-        // The 24 starts the count and each hour adds the mark after it.
+        // The 24 starts the count; each hour adds the mark after it.
         _recoveryMarks = hours + 1;
     }
 
-    //! Set the color the recovery marks are drawn in
-    //! @param color The color to use
     function setRecoveryColor(color as Number) as Void {
         _recoveryColor = color;
     }
 
-    //! Draw every mark
-    //! @param dc The drawing context
     function draw(dc as Dc) as Void {
         var minorStep = Dial.DEGREES_PER_HOUR_MARK.toFloat() / _MINOR_STEPS;
 
@@ -132,11 +98,8 @@ class RimMarks {
         }
     }
 
-    //! The color of a mark: the recovery color while it is among the hours
-    //! left to recover, the day's otherwise
-    //! @param index Which mark, hour and minor alike, clockwise from the 24
-    //! @param degrees Where the mark sits, clockwise from midnight
-    //! @return The color to draw it in
+    //! The recovery color while the mark is among the hours left, the day's
+    //! otherwise. index counts every mark clockwise from the 24.
     private function colorAt(index as Number, degrees as Numeric) as Number {
         if (index < _recoveryMarks) {
             return _recoveryColor;
@@ -145,9 +108,7 @@ class RimMarks {
         return _dayColors.colorAt(degrees);
     }
 
-    //! Where a mark sits on the dial
-    //! @param mark Which mark, counting clockwise from midnight
-    //! @return The position in degrees, clockwise from midnight
+    //! Degrees clockwise from midnight
     private function positionOf(mark as Number) as Number {
         return mark * Dial.DEGREES_PER_HOUR_MARK;
     }

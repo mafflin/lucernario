@@ -2,19 +2,16 @@ import Toybox.Application;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-//! Digital watch face that shows the time, as large as the screen allows.
+//! Digital watch face: the time, as large as the screen allows.
 class LucernarioApp extends Application.AppBase {
 
-    //! Whether the watch face was started by the native watch face editor
+    //! Whether the native watch face editor started the face
     private var _editMode as Boolean = false;
 
-    //! Constructor
     function initialize() {
         AppBase.initialize();
     }
 
-    //! Handle app startup
-    //! @param state Startup arguments
     function onStart(state as Dictionary?) as Void {
         if (state != null) {
             var launched = state[:launchedFromWatchFaceSettingsEditor];
@@ -22,17 +19,11 @@ class LucernarioApp extends Application.AppBase {
         }
     }
 
-    //! Handle app shutdown
-    //! @param state Shutdown arguments
     function onStop(state as Dictionary?) as Void {
     }
 
-    //! Return the initial view for the app.
-    //!
-    //! The delegate is always attached: it carries both the edits made in the
-    //! native watch face editor and the power budget notice for partial
-    //! updates, and the latter can arrive at any time.
-    //! @return Array [LucernarioView] or [LucernarioView, LucernarioDelegate]
+    //! The delegate carries editor edits and the power budget notice, which
+    //! can arrive at any time, so it is always attached.
     function getInitialView() as [Views] or [Views, InputDelegates] {
         var view = new LucernarioView(_editMode);
 

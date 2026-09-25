@@ -2,58 +2,39 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! The seconds hand: an arrow inside the marks, pointing out at
-//! the second - equilateral, with a base of eight degrees measured at the
-//! ring's inner edge.
-//!
-//! Set in far enough that the box a partial update clips to around it never
-//! reaches the marks, at any angle, so a tick has none of them to put back.
-//! The box is the upright rectangle round the three corners, and on the
-//! diagonals a base corner pokes out past the tip, which is what holds the
-//! tip a few pixels off the marks. The hour hand reaches past them, and is
-//! put back when the box cuts into it.
-//!
-//! It ticks in low power mode through partial updates, repainting only the
-//! pixels it vacates.
+//! The seconds hand: an equilateral arrow inside the marks, pointing out.
+//! Set in far enough that its clip box never reaches the marks at any
+//! angle - on the diagonals a base corner pokes out past the tip. Ticks in
+//! low power mode through partial updates, repainting only what it vacates.
 class SecondsHand {
 
-    //! The span of the base, measured at the ring's inner edge. Equilateral,
-    //! so this is the whole of its size.
+    //! The base, in degrees at the ring's inner edge
     private const _WIDTH_DEGREES = 8;
 
-    //! Air between the tip and the marks' ends: what the clip box reaches
-    //! past the tip on the diagonals, the ends' smoothed edges spilling about
-    //! a pixel inward, and one more for the corners' own pixels. Counted from
-    //! where the pen stops, which is half its width past where a line ends.
+    //! Air between the tip and the marks' pen ends: the box's diagonal
+    //! reach, a pixel of smoothing, and one for the corners themselves
     private const _MARK_GAP = 5;
 
-    //! The color the arrow is drawn in
     private var _color as Number = Graphics.COLOR_WHITE;
 
-    //! How far out the tip and the base stand, and half the base's width,
-    //! resolved in prepare()
+    //! Resolved in prepare()
     private var _tip as Number = 0;
     private var _baseRadius as Float = 0.0;
     private var _halfWidth as Float = 0.0;
 
-    //! Which second the arrow was last drawn at, or null when it is not on
-    //! screen
+    //! Where it was last drawn, null when off screen
     private var _second as Number? = null;
 
-    //! The corners it was last drawn with, filled in place rather than made
-    //! anew each tick, and the box around them
+    //! Filled in place rather than made anew each tick
     private var _points as Array<[Numeric, Numeric]>;
     private var _box as Box;
 
-    //! Constructor
     function initialize() {
         _points = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
         _box = new Box();
     }
 
-    //! Size the arrow off the ring. Run after Dial.setup().
-    //! @param markReach How far in from the rim the marks come
-    //! @param markWidth How wide an hour mark is
+    //! After Dial.setup()
     function prepare(markReach as Number, markWidth as Number) as Void {
         var width = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(_WIDTH_DEGREES / 2.0));
 
@@ -63,36 +44,25 @@ class SecondsHand {
         _second = null;
     }
 
-    //! How wide the base is, for whatever is sized to match
-    //! @return The width in pixels
     function baseWidth() as Float {
         return _halfWidth * 2;
     }
 
-    //! Set the color the arrow is drawn in
-    //! @param color The color to use
     function setColor(color as Number) as Void {
         _color = color;
     }
 
-    //! Forget where the arrow was, so the next partial update does not try to
-    //! lift it off a screen that has since been repainted
+    //! So the next tick does not lift it off a screen since repainted
     function forget() as Void {
         _second = null;
     }
 
-    //! Draw the arrow where it stands now
-    //! @param dc The drawing context
     function draw(dc as Dc) as Void {
         place(Clock.now().sec);
         paint(dc);
     }
 
-    //! Repaint just the pixels the arrow vacates. Where it is going needs
-    //! nothing put back: the arrow is opaque and covers whatever it lands on.
-    //! @param dc The drawing context
-    //! @param restoreRim Puts the rim back under the old position, called
-    //!        with that position already clipped and the second it was at
+    //! Repaint only what the arrow vacates: it is opaque where it lands
     function drawPartial(dc as Dc, restoreRim as Method(dc as Dc, second as Number) as Void) as Void {
         var second = Clock.now().sec;
         var previous = _second;
@@ -101,13 +71,13 @@ class SecondsHand {
             return;
         }
 
-        // Where it was: lift the arrow off and put the rim back underneath.
+        // Where it was: lift it off and put the rim back.
         if (previous != null) {
             ClipRegion.clip(dc, _box);
             restoreRim.invoke(dc, previous);
         }
 
-        // Where it is going: the box bounds the draw and nothing more.
+        // Where it is going: the box only bounds the draw.
         place(second);
         ClipRegion.clip(dc, _box);
         paint(dc);
@@ -115,24 +85,21 @@ class SecondsHand {
         dc.clearClip();
     }
 
-    //! Work out the corners at a second, and the box around them
-    //! @param second The second, 0 to 59
     private function place(second as Number) as Void {
         var radians = Dial.radiansOf(second * Dial.DEGREES_PER_SECOND);
         var outX = Math.cos(radians);
 
-        // Screen y grows downward, so the sine of the angle is negated.
+        // Screen y grows downward.
         var outY = -Math.sin(radians);
 
-        // Across the arrow is out turned a quarter: (-outY, outX).
+        // Across is out turned a quarter.
         var acrossX = -outY * _halfWidth;
         var acrossY = outX * _halfWidth;
         var baseX = Dial.centerX + (_baseRadius * outX);
         var baseY = Dial.centerY + (_baseRadius * outY);
 
-        // Truncated rather than rounded, unlike everything that stands still:
-        // this runs every second, and a corner half a pixel off is nothing on
-        // a shape whose every edge is smoothed.
+        // Truncated, not rounded: this runs every second, and half a pixel is
+        // nothing on a smoothed shape.
         var tipX = (Dial.centerX + (_tip * outX)).toNumber();
         var tipY = (Dial.centerY + (_tip * outY)).toNumber();
         var leftX = (baseX + acrossX).toNumber();
@@ -155,8 +122,6 @@ class SecondsHand {
         _second = second;
     }
 
-    //! Fill the arrow at its last corners
-    //! @param dc The drawing context
     private function paint(dc as Dc) as Void {
         RimPainter.fill(dc, _points, _color);
     }

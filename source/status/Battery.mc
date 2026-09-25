@@ -3,10 +3,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.WatchUi;
 
-//! The charge level, as one of eleven bitmaps.
-//!
-//! The only icon that says something with color: the artwork carries the
-//! level, and the color carries how much that level matters.
+//! The charge as one of eleven bitmaps, red when empty and orange when low.
 class Battery extends Icon {
 
     private const _PERCENT_PER_LEVEL = 10;
@@ -14,12 +11,10 @@ class Battery extends Icon {
     private const _LOW_LEVEL = 1;
     private const _TOP_LEVEL = 10;
 
-    //! Colors the two lowest levels are drawn in, whatever the face's own
-    //! color is. Both read against a light background and a dark one.
+    //! Both read against either background
     private const _EMPTY_COLOR = Graphics.COLOR_RED;
     private const _LOW_COLOR = Graphics.COLOR_ORANGE;
 
-    //! One bitmap per level, from empty to full
     private var _images as Array<ResourceId> = [
         Rez.Drawables.Battery0,
         Rez.Drawables.Battery10,
@@ -34,19 +29,15 @@ class Battery extends Icon {
         Rez.Drawables.Battery100
     ];
 
-    //! The level last read. Reached from the partial update too, so the
-    //! charge is looked up once a minute rather than once a call.
+    //! Read once a minute: bitmap() is reached from the partial update too
     private var _level as Number = _EMPTY_LEVEL;
     private var _reading as MinuteGate;
 
-    //! Constructor. No single resource: bitmap() picks one per charge level.
     function initialize() {
         Icon.initialize(null);
         _reading = new MinuteGate();
     }
 
-    //! The bitmap for the current charge level
-    //! @return The bitmap
     protected function bitmap() as BitmapResource {
         if (_reading.opens()) {
             _level = level();
@@ -55,8 +46,6 @@ class Battery extends Icon {
         return choose(_images, _level);
     }
 
-    //! Red when empty, orange when low, the face's own color otherwise
-    //! @return The color to draw in
     protected function tint() as Number {
         if (_level == _EMPTY_LEVEL) {
             return _EMPTY_COLOR;
@@ -69,8 +58,6 @@ class Battery extends Icon {
         return Icon.tint();
     }
 
-    //! The charge as one of eleven levels
-    //! @return The level, empty to top
     private function level() as Number {
         var reading = System.getSystemStats().battery.toNumber() / _PERCENT_PER_LEVEL;
 
