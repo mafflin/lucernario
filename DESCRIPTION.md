@@ -2,7 +2,7 @@ Lucernario is a digital watch face built around one idea: the time, centered, in
 the largest font the watch has. Everything else keeps out of its way.
 
 **The rim** carries a 24-hour dial, numbered every four hours, with a fine mark
-every twelve minutes. The marks and numerals are amber from sunrise to sunset
+every quarter hour. The marks and numerals are amber from sunrise to sunset
 and sky blue through the night, so a glance at the dial tells you how much
 daylight is left. A broad hand tracks the hour, and an arrow counts the seconds
 just inside the marks — it keeps going in low power mode on watches whose

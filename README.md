@@ -40,7 +40,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after, shaded to the style |
-| `source/rim/RimMarks.mc` | The hour marks and four minor marks between each |
+| `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
 | `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer |
 | `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the Dark Complicated style |
@@ -161,16 +161,16 @@ pixel at the rim is roughly a quarter of a degree, which is a useful step on
 a shape this small. The pen is round, so a line runs half its width past each
 end; every clearance and clip box counts that in.
 
-The rim is 24 hour marks with four thin minor marks between each pair, one
-every twelve minutes, and the numerals 24, 4, 8, 12, 16 and 20 against the
+The rim is 24 hour marks with three thin minor marks between each pair, one
+every quarter hour, and the numerals 24, 4, 8, 12, 16 and 20 against the
 inner ends of their marks.
 
 On the `Dark Complicated` style the hours left to recover
 (`ActivityMonitor.Info.timeToRecovery`) take the accent color on the marks,
 not the numerals: the 24, and one more mark for each hour, hour and minor
 marks alike, clockwise from it - 1 hour colors the 24 and the minor mark
-after it, 20 hours the marks from the 24 through the 4. The whole dial is
-119 hours, and more than that colors every mark. With none left, none are
+after it, 16 hours the marks from the 24 through the 4. The whole dial is
+95 hours, and more than that colors every mark. With none left, none are
 colored. Read once a minute; the marks are never touched by a partial one.
 
 While an activity is under way the system draws its own indicator at the top

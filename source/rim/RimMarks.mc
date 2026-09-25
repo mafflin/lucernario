@@ -1,10 +1,10 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! 24 hour marks, midnight at the top, with four minor marks between each
+//! 24 hour marks, midnight at the top, with three minor marks between each
 //! pair. Colored with the day - see DayColors. On the complicated style the
 //! hours left to recover take the accent color: the 24, then one mark per
-//! hour clockwise, hour and minor alike. The whole dial is 119 hours.
+//! hour clockwise, hour and minor alike. The whole dial is 95 hours.
 class RimMarks {
 
     //! Width as a share of the radius, in pixels - see RimPainter.drawRadial
@@ -16,8 +16,8 @@ class RimMarks {
     private const _LENGTH_NUMERATOR = 2;
     private const _LENGTH_DIVISOR = 5;
 
-    //! Minor marks between hour marks: twelve minute steps
-    private const _MINOR_MARKS = 4;
+    //! Minor marks between hour marks: quarter hour steps
+    private const _MINOR_MARKS = 3;
     private const _MINOR_STEPS = _MINOR_MARKS + 1;
 
     //! Minor reach as a share of an hour mark's
