@@ -98,10 +98,8 @@ one — from the sunrise and sunset complications, the same numbers the data
 container shows. Each mark and numeral takes the color of the moment it
 stands for. Until the sun is known they are drawn in the data color.
 
-The container's top sits at 66% of the screen height. The status row mirrors
-it: the row's bottom sits as far from the top of the screen as the
-container's top is from the bottom, lifted by a twenty second of the height to even the pair up by eye,
-so the two frame the time on every screen.
+The status row mirrors a line at 66% of the screen height, lifted by 1/22 of
+the height; the data container starts 2% below that line.
 
 The system hands over a raw value and almost never formats it, so
 `ComplicationFormat` does. Most types are a count that `Complication.unit`

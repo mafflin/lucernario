@@ -22,7 +22,7 @@ class StatusBar {
     //! Has to be told its size
     private var _wind as Wind;
 
-    //! The data container's top, which the row sits opposite
+    //! The line below the time the row mirrors
     private var _mirrorY as Number = 0;
 
     //! One box answers for the whole row. Empty while nothing shows.
@@ -42,7 +42,7 @@ class StatusBar {
         ] as Array<Icon>;
     }
 
-    //! Once per layout, after the container is placed
+    //! Once per layout
     function mirror(y as Number) as Void {
         _mirrorY = y;
     }
@@ -100,8 +100,8 @@ class StatusBar {
         }
     }
 
-    //! The row's bottom as far from the top as the container's top is from
-    //! the bottom, lifted a touch
+    //! The row's bottom as far from the top as the frame line is from the
+    //! bottom, lifted a touch
     private function middle(dc as Dc, tall as Number) as Number {
         var height = dc.getHeight();
 

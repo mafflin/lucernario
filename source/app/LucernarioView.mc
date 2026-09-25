@@ -7,8 +7,10 @@ import Toybox.WatchUi;
 //! The watch face: owns the elements and applies the configuration.
 class LucernarioView extends WatchUi.WatchFace {
 
-    //! Top of the data container, as a share of the screen height
-    private const _FIELD_TOP_RATIO = 0.66;
+    //! Shares of the screen height: the line the status row mirrors, and the
+    //! data container's drop below it
+    private const _FRAME_RATIO = 0.66;
+    private const _FIELD_DROP_RATIO = 0.02;
 
     private var _style as Number = Styles.DEFAULT;
     private var _background as Number = Graphics.COLOR_BLACK;
@@ -235,13 +237,12 @@ class LucernarioView extends WatchUi.WatchFace {
     }
 
     private function placeFields(dc as Dc) as Void {
-        var top = (Dial.screenHeight * _FIELD_TOP_RATIO).toNumber();
-        var rowCenterY = top + (_centerField.heightIn(dc) / 2);
+        var frame = (Dial.screenHeight * _FRAME_RATIO).toNumber();
+        var top = frame + (Dial.screenHeight * _FIELD_DROP_RATIO).toNumber();
 
-        _centerField.prepare(dc, Dial.centerX, rowCenterY);
+        _centerField.prepare(dc, Dial.centerX, top + (_centerField.heightIn(dc) / 2));
 
-        // The status row sits as far above the middle as the container below.
-        _statusBar.mirror(_centerField.locY.toNumber());
+        _statusBar.mirror(frame);
     }
 
     //! Draw the containers, leaving out the one the editor is pulsing
