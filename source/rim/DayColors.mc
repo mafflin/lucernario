@@ -3,7 +3,8 @@ import Toybox.Lang;
 
 //! The rim's colors: amber from sunrise to sunset, sky blue after - bright
 //! on the dark style, dark on the light one. The data color until the sun
-//! is known. Shared by the marks and the numerals so they always agree.
+//! is known. Shared by the marks, the numerals and the hour hand, which
+//! takes the other color so it stands out from the marks around it.
 class DayColors {
 
     private const _DARK_STYLE_DAY = Palette.AMBER;
@@ -53,18 +54,39 @@ class DayColors {
 
     //! The color at a moment of the day, in degrees clockwise from midnight
     function colorAt(degrees as Numeric) as Number {
+        var isDay = isDayAt(degrees);
+
+        if (isDay == null) {
+            return _color;
+        }
+
+        return isDay ? _dayColor : _nightColor;
+    }
+
+    //! The night color by day and the day color by night, null until the sun
+    //! is known
+    function invertedColorAt(degrees as Numeric) as Number? {
+        var isDay = isDayAt(degrees);
+
+        if (isDay == null) {
+            return null;
+        }
+
+        return isDay ? _nightColor : _dayColor;
+    }
+
+    //! Null until the sun is known
+    private function isDayAt(degrees as Numeric) as Boolean? {
         var rise = _rise;
         var set = _set;
 
         if ((rise == null) || (set == null)) {
-            return _color;
+            return null;
         }
 
         // Far from the time zone's meridian the day can run across midnight.
-        var isDay = (rise <= set)
+        return (rise <= set)
             ? ((degrees >= rise) && (degrees < set))
             : ((degrees >= rise) || (degrees < set));
-
-        return isDay ? _dayColor : _nightColor;
     }
 }

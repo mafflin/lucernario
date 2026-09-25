@@ -2,7 +2,8 @@ import Toybox.Graphics;
 import Toybox.Lang;
 
 //! The hour hand: a mark at the hour, twice as wide as an hour mark and a
-//! third longer, in the accent color. Reaching past the marks, it is put
+//! third longer, in the rim's colors inverted - see DayColors - and the
+//! accent color until the sun is known. Reaching past the marks, it is put
 //! back when the seconds hand's clip cuts into it: a tick or two a minute.
 class HourHand {
 
@@ -10,6 +11,10 @@ class HourHand {
     private const _LENGTH_NUMERATOR = 4;
     private const _LENGTH_DIVISOR = 3;
 
+    private var _dayColors as DayColors;
+
+    //! Until the sun is known
+    private var _accentColor as Number = Graphics.COLOR_WHITE;
     private var _color as Number = Graphics.COLOR_WHITE;
 
     //! Resolved in prepare()
@@ -20,7 +25,8 @@ class HourHand {
     private var _position as Float = 0.0;
     private var _box as Box;
 
-    function initialize() {
+    function initialize(dayColors as DayColors) {
+        _dayColors = dayColors;
         _box = new Box();
     }
 
@@ -31,12 +37,17 @@ class HourHand {
     }
 
     function setColor(color as Number) as Void {
-        _color = color;
+        _accentColor = color;
     }
 
+    //! After the day colors have refreshed
     function draw(dc as Dc) as Void {
         _position = Dial.positionOfMinute(currentMinute());
         boxAround(_position);
+
+        var color = _dayColors.invertedColorAt(_position);
+        _color = (color != null) ? color : _accentColor;
+
         paint(dc);
     }
 

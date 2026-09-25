@@ -64,7 +64,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _rimMarks = new RimMarks(_dayColors);
         _numerals = new RimNumerals(_dayColors);
         _hand = new SecondsHand();
-        _hourHand = new HourHand();
+        _hourHand = new HourHand(_dayColors);
         _windReading = new WindReading();
         _windBearing = new WindBearing(_windReading);
         _activityTimer = new ActivityTimer();

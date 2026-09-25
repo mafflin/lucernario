@@ -44,7 +44,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after, shaded to the style |
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
-| `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer |
+| `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer, in the rim's colors inverted |
 | `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the complicated styles |
 | `source/rim/GoalHand.mc` | The goal hand, a dot just inside the marks, on the complicated styles |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
@@ -70,8 +70,9 @@ not Connect IQ app settings. Currently configurable:
   goal hand. The editor has no background setting, so the style id is what
   carries it; `source/app/Styles.mc` decodes it. Ids must stay in step with
   `watchface.xml`.
-- **Accent color** — the hour, seconds and goal hands, the wind bearing in a light
-  wind, and the recovery hours: the things meant to stand apart.
+- **Accent color** — the seconds and goal hands, the wind bearing in a light
+  wind, the recovery hours, and the hour hand until the sun is known: the
+  things meant to stand apart.
 - **Data color** — the time, the status icons and the data container, and
   the rim marks and numerals until the sun is known.
 - **Data container** — one complication slot centered below the time. The
@@ -106,6 +107,10 @@ day — Amber and Sky on the dark style, Dark Amber and Dark Sky on the light
 one — from the sunrise and sunset complications, the same numbers the data
 container shows. Each mark and numeral takes the color of the moment it
 stands for. Until the sun is known they are drawn in the data color.
+
+The hour hand takes the same two colors the other way round: sky blue by day
+and amber through the night, so it stands out from the marks it sits among.
+Until the sun is known it is drawn in the accent color.
 
 The status row mirrors a line at 66% of the screen height, lifted by 1/22 of
 the height; the data container starts 2% below that line.
