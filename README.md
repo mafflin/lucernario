@@ -35,7 +35,9 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
+| `source/time/ActivityReading.mc` | The activity monitor, read once a minute for the recovery hours and the goal hand |
 | `source/time/Recovery.mc` | Hours left to recover, off the activity monitor |
+| `source/time/GoalProgress.mc` | Progress to the goal hand's goal, off the activity monitor |
 | `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 24 |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
@@ -43,7 +45,8 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
 | `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer |
-| `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the Dark Complicated style |
+| `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the complicated styles |
+| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the marks, on the complicated styles |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch, and the test against it |
 | `source/rim/Box.mc` | The box around a shape, for that test |
@@ -51,7 +54,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/status/WindReading.mc` | The wind's bearing and strength, shared by the row's arrow and the dial |
 | `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
 | `source/complications/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
-| `source/complications/FieldLocation.mc` | The container slot id, mirroring `watchface.xml` |
+| `source/complications/SlotId.mc` | The editor's slot ids, mirroring `watchface.xml` |
 | `source/complications/ComplicationLabel.mc` | A short name per complication type |
 | `source/complications/ComplicationFormat.mc` | Turns a complication's raw value into readable text |
 | `resources/configs/watchface.xml` | Declares which settings the editor offers |
@@ -61,12 +64,13 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
-- **Style** — `Dark` (default), `Light`, or `Dark Complicated`, which
-  moves the wind out of the status row and onto the dial and shows the hours
-  left to recover on the rim. The editor has no background
-  setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
-  Ids must stay in step with `watchface.xml`.
-- **Accent color** — the hour and seconds hands, the wind bearing in a light
+- **Style** — `Dark` (default), `Light`, `Dark Complicated` or `Light
+  Complicated`. The complicated styles move the wind out of the status row
+  and onto the dial, show the hours left to recover on the rim and add the
+  goal hand. The editor has no background setting, so the style id is what
+  carries it; `source/app/Styles.mc` decodes it. Ids must stay in step with
+  `watchface.xml`.
+- **Accent color** — the hour, seconds and goal hands, the wind bearing in a light
   wind, and the recovery hours: the things meant to stand apart.
 - **Data color** — the time, the status icons and the data container, and
   the rim marks and numerals until the sun is known.
@@ -74,12 +78,17 @@ not Connect IQ app settings. Currently configurable:
   types it offers are listed one by one in `watchface.xml` rather than opened
   up with `allowAny`, which keeps the picker to what reads well in a slot this
   size; the cost is that complications published by other Connect IQ apps are
-  not offered at all. Its slot id lives in `source/complications/FieldLocation.mc` and must
+  not offered at all. Its slot id lives in `source/complications/SlotId.mc` and must
   stay in step with `watchface.xml`. It defaults to the weekday and the date,
   named twice: `default="true"` in `watchface.xml` is what the editor offers,
   and the type handed to `ComplicationField` in `LucernarioView` is what the slot
   holds until the editor has said anything at all. Requires the
   `ComplicationSubscriber` permission.
+- **Goal** — a second complication slot, used only to pick the goal hand's
+  goal on the complicated styles: steps (default), floors climbed or
+  intensity minutes. The editor shows it on every style, since a slot cannot
+  be tied to one, and it does nothing on the others. There is no "none"
+  entry either; the style is what turns the hand off.
 
 Both colors offer the same thirty named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
@@ -147,8 +156,8 @@ puts the rim back there, then clips to where it is going and draws it. The
 hand is an arrow set in far enough that even the corners of its clip box
 stay off the marks, round pen ends included, so a tick never repaints
 them: only the numeral nearest the hand's last position, the status row, the
-wind bearing and the hour hand, both of which reach past the marks, and only
-when the box has cut into them. If that
+wind bearing and the hour hand, both of which reach past the marks, the steps
+hand, and only when the box has cut into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
@@ -165,7 +174,7 @@ The rim is 24 hour marks with three thin minor marks between each pair, one
 every quarter hour, and the numerals 24, 4, 8, 12, 16 and 20 against the
 inner ends of their marks.
 
-On the `Dark Complicated` style the hours left to recover
+On the complicated styles the hours left to recover
 (`ActivityMonitor.Info.timeToRecovery`) take the accent color on the marks,
 not the numerals: the 24, and one more mark for each hour, hour and minor
 marks alike, clockwise from it - 1 hour colors the 24 and the minor mark
@@ -185,12 +194,24 @@ so a southerly, 180, points up), with the strength said in color: the
 data color up to 20 km/h, orange above that, red above 40. None of them have
 a setting: each icon shows whenever the thing it reports is worth reporting.
 
-On the `Dark Complicated` style the wind leaves the row for the dial: an
+On the complicated styles the wind leaves the row for the dial: an
 equilateral triangle the size of the seconds hand, standing on the rim at
 the bearing the wind blows from and pointing the way it blows, north at the
 top. It takes the accent color in a light wind and the same orange and red
 above that. It reaches past the marks, so a partial update puts it back when
 the seconds hand's clip cuts into it, as it does the hour hand.
+
+The complicated styles also carry the goal hand: an accent colored dot, as
+wide across as two hour marks, just inside the marks with two pixels between
+them. It goes round once from the 24 to the goal picked in the goal slot and
+stays at the 24 past it. Each goal comes off `ActivityMonitor.Info` rather
+than the complication, which carries no goal: `steps` over `stepGoal`,
+`floorsClimbed` over `floorsClimbedGoal`, and `activeMinutesWeek.total` over
+`activeMinutesWeekGoal` (a weekly goal). With no goal to read, the dot stays
+off. The activity monitor is read once a minute, one read shared with the
+recovery hours and skipped on the styles that show neither; a new goal shows
+at once, off the last read. It lies in the seconds hand's path, so a partial
+update puts it back when the clip cuts into it.
 
 The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
 and tinted to the data color; untinted it would be invisible on the light

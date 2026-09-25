@@ -15,6 +15,9 @@ class LucernarioView extends WatchUi.WatchFace {
     private var _style as Number = Styles.DEFAULT;
     private var _background as Number = Graphics.COLOR_BLACK;
 
+    //! Gates the activity read
+    private var _complicated as Boolean = false;
+
     private var _time as TimeDisplay;
     private var _daylight as Daylight;
     private var _dayColors as DayColors;
@@ -22,10 +25,13 @@ class LucernarioView extends WatchUi.WatchFace {
     private var _numerals as RimNumerals;
     private var _hand as SecondsHand;
     private var _hourHand as HourHand;
+    private var _goalHand as GoalHand;
     private var _windReading as WindReading;
     private var _windBearing as WindBearing;
     private var _activityTimer as ActivityTimer;
+    private var _activity as ActivityReading;
     private var _recovery as Recovery;
+    private var _goalProgress as GoalProgress;
     private var _statusBar as StatusBar;
     private var _centerField as ComplicationField;
     private var _fields as Array<ComplicationField>;
@@ -33,8 +39,8 @@ class LucernarioView extends WatchUi.WatchFace {
     //! Whether the native watch face editor started the face
     private var _editMode as Boolean;
 
-    //! The container the editor is pulsing, hidden on the face meanwhile
-    private var _editedField as ComplicationField?;
+    //! What the editor is pulsing, hidden meanwhile
+    private var _edited as WatchUi.Drawable?;
 
     private var _isAwake as Boolean = true;
 
@@ -62,10 +68,13 @@ class LucernarioView extends WatchUi.WatchFace {
         _windReading = new WindReading();
         _windBearing = new WindBearing(_windReading);
         _activityTimer = new ActivityTimer();
+        _activity = new ActivityReading();
         _recovery = new Recovery();
+        _goalProgress = new GoalProgress();
+        _goalHand = new GoalHand(_goalProgress);
         _statusBar = new StatusBar(_windReading);
 
-        _centerField = new ComplicationField(FieldLocation.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
+        _centerField = new ComplicationField(SlotId.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
         _fields = [_centerField];
 
         _partialUpdatesAllowed = (WatchUi.WatchFace has :onPartialUpdate);
@@ -87,6 +96,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _hand.prepare(markReach, _rimMarks.width());
         _windBearing.prepare(_hand.baseWidth());
         _hourHand.prepare(markReach, _rimMarks.width());
+        _goalHand.prepare(markReach, _rimMarks.width());
 
         placeFields(dc);
 
@@ -111,7 +121,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         // On to another setting: the container is no longer being pulsed.
         if (editedType != WatchUi.WATCH_FACE_CONFIG_TYPE_COMPLICATION) {
-            _editedField = null;
+            _edited = null;
         }
 
         WatchUi.requestUpdate();
@@ -127,7 +137,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _daylight.refresh();
         _windReading.refresh();
         _activityTimer.refresh();
-        _recovery.refresh();
+        refreshActivity();
         _dayColors.refresh();
         _rimMarks.setRecoveryHours(_recovery.hoursLeft());
         smooth(dc);
@@ -140,7 +150,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _windBearing.draw(dc);
         _statusBar.draw(dc);
         _time.draw(dc);
-        drawFields(dc);
+        drawEditable(dc);
         _hourHand.draw(dc);
 
         if (handIsVisible()) {
@@ -170,24 +180,26 @@ class LucernarioView extends WatchUi.WatchFace {
         _numerals.redraw(dc, second);
         _statusBar.redraw(dc);
         _windBearing.redraw(dc);
+        _goalHand.redraw(dc);
         _hourHand.redraw(dc);
     }
 
-    //! The drawable for the container the editor is about to pulse
+    //! The drawable the editor is about to pulse
     function getComplication(complication as ComplicationRef) as ComplicationDrawableRef? {
-        var field = fieldAt(complication.uniqueIdentifier);
+        var location = complication.uniqueIdentifier;
+
+        // Not on the face: nothing to pulse.
+        if (location == SlotId.GOAL) {
+            return _goalHand.isEnabled() ? pulse(_goalHand, _goalHand.getBoundingBox()) : null;
+        }
+
+        var field = fieldAt(location);
 
         if (field == null) {
             return null;
         }
 
-        _editedField = field;
-        WatchUi.requestUpdate();
-
-        return new WatchUi.ComplicationDrawableRef({
-            :drawable => field,
-            :boundingBox => field.getBoundingBox()
-        });
+        return pulse(field, field.getBoundingBox());
     }
 
     //! The slot under a tap, or null
@@ -245,9 +257,19 @@ class LucernarioView extends WatchUi.WatchFace {
         _statusBar.mirror(frame);
     }
 
-    //! Draw the containers, leaving out the one the editor is pulsing
-    private function drawFields(dc as Dc) as Void {
-        var edited = _editedField;
+    private function pulse(drawable as WatchUi.Drawable, boundingBox as Graphics.BoundingBox) as ComplicationDrawableRef {
+        _edited = drawable;
+        WatchUi.requestUpdate();
+
+        return new WatchUi.ComplicationDrawableRef({
+            :drawable => drawable,
+            :boundingBox => boundingBox
+        });
+    }
+
+    //! Everything but what the editor is pulsing
+    private function drawEditable(dc as Dc) as Void {
+        var edited = _edited;
 
         if (edited != null) {
             edited.setVisible(false);
@@ -256,6 +278,8 @@ class LucernarioView extends WatchUi.WatchFace {
         for (var i = 0; i < _fields.size(); i++) {
             _fields[i].draw(dc);
         }
+
+        _goalHand.draw(dc);
 
         // Put it back so the editor can still draw it.
         if (edited != null) {
@@ -304,6 +328,12 @@ class LucernarioView extends WatchUi.WatchFace {
 
         for (var i = 0; i < complicationSettings.size(); i++) {
             var slot = complicationSettings[i];
+
+            if (slot.uniqueIdentifier == SlotId.GOAL) {
+                applyGoal(slot.complicationId);
+                continue;
+            }
+
             var field = fieldAt(slot.uniqueIdentifier);
 
             if (field == null) {
@@ -317,6 +347,29 @@ class LucernarioView extends WatchUi.WatchFace {
 
             field.refresh();
         }
+    }
+
+    //! null until picked: steps stand
+    private function applyGoal(complicationId as Complications.Id?) as Void {
+        if (complicationId != null) {
+            _goalProgress.setType(complicationId.getType());
+        }
+    }
+
+    //! Shared by recovery and the goal hand
+    private function refreshActivity() as Void {
+        if (!_complicated) {
+            return;
+        }
+
+        var info = _activity.refresh();
+
+        if (info == null) {
+            return;
+        }
+
+        _recovery.read(info);
+        _goalProgress.read(info);
     }
 
     //! In low power mode the hand shows only if it can keep moving
@@ -338,9 +391,12 @@ class LucernarioView extends WatchUi.WatchFace {
         // Each element holds its own switch for the complicated style.
         var complicated = Styles.isComplicated(style);
 
+        _complicated = complicated;
+
         _windBearing.setEnabled(complicated);
         _statusBar.setWindShown(!complicated);
         _rimMarks.setRecoveryShown(complicated);
+        _goalHand.setEnabled(complicated);
     }
 
     //! The accent color: what is meant to stand apart from the rest
@@ -349,6 +405,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         _hand.setColor(color);
         _hourHand.setColor(color);
+        _goalHand.setColor(color);
         _windBearing.setColor(color);
         _rimMarks.setRecoveryColor(color);
     }

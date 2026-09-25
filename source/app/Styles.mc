@@ -7,7 +7,8 @@ module Styles {
     enum Value {
         DARK = 1,
         LIGHT = 2,
-        DARK_COMPLICATED = 3
+        DARK_COMPLICATED = 3,
+        LIGHT_COMPLICATED = 4
     }
 
     const DEFAULT = DARK;
@@ -22,11 +23,11 @@ module Styles {
     }
 
     function isLight(style as Number) as Boolean {
-        return (style == LIGHT);
+        return (style == LIGHT) || (style == LIGHT_COMPLICATED);
     }
 
-    //! Wind as a bearing on the dial, recovery hours on the rim marks
+    //! Wind bearing, recovery marks and the goal hand
     function isComplicated(style as Number) as Boolean {
-        return (style == DARK_COMPLICATED);
+        return (style == DARK_COMPLICATED) || (style == LIGHT_COMPLICATED);
     }
 }

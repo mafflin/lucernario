@@ -5,6 +5,7 @@
             <style id="1" label="@Strings.styleDark" default="true"/>
             <style id="2" label="@Strings.styleLight"/>
             <style id="3" label="@Strings.styleDarkComplicated"/>
+            <style id="4" label="@Strings.styleLightComplicated"/>
         </styles>
         <!-- An explicit palette rather than allowAny: the editor wants a
              label per color, and with allowAny the fenix 8 Solar filled its
@@ -80,13 +81,14 @@
             <color label="@Strings.ColorDarkMagenta">0xAA00AA</color>
             <color label="@Strings.ColorPink">0xFF00AA</color>
         </dataColors>
-        <!-- Ids must match the FieldLocation module in source/complications/FieldLocation.mc
+        <!-- Ids must match the SlotId module in source/complications/SlotId.mc
 
              The types are listed rather than allowAny: the editor offers
-             exactly these, in this order. Steps is the default. The comment
-             on each line is the short name ComplicationLabel gives it - the
-             two lists are meant to stay in step, so a type dropped here
-             should lose its case there as well. -->
+             exactly these, in this order. The weekday and date is the
+             default. The comment on each line is the short name
+             ComplicationLabel gives it - the two lists are meant to stay in
+             step, so a type dropped here should lose its case there as
+             well. -->
         <data>
             <complication id="1">
                 <type>Complications.COMPLICATION_TYPE_BATTERY</type>                          <!-- BAT -->
@@ -115,6 +117,12 @@
                 <type>Complications.COMPLICATION_TYPE_SOLAR_INPUT</type>                      <!-- SOL -->
                 <type>Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE</type>              <!-- TEMP -->
                 <type>Complications.COMPLICATION_TYPE_HIGH_LOW_TEMPERATURE</type>             <!-- no label -->
+            </complication>
+            <!-- The goal hand's goal; each type needs a case in GoalProgress -->
+            <complication id="2">
+                <type default="true">Complications.COMPLICATION_TYPE_STEPS</type>
+                <type>Complications.COMPLICATION_TYPE_FLOORS_CLIMBED</type>
+                <type>Complications.COMPLICATION_TYPE_INTENSITY_MINUTES</type>
             </complication>
         </data>
     </watchface-config>

@@ -1,24 +1,16 @@
 import Toybox.ActivityMonitor;
 import Toybox.Lang;
 
-//! Hours until recovered, off the activity monitor. Read once a minute: the
-//! read builds a whole ActivityMonitor.Info.
+//! Hours until recovered
 class Recovery {
 
     private var _hoursLeft as Number? = null;
-    private var _reading as MinuteGate;
 
     function initialize() {
-        _reading = new MinuteGate();
     }
 
-    //! Once per full update
-    function refresh() as Void {
-        if (!_reading.opens()) {
-            return;
-        }
-
-        _hoursLeft = readHours();
+    function read(info as ActivityMonitor.Info) as Void {
+        _hoursLeft = readHours(info);
     }
 
     //! null when recovered, or when the watch does not keep the number
@@ -26,11 +18,9 @@ class Recovery {
         return _hoursLeft;
     }
 
-    private function readHours() as Number? {
-        var info = ActivityMonitor.getInfo();
-
+    private function readHours(info as ActivityMonitor.Info) as Number? {
         // Naming a member the watch lacks is an error, not an exception.
-        if ((info == null) || !(info has :timeToRecovery)) {
+        if (!(info has :timeToRecovery)) {
             return null;
         }
 

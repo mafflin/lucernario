@@ -22,8 +22,9 @@ today's high and low.
 **Configured on the watch.** Style, accent color, data color and the data field
 are all set in Garmin's native watch face editor — no phone, no settings menus.
 
-- Dark, Light, or Dark Complicated with the wind as a bearing on the dial
-  and the hours left to recover marked on the rim
+- Dark or Light, each also Complicated: the wind as a bearing on the dial,
+  the hours left to recover marked on the rim, and a goal hand for steps,
+  floors or intensity minutes
 - 30 colors for the hands and 30 for the time, status row and data field,
   chosen to stay clean on MIP displays
 - Always-on seconds hand where the power budget allows
