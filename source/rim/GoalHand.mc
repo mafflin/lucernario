@@ -2,11 +2,11 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-//! A dot going round once to the goal, just inside the marks
+//! A dot going round once to the goal, just inside the hour hand's reach
 class GoalHand extends WatchUi.Drawable {
 
-    //! Air between the dot and the marks
-    private const _MARK_GAP = 2;
+    //! Air between the dot and the hour hand
+    private const _HAND_GAP = 2;
     private const _MIN_RADIUS = 2;
 
     private var _progress as GoalProgress;
@@ -29,10 +29,10 @@ class GoalHand extends WatchUi.Drawable {
         _box = new Box();
     }
 
-    //! After the marks are prepared
-    function prepare(markReach as Number, markWidth as Number) as Void {
+    //! After the marks and the hour hand are prepared
+    function prepare(handReach as Number, markWidth as Number) as Void {
         _radius = (markWidth < _MIN_RADIUS) ? _MIN_RADIUS : markWidth;
-        _center = Dial.rim - markReach - RimPainter.penRadius(markWidth) - _MARK_GAP - _radius;
+        _center = Dial.rim - handReach - _HAND_GAP - _radius;
     }
 
     function setEnabled(enabled as Boolean) as Void {

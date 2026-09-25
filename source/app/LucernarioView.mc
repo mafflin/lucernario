@@ -96,7 +96,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _hand.prepare(markReach, _rimMarks.width());
         _windBearing.prepare(_hand.baseWidth());
         _hourHand.prepare(markReach, _rimMarks.width());
-        _goalHand.prepare(markReach, _rimMarks.width());
+        _goalHand.prepare(_hourHand.reach(), _rimMarks.width());
 
         placeFields(dc);
 

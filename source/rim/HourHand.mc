@@ -36,6 +36,11 @@ class HourHand {
         _length = markReach * _LENGTH_NUMERATOR / _LENGTH_DIVISOR;
     }
 
+    //! How far in from the rim the pen comes
+    function reach() as Number {
+        return _length + RimPainter.penRadius(_width);
+    }
+
     function setColor(color as Number) as Void {
         _accentColor = color;
     }

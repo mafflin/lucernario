@@ -3,8 +3,10 @@ import Toybox.Lang;
 
 //! 24 hour marks, midnight at the top, with three minor marks between each
 //! pair. Colored with the day - see DayColors. On the complicated style the
-//! hours left to recover take the accent color: the 24, then one mark per
-//! hour clockwise, hour and minor alike. The whole dial is 95 hours.
+//! hours left to recover take the accent color on the outer quarter of an
+//! hour mark's reach, twice as wide on the minor marks: the 24, then one
+//! mark per hour clockwise, hour and minor alike. The whole dial is 95
+//! hours.
 class RimMarks {
 
     //! Width as a share of the radius, in pixels - see RimPainter.drawRadial
@@ -24,11 +26,16 @@ class RimMarks {
     private const _MINOR_LENGTH_NUMERATOR = 2;
     private const _MINOR_LENGTH_DIVISOR = 3;
     private const _MINOR_WIDTH = 1;
+    private const _MINOR_RECOVERY_WIDTH = _MINOR_WIDTH * 2;
+
+    //! Recovery reach as a share of an hour mark's
+    private const _RECOVERY_LENGTH_DIVISOR = 4;
 
     //! Resolved in prepare()
     private var _length as Number = 0;
     private var _width as Number = _MIN_WIDTH;
     private var _minorLength as Number = 0;
+    private var _recoveryLength as Number = 0;
 
     private var _dayColors as DayColors;
 
@@ -52,6 +59,7 @@ class RimMarks {
         }
 
         _minorLength = _length * _MINOR_LENGTH_NUMERATOR / _MINOR_LENGTH_DIVISOR;
+        _recoveryLength = _length / _RECOVERY_LENGTH_DIVISOR;
     }
 
     //! How far in from the rim an hour mark comes
@@ -89,23 +97,23 @@ class RimMarks {
             var hour = positionOf(mark);
             var first = mark * _MINOR_STEPS;
 
-            RimPainter.drawRadial(dc, hour, colorAt(first, hour), _width, _length);
+            drawMark(dc, first, hour, _width, _width, _length);
 
             for (var step = 1; step < _MINOR_STEPS; step++) {
-                var degrees = hour + (step * minorStep);
-                RimPainter.drawRadial(dc, degrees, colorAt(first + step, degrees), _MINOR_WIDTH, _minorLength);
+                drawMark(dc, first + step, hour + (step * minorStep), _MINOR_WIDTH, _MINOR_RECOVERY_WIDTH, _minorLength);
             }
         }
     }
 
-    //! The recovery color while the mark is among the hours left, the day's
-    //! otherwise. index counts every mark clockwise from the 24.
-    private function colorAt(index as Number, degrees as Numeric) as Number {
-        if (index < _recoveryMarks) {
-            return _recoveryColor;
-        }
+    //! In the day's color; among the hours left, the outer quarter of an hour
+    //! mark's reach in the recovery color at recoveryWidth. index counts
+    //! every mark clockwise from the 24.
+    private function drawMark(dc as Dc, index as Number, degrees as Numeric, width as Number, recoveryWidth as Number, length as Number) as Void {
+        RimPainter.drawRadial(dc, degrees, _dayColors.colorAt(degrees), width, length);
 
-        return _dayColors.colorAt(degrees);
+        if (index < _recoveryMarks) {
+            RimPainter.drawRadial(dc, degrees, _recoveryColor, recoveryWidth, _recoveryLength);
+        }
     }
 
     //! Degrees clockwise from midnight

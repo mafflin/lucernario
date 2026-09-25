@@ -11,14 +11,11 @@ module RimPainter {
     //! An equilateral triangle's height over its base
     const EQUILATERAL_HEIGHT = 0.866;
 
-    //! How far past the rim a mark's line starts, in mark lengths. The
-    //! renderer snaps each end to a pixel, which turns a short line by
-    //! several degrees; starting off the glass spreads that over four times
-    //! the length.
-    const OVERSHOOT_LENGTHS = 3;
-
     //! A mark as a line, as wide as the pen. An arc cannot be made narrow
-    //! enough: drawArc works in whole degrees, a line in pixels.
+    //! enough: drawArc works in whole degrees, a line in pixels. The renderer
+    //! snaps each end to a pixel, which turns a short line by degrees; every
+    //! line starts a ring depth off the glass, which spreads that out and
+    //! lets a shorter line lie true over a longer one.
     function drawRadial(dc as Dc, valueDegrees as Numeric, color as Number, widthPixels as Number, radialLength as Number) as Void {
         var radians = Dial.radiansOf(valueDegrees);
         var acrossX = Math.cos(radians);
@@ -26,7 +23,7 @@ module RimPainter {
         // Screen y grows downward.
         var acrossY = -Math.sin(radians);
 
-        var outer = Dial.rim + (radialLength * OVERSHOOT_LENGTHS);
+        var outer = Dial.rim + Dial.ringDepth;
         var inner = Dial.rim - radialLength;
 
         dc.setPenWidth(widthPixels);
