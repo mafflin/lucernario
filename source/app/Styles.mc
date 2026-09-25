@@ -7,7 +7,8 @@ module Styles {
     enum Value {
         DARK = 1,
         LIGHT = 2,
-        DARK_COMPLICATED = 3
+        DARK_COMPLICATED = 3,
+        DARK_OVERCOMPLICATED = 4
     }
 
     const DEFAULT = DARK;
@@ -27,6 +28,11 @@ module Styles {
 
     //! Wind as a bearing on the dial, recovery hours on the rim marks
     function isComplicated(style as Number) as Boolean {
-        return (style == DARK_COMPLICATED);
+        return (style == DARK_COMPLICATED) || isOvercomplicated(style);
+    }
+
+    //! Complicated, and the steps hand on top
+    function isOvercomplicated(style as Number) as Boolean {
+        return (style == DARK_OVERCOMPLICATED);
     }
 }

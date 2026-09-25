@@ -36,6 +36,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
 | `source/time/Recovery.mc` | Hours left to recover, off the activity monitor |
+| `source/time/GoalProgress.mc` | Progress to the goal hand's goal, off the activity monitor |
 | `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 24 |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
@@ -44,6 +45,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
 | `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer |
 | `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the Dark Complicated style |
+| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the marks, on the Dark Overcomplicated style |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch, and the test against it |
 | `source/rim/Box.mc` | The box around a shape, for that test |
@@ -51,7 +53,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/status/WindReading.mc` | The wind's bearing and strength, shared by the row's arrow and the dial |
 | `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
 | `source/complications/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
-| `source/complications/FieldLocation.mc` | The container slot id, mirroring `watchface.xml` |
+| `source/complications/FieldLocation.mc` | The editor's slot ids, mirroring `watchface.xml` |
 | `source/complications/ComplicationLabel.mc` | A short name per complication type |
 | `source/complications/ComplicationFormat.mc` | Turns a complication's raw value into readable text |
 | `resources/configs/watchface.xml` | Declares which settings the editor offers |
@@ -61,12 +63,13 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
-- **Style** — `Dark` (default), `Light`, or `Dark Complicated`, which
+- **Style** — `Dark` (default), `Light`, `Dark Complicated`, which
   moves the wind out of the status row and onto the dial and shows the hours
-  left to recover on the rim. The editor has no background
+  left to recover on the rim, or `Dark Overcomplicated`, which adds the goal
+  hand to that. The editor has no background
   setting, so the style id is what carries it; `source/app/Styles.mc` decodes it.
   Ids must stay in step with `watchface.xml`.
-- **Accent color** — the hour and seconds hands, the wind bearing in a light
+- **Accent color** — the hour, seconds and goal hands, the wind bearing in a light
   wind, and the recovery hours: the things meant to stand apart.
 - **Data color** — the time, the status icons and the data container, and
   the rim marks and numerals until the sun is known.
@@ -80,6 +83,11 @@ not Connect IQ app settings. Currently configurable:
   and the type handed to `ComplicationField` in `LucernarioView` is what the slot
   holds until the editor has said anything at all. Requires the
   `ComplicationSubscriber` permission.
+- **Goal** — a second complication slot, used only to pick the goal hand's
+  goal on `Dark Overcomplicated`: steps (default), floors climbed or
+  intensity minutes. The editor shows it on every style, since a
+  slot cannot be tied to one, and it does nothing on the others. There is no
+  "none" entry either; the style is what turns the hand off.
 
 Both colors offer the same thirty named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
@@ -147,8 +155,8 @@ puts the rim back there, then clips to where it is going and draws it. The
 hand is an arrow set in far enough that even the corners of its clip box
 stay off the marks, round pen ends included, so a tick never repaints
 them: only the numeral nearest the hand's last position, the status row, the
-wind bearing and the hour hand, both of which reach past the marks, and only
-when the box has cut into them. If that
+wind bearing and the hour hand, both of which reach past the marks, the steps
+hand, and only when the box has cut into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
@@ -191,6 +199,18 @@ the bearing the wind blows from and pointing the way it blows, north at the
 top. It takes the accent color in a light wind and the same orange and red
 above that. It reaches past the marks, so a partial update puts it back when
 the seconds hand's clip cuts into it, as it does the hour hand.
+
+On the `Dark Overcomplicated` style, the complicated one plus the goal
+hand: an accent colored dot, as wide across as two hour marks, just inside
+the marks with two pixels between them. It goes round once from the 24 to
+the goal picked in the goal slot and stays at the 24 past it. Each goal comes
+off `ActivityMonitor.Info` rather than the complication, which carries no
+goal: `steps` over `stepGoal`, `floorsClimbed` over `floorsClimbedGoal`,
+and `activeMinutesWeek.total` over `activeMinutesWeekGoal` (a weekly goal).
+With no goal to read, the dot stays off. Read once a minute, and again as
+soon as the goal is changed.
+It lies in the seconds hand's path, so a partial update puts it back when
+the clip cuts into it.
 
 The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
 and tinted to the data color; untinted it would be invisible on the light

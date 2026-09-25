@@ -5,6 +5,7 @@
             <style id="1" label="@Strings.styleDark" default="true"/>
             <style id="2" label="@Strings.styleLight"/>
             <style id="3" label="@Strings.styleDarkComplicated"/>
+            <style id="4" label="@Strings.styleDarkOvercomplicated"/>
         </styles>
         <!-- An explicit palette rather than allowAny: the editor wants a
              label per color, and with allowAny the fenix 8 Solar filled its
@@ -115,6 +116,13 @@
                 <type>Complications.COMPLICATION_TYPE_SOLAR_INPUT</type>                      <!-- SOL -->
                 <type>Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE</type>              <!-- TEMP -->
                 <type>Complications.COMPLICATION_TYPE_HIGH_LOW_TEMPERATURE</type>             <!-- no label -->
+            </complication>
+            <!-- The goal hand's goal, on Dark Overcomplicated only: each type
+                 here needs a goal read in GoalProgress. Steps is the default. -->
+            <complication id="2">
+                <type default="true">Complications.COMPLICATION_TYPE_STEPS</type>
+                <type>Complications.COMPLICATION_TYPE_FLOORS_CLIMBED</type>
+                <type>Complications.COMPLICATION_TYPE_INTENSITY_MINUTES</type>
             </complication>
         </data>
     </watchface-config>
