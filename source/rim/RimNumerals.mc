@@ -6,7 +6,7 @@ import Toybox.Math;
 //! with the day. Turned to follow the marks, 8 through 16 flipped so they
 //! do not read upside down; a watch without vector fonts gets them upright.
 //! The seconds hand crosses one every ten seconds, so a partial update puts
-//! back only the nearest.
+//! back only the nearest. Left off on the simple styles.
 class RimNumerals {
 
     private const _COUNT = 6;
@@ -39,6 +39,7 @@ class RimNumerals {
     private var _boxes as Array<Box>;
 
     private var _dayColors as DayColors;
+    private var _enabled as Boolean = true;
 
     //! The 24 is left off while the system's activity indicator sits over it
     private var _topHidden as Boolean = false;
@@ -92,6 +93,10 @@ class RimNumerals {
         }
     }
 
+    function setEnabled(enabled as Boolean) as Void {
+        _enabled = enabled;
+    }
+
     function draw(dc as Dc, hideTop as Boolean) as Void {
         _topHidden = hideTop;
 
@@ -114,7 +119,7 @@ class RimNumerals {
     }
 
     private function isShown(i as Number) as Boolean {
-        return (i != 0) || !_topHidden;
+        return _enabled && ((i != 0) || !_topHidden);
     }
 
     private function paint(dc as Dc, i as Number) as Void {

@@ -3,6 +3,8 @@
 
     <string id="styleDark">Dark</string>
     <string id="styleLight">Light</string>
+    <string id="styleDarkSimple">Dark Simple</string>
+    <string id="styleLightSimple">Light Simple</string>
     <string id="styleDarkComplicated">Dark Complicated</string>
     <string id="styleLightComplicated">Light Complicated</string>
 

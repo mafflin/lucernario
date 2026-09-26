@@ -25,7 +25,8 @@ are all set in Garmin's native watch face editor — no phone, no settings menus
 - Dark or Light, each also Complicated: the wind as a bearing on the dial,
   the hours left to recover marked on the rim, and a goal hand for steps,
   floors or intensity minutes
-- 30 colors for the hands and 30 for the time, status row and data field,
-  chosen to stay clean on MIP displays
+- Simple: Complicated with the rim numerals left off, in Dark or Light
+- 30 accent colors for the seconds and goal hands and 30 for the time,
+  status row and data field, chosen to stay clean on MIP displays
 - Always-on seconds hand where the power budget allows
 - Open source under the MIT License: github.com/mafflin/lucernario

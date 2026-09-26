@@ -43,7 +43,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after, shaded to the style |
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
-| `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends |
+| `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends; off on the simple styles |
 | `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer, in the rim's colors inverted |
 | `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the complicated styles |
 | `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour hand, on the complicated styles |
@@ -64,11 +64,14 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
-- **Style** — `Dark` (default), `Light`, `Dark Complicated` or `Light
-  Complicated`. The complicated styles move the wind out of the status row
-  and onto the dial, show the hours left to recover on the rim and add the
-  goal hand. The editor has no background setting, so the style id is what
-  carries it; `source/app/Styles.mc` decodes it. Ids must stay in step with
+- **Style** — `Dark` (default), `Light`, `Dark Complicated`, `Light
+  Complicated`, `Dark Simple` or `Light Simple`. The complicated styles move the
+  wind out of the status row and onto the dial, show the hours left to
+  recover on the rim and add the goal hand. The simple styles are the
+  complicated ones with the rim numerals left off, and everything said of
+  the complicated styles below holds for them too. The editor has no
+  background setting, so the style id is what carries it;
+  `source/app/Styles.mc` decodes it. Ids must stay in step with
   `watchface.xml`.
 - **Accent color** — the seconds and goal hands, the wind bearing in a light
   wind, the recovery hours, and the hour hand until the sun is known: the
@@ -177,7 +180,7 @@ end; every clearance and clip box counts that in.
 
 The rim is 24 hour marks with three thin minor marks between each pair, one
 every quarter hour, and the numerals 24, 4, 8, 12, 16 and 20 against the
-inner ends of their marks.
+inner ends of their marks - left off on the simple styles.
 
 On the complicated styles the hours left to recover
 (`ActivityMonitor.Info.timeToRecovery`) take the accent color on the outer

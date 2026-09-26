@@ -387,6 +387,7 @@ class LucernarioView extends WatchUi.WatchFace {
         _style = style;
         _background = Styles.backgroundOf(style);
         _dayColors.setLight(Styles.isLight(style));
+        _numerals.setEnabled(!Styles.isSimple(style));
 
         // Each element holds its own switch for the complicated style.
         var complicated = Styles.isComplicated(style);

@@ -8,7 +8,9 @@ module Styles {
         DARK = 1,
         LIGHT = 2,
         DARK_COMPLICATED = 3,
-        LIGHT_COMPLICATED = 4
+        LIGHT_COMPLICATED = 4,
+        DARK_SIMPLE = 5,
+        LIGHT_SIMPLE = 6
     }
 
     const DEFAULT = DARK;
@@ -23,11 +25,16 @@ module Styles {
     }
 
     function isLight(style as Number) as Boolean {
-        return (style == LIGHT) || (style == LIGHT_COMPLICATED);
+        return (style == LIGHT) || (style == LIGHT_COMPLICATED) || (style == LIGHT_SIMPLE);
     }
 
-    //! Wind bearing, recovery marks and the goal hand
+    //! Wind bearing, recovery marks and the goal hand; the simple styles too
     function isComplicated(style as Number) as Boolean {
-        return (style == DARK_COMPLICATED) || (style == LIGHT_COMPLICATED);
+        return (style == DARK_COMPLICATED) || (style == LIGHT_COMPLICATED) || isSimple(style);
+    }
+
+    //! Complicated, without the rim numerals
+    function isSimple(style as Number) as Boolean {
+        return (style == DARK_SIMPLE) || (style == LIGHT_SIMPLE);
     }
 }
