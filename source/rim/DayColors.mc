@@ -7,49 +7,49 @@ import Toybox.Lang;
 //! takes the other color so it stands out from the marks around it.
 class DayColors {
 
-    private const _DARK_STYLE_DAY = Palette.AMBER;
-    private const _DARK_STYLE_NIGHT = Palette.SKY;
-    private const _LIGHT_STYLE_DAY = Palette.DARK_AMBER;
-    private const _LIGHT_STYLE_NIGHT = Palette.DARK_SKY;
+    private const DARK_STYLE_DAY = Palette.AMBER;
+    private const DARK_STYLE_NIGHT = Palette.SKY;
+    private const LIGHT_STYLE_DAY = Palette.DARK_AMBER;
+    private const LIGHT_STYLE_NIGHT = Palette.DARK_SKY;
 
-    private var _daylight as Daylight;
+    private var daylight as Daylight;
 
-    private var _dayColor as Number = _DARK_STYLE_DAY;
-    private var _nightColor as Number = _DARK_STYLE_NIGHT;
+    private var dayColor as Number = DARK_STYLE_DAY;
+    private var nightColor as Number = DARK_STYLE_NIGHT;
 
     //! Until the sun is known
-    private var _color as Number = Graphics.COLOR_WHITE;
+    private var fallbackColor as Number = Graphics.COLOR_WHITE;
 
     //! Sunrise and sunset on the dial, null when not known
-    private var _rise as Float? = null;
-    private var _set as Float? = null;
+    private var sunrisePosition as Float? = null;
+    private var sunsetPosition as Float? = null;
 
     function initialize(daylight as Daylight) {
-        _daylight = daylight;
+        self.daylight = daylight;
     }
 
-    function setColor(color as Number) as Void {
-        _color = color;
+    function setFallbackColor(color as Number) as Void {
+        fallbackColor = color;
     }
 
     function setLight(isLight as Boolean) as Void {
-        _dayColor = isLight ? _LIGHT_STYLE_DAY : _DARK_STYLE_DAY;
-        _nightColor = isLight ? _LIGHT_STYLE_NIGHT : _DARK_STYLE_NIGHT;
+        dayColor = isLight ? LIGHT_STYLE_DAY : DARK_STYLE_DAY;
+        nightColor = isLight ? LIGHT_STYLE_NIGHT : DARK_STYLE_NIGHT;
     }
 
     //! Once per full update, after the daylight has refreshed
     function refresh() as Void {
-        var sunrise = _daylight.sunrise();
-        var sunset = _daylight.sunset();
+        var sunrise = daylight.sunrise();
+        var sunset = daylight.sunset();
 
         if ((sunrise == null) || (sunset == null)) {
-            _rise = null;
-            _set = null;
+            sunrisePosition = null;
+            sunsetPosition = null;
             return;
         }
 
-        _rise = Dial.positionOfMinute(sunrise);
-        _set = Dial.positionOfMinute(sunset);
+        sunrisePosition = Dial.positionOfMinute(sunrise);
+        sunsetPosition = Dial.positionOfMinute(sunset);
     }
 
     //! The color at a moment of the day, in degrees clockwise from midnight
@@ -57,10 +57,10 @@ class DayColors {
         var isDay = isDayAt(degrees);
 
         if (isDay == null) {
-            return _color;
+            return fallbackColor;
         }
 
-        return isDay ? _dayColor : _nightColor;
+        return isDay ? dayColor : nightColor;
     }
 
     //! The night color by day and the day color by night, null until the sun
@@ -72,13 +72,13 @@ class DayColors {
             return null;
         }
 
-        return isDay ? _nightColor : _dayColor;
+        return isDay ? nightColor : dayColor;
     }
 
     //! Null until the sun is known
     private function isDayAt(degrees as Numeric) as Boolean? {
-        var rise = _rise;
-        var set = _set;
+        var rise = sunrisePosition;
+        var set = sunsetPosition;
 
         if ((rise == null) || (set == null)) {
             return null;

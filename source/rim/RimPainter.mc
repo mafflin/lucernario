@@ -11,12 +11,18 @@ module RimPainter {
     //! An equilateral triangle's height over its base
     const EQUILATERAL_HEIGHT = 0.866;
 
-    //! A mark as a line, as wide as the pen. An arc cannot be made narrow
-    //! enough: drawArc works in whole degrees, a line in pixels. The renderer
-    //! snaps each end to a pixel, which turns a short line by degrees; every
-    //! line starts a ring depth off the glass, which spreads that out and
-    //! lets a shorter line lie true over a longer one.
-    function drawRadial(dc as Dc, valueDegrees as Numeric, color as Number, widthPixels as Number, radialLength as Number) as Void {
+    //! Before drawRadial: a mark is as wide as the pen
+    function setPen(dc as Dc, color as Number, widthPixels as Number) as Void {
+        dc.setPenWidth(widthPixels);
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+    }
+
+    //! A mark as a line. An arc cannot be made narrow enough: drawArc works
+    //! in whole degrees, a line in pixels. The renderer snaps each end to a
+    //! pixel, which turns a short line by degrees; every line starts a ring
+    //! depth off the glass, which spreads that out and lets a shorter line
+    //! lie true over a longer one.
+    function drawRadial(dc as Dc, valueDegrees as Numeric, radialLength as Number) as Void {
         var radians = Dial.radiansOf(valueDegrees);
         var acrossX = Math.cos(radians);
 
@@ -26,8 +32,6 @@ module RimPainter {
         var outer = Dial.rim + Dial.ringDepth;
         var inner = Dial.rim - radialLength;
 
-        dc.setPenWidth(widthPixels);
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.drawLine(
             Dial.pixel(Dial.centerX + (outer * acrossX)),
             Dial.pixel(Dial.centerY + (outer * acrossY)),

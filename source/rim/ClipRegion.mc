@@ -16,20 +16,20 @@ module ClipRegion {
 
     //! Clip to a box, cut down to the screen
     function clip(dc as Dc, shape as Box) as Void {
-        var x1 = shape.left;
-        var y1 = shape.top;
-        var x2 = shape.left + shape.width;
-        var y2 = shape.top + shape.height;
+        var left = shape.left;
+        var top = shape.top;
+        var right = shape.left + shape.width;
+        var bottom = shape.top + shape.height;
 
-        if (x1 < 0) { x1 = 0; }
-        if (y1 < 0) { y1 = 0; }
-        if (x2 > Dial.screenWidth) { x2 = Dial.screenWidth; }
-        if (y2 > Dial.screenHeight) { y2 = Dial.screenHeight; }
+        if (left < 0) { left = 0; }
+        if (top < 0) { top = 0; }
+        if (right > Dial.screenWidth) { right = Dial.screenWidth; }
+        if (bottom > Dial.screenHeight) { bottom = Dial.screenHeight; }
 
-        boxX = x1;
-        boxY = y1;
-        boxWidth = x2 - x1;
-        boxHeight = y2 - y1;
+        boxX = left;
+        boxY = top;
+        boxWidth = right - left;
+        boxHeight = bottom - top;
 
         dc.setClip(boxX, boxY, boxWidth, boxHeight);
     }

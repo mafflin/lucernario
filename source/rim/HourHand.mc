@@ -7,78 +7,83 @@ import Toybox.Lang;
 //! back when the seconds hand's clip cuts into it: a tick or two a minute.
 class HourHand {
 
-    private const _WIDTH_FACTOR = 2;
-    private const _LENGTH_NUMERATOR = 4;
-    private const _LENGTH_DIVISOR = 3;
+    private const WIDTH_FACTOR = 2;
+    private const LENGTH_NUMERATOR = 4;
+    private const LENGTH_DIVISOR = 3;
 
-    private var _dayColors as DayColors;
+    private var dayColors as DayColors;
 
     //! Until the sun is known
-    private var _accentColor as Number = Graphics.COLOR_WHITE;
-    private var _color as Number = Graphics.COLOR_WHITE;
+    private var accentColor as Number = Graphics.COLOR_WHITE;
+    private var drawnColor as Number = Graphics.COLOR_WHITE;
 
     //! Resolved in prepare()
-    private var _width as Number = 0;
-    private var _length as Number = 0;
+    private var width as Number = 0;
+    private var length as Number = 0;
 
-    //! Where it was last drawn, and the box around it
-    private var _position as Float = 0.0;
-    private var _box as Box;
+    //! Where it was last drawn, its ends on the glass, and the box around them
+    private var position as Float = 0.0;
+    private var ends as Array<[Numeric, Numeric]>;
+    private var box as Box;
 
     function initialize(dayColors as DayColors) {
-        _dayColors = dayColors;
-        _box = new Box();
+        self.dayColors = dayColors;
+        ends = [[0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
+        box = new Box();
     }
 
     //! After the marks are prepared
     function prepare(markReach as Number, markWidth as Number) as Void {
-        _width = markWidth * _WIDTH_FACTOR;
-        _length = markReach * _LENGTH_NUMERATOR / _LENGTH_DIVISOR;
+        width = markWidth * WIDTH_FACTOR;
+        length = markReach * LENGTH_NUMERATOR / LENGTH_DIVISOR;
     }
 
     //! How far in from the rim the pen comes
     function reach() as Number {
-        return _length + RimPainter.penRadius(_width);
+        return length + RimPainter.penRadius(width);
     }
 
     function setColor(color as Number) as Void {
-        _accentColor = color;
+        accentColor = color;
     }
 
     //! After the day colors have refreshed
     function draw(dc as Dc) as Void {
-        _position = Dial.positionOfMinute(currentMinute());
-        boxAround(_position);
+        position = Dial.positionOfMinute(currentMinute());
+        placeBox();
 
-        var color = _dayColors.invertedColorAt(_position);
-        _color = (color != null) ? color : _accentColor;
+        var inverted = dayColors.invertedColorAt(position);
+        drawnColor = accentColor;
+
+        if (inverted != null) {
+            drawnColor = inverted;
+        }
 
         paint(dc);
     }
 
     //! Put it back if the clip has cut into it
     function redraw(dc as Dc) as Void {
-        if (ClipRegion.covers(_box)) {
+        if (ClipRegion.covers(box)) {
             paint(dc);
         }
     }
 
     private function paint(dc as Dc) as Void {
-        RimPainter.drawRadial(dc, _position, _color, _width, _length);
+        RimPainter.setPen(dc, drawnColor, width);
+        RimPainter.drawRadial(dc, position, length);
     }
 
     //! From the rim to the inner end; the overshoot off the glass cannot be
     //! cut into
-    private function boxAround(position as Float) as Void {
+    private function placeBox() as Void {
         var radians = Dial.radiansOf(position);
+        var inner = Dial.rim - length;
 
-        _box.aroundLine(
-            Dial.pointX(radians, Dial.rim),
-            Dial.pointY(radians, Dial.rim),
-            Dial.pointX(radians, Dial.rim - _length),
-            Dial.pointY(radians, Dial.rim - _length),
-            RimPainter.penRadius(_width)
-        );
+        ends[0] = [Dial.pointX(radians, Dial.rim), Dial.pointY(radians, Dial.rim)];
+        ends[1] = [Dial.pointX(radians, inner), Dial.pointY(radians, inner)];
+
+        box.aroundPoints(ends, RimPainter.penRadius(width));
     }
 
     //! Minutes past midnight: the hand stands between the hour marks

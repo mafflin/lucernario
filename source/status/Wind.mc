@@ -13,81 +13,86 @@ class Wind extends Icon {
     //! Whole units so every corner lands on a pixel at 24 and 36; the right
     //! wing mirrors the left. A convex triangle: a notched dart would need
     //! two polygons, and smoothing leaves a seam where they meet.
-    private const _GRID = 24.0;
-    private const _MIDDLE = _GRID / 2;
-    private const _APEX_X = 12;
-    private const _APEX_Y = 2;
-    private const _WING_X = 4;
-    private const _WING_Y = 20;
+    private const GRID = 24.0;
+    private const MIDDLE = GRID / 2;
+    private const APEX_X = 12;
+    private const APEX_Y = 2;
+    private const WING_X = 4;
+    private const WING_Y = 20;
 
-    private var _wind as WindReading;
-    private var _enabled as Boolean = true;
+    private var windReading as WindReading;
+    private var enabled as Boolean = true;
 
     //! The square the row gives this icon
-    private var _square as Number = 0;
+    private var square as Number = 0;
 
     //! Corners about the square's middle, held until the bearing moves
-    private var _corners as Array< Array<Float> >? = null;
-    private var _cornersBearing as Number? = null;
+    private var corners as Array< Array<Float> >? = null;
+    private var cornersBearing as Number? = null;
 
-    function initialize(wind as WindReading) {
+    function initialize(windReading as WindReading) {
         Icon.initialize(null);
-        _wind = wind;
+        self.windReading = windReading;
     }
 
     //! false while the dial shows the bearing instead
     function setEnabled(enabled as Boolean) as Void {
-        _enabled = enabled;
+        self.enabled = enabled;
     }
 
-    function on(settings as System.DeviceSettings) as Boolean {
-        return _enabled && (_wind.bearing() != null);
+    function isReporting(settings as System.DeviceSettings) as Boolean {
+        return enabled && (windReading.bearing() != null);
     }
 
     //! No bitmap to measure: the size is the build's, 24px or 36px
-    function setSquare(square as Number) as Void {
-        if (square == _square) {
+    function setSquare(size as Number) as Void {
+        if (size == square) {
             return;
         }
 
-        _square = square;
-        _corners = null;
+        square = size;
+        corners = null;
     }
 
     function width() as Number {
-        return _square;
+        return square;
     }
 
     function height() as Number {
-        return _square;
+        return square;
     }
 
     protected function tint() as Number {
-        return _wind.colorFor(Icon.tint());
+        return windReading.colorFor(Icon.tint());
     }
 
     protected function paint(dc as Dc, x as Number, y as Number) as Void {
-        if (_square == 0) {
+        if (square == 0) {
             return;
         }
 
-        var bearing = _wind.bearing();
-
-        if ((_corners == null) || (bearing != _cornersBearing)) {
-            _corners = cornersFor(bearing);
-            _cornersBearing = bearing;
-        }
-
-        var corners = _corners as Array< Array<Float> >;
-        var middleX = x + (_square / 2.0);
-        var middleY = y + (_square / 2.0);
+        var offsets = currentCorners();
+        var middleX = x + (square / 2.0);
+        var middleY = y + (square / 2.0);
 
         dc.setColor(tint(), Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon([
-            [Dial.pixel(middleX + corners[0][0]), Dial.pixel(middleY + corners[0][1])],
-            [Dial.pixel(middleX + corners[1][0]), Dial.pixel(middleY + corners[1][1])],
-            [Dial.pixel(middleX + corners[2][0]), Dial.pixel(middleY + corners[2][1])]
+            [Dial.pixel(middleX + offsets[0][0]), Dial.pixel(middleY + offsets[0][1])],
+            [Dial.pixel(middleX + offsets[1][0]), Dial.pixel(middleY + offsets[1][1])],
+            [Dial.pixel(middleX + offsets[2][0]), Dial.pixel(middleY + offsets[2][1])]
         ]);
+    }
+
+    //! Worked out again only when the bearing or the square moves
+    private function currentCorners() as Array< Array<Float> > {
+        var bearing = windReading.bearing();
+
+        if ((corners == null) || (bearing != cornersBearing)) {
+            corners = cornersFor(bearing);
+            cornersBearing = bearing;
+        }
+
+        return corners as Array< Array<Float> >;
     }
 
     //! Apex first, turned to point downwind
@@ -101,18 +106,21 @@ class Wind extends Icon {
             angle = Math.toRadians(bearing + Dial.HALF_TURN).toFloat();
         }
 
-        var sine = Math.sin(angle).toFloat();
-        var cosine = Math.cos(angle).toFloat();
-        var scale = _square / _GRID;
-
         return [
-            turn((_APEX_X - _MIDDLE) * scale, (_APEX_Y - _MIDDLE) * scale, sine, cosine),
-            turn((_WING_X - _MIDDLE) * scale, (_WING_Y - _MIDDLE) * scale, sine, cosine),
-            turn((_MIDDLE - _WING_X) * scale, (_WING_Y - _MIDDLE) * scale, sine, cosine)
+            corner(APEX_X, APEX_Y, angle),
+            corner(WING_X, WING_Y, angle),
+            corner(GRID - WING_X, WING_Y, angle)
         ];
     }
 
-    private function turn(dx as Float, dy as Float, sine as Float, cosine as Float) as Array<Float> {
+    //! A grid point as an offset from the square's middle, turned by angle
+    private function corner(gridX as Numeric, gridY as Numeric, angle as Float) as Array<Float> {
+        var scale = square / GRID;
+        var dx = ((gridX - MIDDLE) * scale).toFloat();
+        var dy = ((gridY - MIDDLE) * scale).toFloat();
+        var sine = Math.sin(angle).toFloat();
+        var cosine = Math.cos(angle).toFloat();
+
         return [
             (dx * cosine) - (dy * sine),
             (dx * sine) + (dy * cosine)

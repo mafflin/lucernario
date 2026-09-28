@@ -6,7 +6,7 @@ import Toybox.WatchUi;
 class LucernarioApp extends Application.AppBase {
 
     //! Whether the native watch face editor started the face
-    private var _editMode as Boolean = false;
+    private var editMode as Boolean = false;
 
     function initialize() {
         AppBase.initialize();
@@ -15,7 +15,7 @@ class LucernarioApp extends Application.AppBase {
     function onStart(state as Dictionary?) as Void {
         if (state != null) {
             var launched = state[:launchedFromWatchFaceSettingsEditor];
-            _editMode = (launched instanceof Boolean) ? (launched as Boolean) : false;
+            editMode = (launched instanceof Boolean) ? (launched as Boolean) : false;
         }
     }
 
@@ -25,7 +25,7 @@ class LucernarioApp extends Application.AppBase {
     //! The delegate carries editor edits and the power budget notice, which
     //! can arrive at any time, so it is always attached.
     function getInitialView() as [Views] or [Views, InputDelegates] {
-        var view = new LucernarioView(_editMode);
+        var view = new LucernarioView(editMode);
 
         if (WatchUi has :WatchFaceDelegate) {
             return [ view, new LucernarioDelegate(view) ];

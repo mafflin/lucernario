@@ -8,7 +8,7 @@ class Alarm extends Icon {
         Icon.initialize(Rez.Drawables.Alarm);
     }
 
-    function on(settings as System.DeviceSettings) as Boolean {
+    function isReporting(settings as System.DeviceSettings) as Boolean {
         var count = settings.alarmCount;
 
         return (count != null) && (count > 0);

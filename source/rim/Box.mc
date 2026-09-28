@@ -26,40 +26,41 @@ class Box {
     }
 
     //! A rectangle as it is, unpadded
-    function set(x as Number, y as Number, w as Number, h as Number) as Void {
-        left = x;
-        top = y;
-        width = w;
-        height = h;
+    function set(left as Number, top as Number, width as Number, height as Number) as Void {
+        self.left = left;
+        self.top = top;
+        self.width = width;
+        self.height = height;
     }
 
     //! Around a rectangle centered on a point
-    function aroundCenter(centerX as Number, centerY as Number, w as Number, h as Number) as Void {
+    function aroundCenter(centerX as Number, centerY as Number, shapeWidth as Number, shapeHeight as Number) as Void {
         set(
-            centerX - (w / 2) - ClipRegion.PADDING,
-            centerY - (h / 2) - ClipRegion.PADDING,
-            w + (2 * ClipRegion.PADDING),
-            h + (2 * ClipRegion.PADDING)
+            centerX - (shapeWidth / 2) - ClipRegion.PADDING,
+            centerY - (shapeHeight / 2) - ClipRegion.PADDING,
+            shapeWidth + (2 * ClipRegion.PADDING),
+            shapeHeight + (2 * ClipRegion.PADDING)
         );
     }
 
-    //! Around a line, with the pen's reach on every side
-    function aroundLine(x1 as Number, y1 as Number, x2 as Number, y2 as Number, reach as Number) as Void {
-        enclose(least(x1, x2), least(y1, y2), most(x1, x2), most(y1, y2), reach);
-    }
+    //! Around a shape's corners, and penReach past them on every side
+    function aroundPoints(points as Array<[Numeric, Numeric]>, penReach as Number) as Void {
+        var minX = points[0][0].toNumber();
+        var minY = points[0][1].toNumber();
+        var maxX = minX;
+        var maxY = minY;
 
-    function aroundCorners(x1 as Number, y1 as Number, x2 as Number, y2 as Number, x3 as Number, y3 as Number) as Void {
-        enclose(
-            least(least(x1, x2), x3),
-            least(least(y1, y2), y3),
-            most(most(x1, x2), x3),
-            most(most(y1, y2), y3),
-            0
-        );
-    }
+        for (var i = 1; i < points.size(); i++) {
+            var x = points[i][0].toNumber();
+            var y = points[i][1].toNumber();
 
-    private function enclose(minX as Number, minY as Number, maxX as Number, maxY as Number, reach as Number) as Void {
-        var pad = reach + ClipRegion.PADDING;
+            if (x < minX) { minX = x; }
+            if (x > maxX) { maxX = x; }
+            if (y < minY) { minY = y; }
+            if (y > maxY) { maxY = y; }
+        }
+
+        var pad = penReach + ClipRegion.PADDING;
 
         // The far pixel is inside, so the count is one more than the difference.
         set(
@@ -68,13 +69,5 @@ class Box {
             (maxX - minX) + 1 + (2 * pad),
             (maxY - minY) + 1 + (2 * pad)
         );
-    }
-
-    private function least(a as Number, b as Number) as Number {
-        return (a < b) ? a : b;
-    }
-
-    private function most(a as Number, b as Number) as Number {
-        return (a > b) ? a : b;
     }
 }

@@ -4,15 +4,15 @@ import Toybox.Lang;
 //! The activity monitor, read once a minute and shared
 class ActivityReading {
 
-    private var _reading as MinuteGate;
+    private var minuteGate as MinuteGate;
 
     function initialize() {
-        _reading = new MinuteGate();
+        minuteGate = new MinuteGate();
     }
 
     //! The new Info, or null within the minute
     function refresh() as ActivityMonitor.Info? {
-        if (!_reading.opens()) {
+        if (!minuteGate.opens()) {
             return null;
         }
 

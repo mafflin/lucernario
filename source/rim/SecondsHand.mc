@@ -9,52 +9,56 @@ import Toybox.Math;
 class SecondsHand {
 
     //! The base, in degrees at the ring's inner edge
-    private const _WIDTH_DEGREES = 8;
+    private const WIDTH_DEGREES = 8;
 
     //! Air between the tip and the marks' pen ends: the box's diagonal
     //! reach, a pixel of smoothing, and one for the corners themselves
-    private const _MARK_GAP = 5;
+    private const MARK_GAP = 5;
 
-    private var _color as Number = Graphics.COLOR_WHITE;
+    private const TIP = 0;
+    private const LEFT = 1;
+    private const RIGHT = 2;
+
+    private var color as Number = Graphics.COLOR_WHITE;
 
     //! Resolved in prepare()
-    private var _tip as Number = 0;
-    private var _baseRadius as Float = 0.0;
-    private var _halfWidth as Float = 0.0;
+    private var tipRadius as Number = 0;
+    private var baseRadius as Float = 0.0;
+    private var halfWidth as Float = 0.0;
 
     //! Where it was last drawn, null when off screen
-    private var _second as Number? = null;
+    private var drawnSecond as Number? = null;
 
     //! Filled in place rather than made anew each tick
-    private var _points as Array<[Numeric, Numeric]>;
-    private var _box as Box;
+    private var corners as Array<[Numeric, Numeric]>;
+    private var box as Box;
 
     function initialize() {
-        _points = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
-        _box = new Box();
+        corners = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
+        box = new Box();
     }
 
     //! After Dial.setup()
     function prepare(markReach as Number, markWidth as Number) as Void {
-        var width = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(_WIDTH_DEGREES / 2.0));
+        var fullWidth = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(WIDTH_DEGREES / 2.0));
 
-        _tip = Dial.rim - markReach - RimPainter.penRadius(markWidth) - _MARK_GAP;
-        _baseRadius = (_tip - (width * RimPainter.EQUILATERAL_HEIGHT)).toFloat();
-        _halfWidth = (width / 2).toFloat();
-        _second = null;
+        tipRadius = Dial.rim - markReach - RimPainter.penRadius(markWidth) - MARK_GAP;
+        baseRadius = (tipRadius - (fullWidth * RimPainter.EQUILATERAL_HEIGHT)).toFloat();
+        halfWidth = (fullWidth / 2).toFloat();
+        drawnSecond = null;
     }
 
     function baseWidth() as Float {
-        return _halfWidth * 2;
+        return halfWidth * 2;
     }
 
     function setColor(color as Number) as Void {
-        _color = color;
+        self.color = color;
     }
 
     //! So the next tick does not lift it off a screen since repainted
     function forget() as Void {
-        _second = null;
+        drawnSecond = null;
     }
 
     function draw(dc as Dc) as Void {
@@ -65,7 +69,7 @@ class SecondsHand {
     //! Repaint only what the arrow vacates: it is opaque where it lands
     function drawPartial(dc as Dc, restoreRim as Method(dc as Dc, second as Number) as Void) as Void {
         var second = Clock.now().sec;
-        var previous = _second;
+        var previous = drawnSecond;
 
         if (second == previous) {
             return;
@@ -73,13 +77,13 @@ class SecondsHand {
 
         // Where it was: lift it off and put the rim back.
         if (previous != null) {
-            ClipRegion.clip(dc, _box);
+            ClipRegion.clip(dc, box);
             restoreRim.invoke(dc, previous);
         }
 
         // Where it is going: the box only bounds the draw.
         place(second);
-        ClipRegion.clip(dc, _box);
+        ClipRegion.clip(dc, box);
         paint(dc);
 
         dc.clearClip();
@@ -93,36 +97,29 @@ class SecondsHand {
         var outY = -Math.sin(radians);
 
         // Across is out turned a quarter.
-        var acrossX = -outY * _halfWidth;
-        var acrossY = outX * _halfWidth;
-        var baseX = Dial.centerX + (_baseRadius * outX);
-        var baseY = Dial.centerY + (_baseRadius * outY);
+        var acrossX = -outY * halfWidth;
+        var acrossY = outX * halfWidth;
+        var baseX = Dial.centerX + (baseRadius * outX);
+        var baseY = Dial.centerY + (baseRadius * outY);
 
-        // Truncated, not rounded: this runs every second, and half a pixel is
-        // nothing on a smoothed shape.
-        var tipX = (Dial.centerX + (_tip * outX)).toNumber();
-        var tipY = (Dial.centerY + (_tip * outY)).toNumber();
-        var leftX = (baseX + acrossX).toNumber();
-        var leftY = (baseY + acrossY).toNumber();
-        var rightX = (baseX - acrossX).toNumber();
-        var rightY = (baseY - acrossY).toNumber();
+        setCorner(TIP, Dial.centerX + (tipRadius * outX), Dial.centerY + (tipRadius * outY));
+        setCorner(LEFT, baseX + acrossX, baseY + acrossY);
+        setCorner(RIGHT, baseX - acrossX, baseY - acrossY);
 
-        var tip = _points[0];
-        var left = _points[1];
-        var right = _points[2];
+        box.aroundPoints(corners, 0);
+        drawnSecond = second;
+    }
 
-        tip[0] = tipX;
-        tip[1] = tipY;
-        left[0] = leftX;
-        left[1] = leftY;
-        right[0] = rightX;
-        right[1] = rightY;
+    //! Truncated, not rounded: this runs every second, and half a pixel is
+    //! nothing on a smoothed shape
+    private function setCorner(index as Number, x as Numeric, y as Numeric) as Void {
+        var corner = corners[index];
 
-        _box.aroundCorners(tipX, tipY, leftX, leftY, rightX, rightY);
-        _second = second;
+        corner[0] = x.toNumber();
+        corner[1] = y.toNumber();
     }
 
     private function paint(dc as Dc) as Void {
-        RimPainter.fill(dc, _points, _color);
+        RimPainter.fill(dc, corners, color);
     }
 }

@@ -8,7 +8,7 @@ class Phone extends Icon {
         Icon.initialize(Rez.Drawables.Phone);
     }
 
-    function on(settings as System.DeviceSettings) as Boolean {
+    function isReporting(settings as System.DeviceSettings) as Boolean {
         return settings.phoneConnected;
     }
 }

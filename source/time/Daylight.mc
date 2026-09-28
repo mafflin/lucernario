@@ -6,34 +6,34 @@ import Toybox.Lang;
 class Daylight {
 
     //! Minutes past midnight, null when the watch has no answer
-    private var _sunrise as Number? = null;
-    private var _sunset as Number? = null;
+    private var sunriseMinute as Number? = null;
+    private var sunsetMinute as Number? = null;
 
-    private var _sunriseId as Complications.Id;
-    private var _sunsetId as Complications.Id;
-    private var _reading as MinuteGate;
+    private var sunriseId as Complications.Id;
+    private var sunsetId as Complications.Id;
+    private var minuteGate as MinuteGate;
 
     function initialize() {
-        _sunriseId = new Complications.Id(Complications.COMPLICATION_TYPE_SUNRISE);
-        _sunsetId = new Complications.Id(Complications.COMPLICATION_TYPE_SUNSET);
-        _reading = new MinuteGate();
+        sunriseId = new Complications.Id(Complications.COMPLICATION_TYPE_SUNRISE);
+        sunsetId = new Complications.Id(Complications.COMPLICATION_TYPE_SUNSET);
+        minuteGate = new MinuteGate();
     }
 
     function refresh() as Void {
-        if (!_reading.opens()) {
+        if (!minuteGate.opens()) {
             return;
         }
 
-        _sunrise = minutesOf(_sunriseId);
-        _sunset = minutesOf(_sunsetId);
+        sunriseMinute = minutesOf(sunriseId);
+        sunsetMinute = minutesOf(sunsetId);
     }
 
     function sunrise() as Number? {
-        return _sunrise;
+        return sunriseMinute;
     }
 
     function sunset() as Number? {
-        return _sunset;
+        return sunsetMinute;
     }
 
     //! The complication carries seconds past midnight

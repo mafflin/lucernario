@@ -9,95 +9,90 @@ import Toybox.Math;
 //! cuts into it.
 class WindBearing {
 
-    private var _wind as WindReading;
-    private var _enabled as Boolean = false;
+    private var windReading as WindReading;
+    private var enabled as Boolean = false;
 
     //! For a light wind
-    private var _color as Number = Graphics.COLOR_WHITE;
+    private var lightColor as Number = Graphics.COLOR_WHITE;
 
     //! Base width, and half the angle its ends span on the rim
-    private var _base as Float = 0.0;
-    private var _halfSpread as Float = 0.0;
+    private var baseWidth as Float = 0.0;
+    private var halfSpread as Float = 0.0;
 
     //! As last drawn, so a partial update can put it back
-    private var _shown as Boolean = false;
-    private var _points as Array<[Numeric, Numeric]>;
-    private var _drawnColor as Number = Graphics.COLOR_WHITE;
-    private var _box as Box;
-    private var _pointsBearing as Number? = null;
+    private var shown as Boolean = false;
+    private var corners as Array<[Numeric, Numeric]>;
+    private var drawnColor as Number = Graphics.COLOR_WHITE;
+    private var box as Box;
+    private var placedBearing as Number? = null;
 
-    function initialize(wind as WindReading) {
-        _wind = wind;
-        _points = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
-        _box = new Box();
+    function initialize(windReading as WindReading) {
+        self.windReading = windReading;
+        corners = [[0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
+        box = new Box();
     }
 
     //! After Dial.setup()
-    function prepare(base as Float) as Void {
-        _base = base;
+    function prepare(width as Float) as Void {
+        baseWidth = width;
 
         // The base is a chord of the rim.
-        _halfSpread = Math.asin(base / (2 * Dial.rim)).toFloat();
-        _pointsBearing = null;
+        halfSpread = Math.asin(width / (2 * Dial.rim)).toFloat();
+        placedBearing = null;
     }
 
     function setEnabled(enabled as Boolean) as Void {
-        _enabled = enabled;
+        self.enabled = enabled;
     }
 
     function setColor(color as Number) as Void {
-        _color = color;
+        lightColor = color;
     }
 
     function draw(dc as Dc) as Void {
-        var bearing = _wind.bearing();
+        var bearing = windReading.bearing();
 
-        _shown = false;
+        shown = false;
 
-        if (!_enabled || (bearing == null)) {
+        if (!enabled || (bearing == null)) {
             return;
         }
 
-        _shown = true;
+        shown = true;
 
-        if (bearing != _pointsBearing) {
+        if (bearing != placedBearing) {
             place(bearing);
         }
 
-        _drawnColor = _wind.colorFor(_color);
+        drawnColor = windReading.colorFor(lightColor);
         paint(dc);
     }
 
     //! Put it back if the clip has cut into it
     function redraw(dc as Dc) as Void {
-        if (_shown && ClipRegion.covers(_box)) {
+        if (shown && ClipRegion.covers(box)) {
             paint(dc);
         }
     }
 
     private function paint(dc as Dc) as Void {
-        RimPainter.fill(dc, _points, _drawnColor);
+        RimPainter.fill(dc, corners, drawnColor);
     }
 
     //! A compass bearing reads as clockwise from the top of the dial
     private function place(bearing as Number) as Void {
-        var point = Dial.radiansOf(bearing);
-        var left = point + _halfSpread;
-        var right = point - _halfSpread;
-        var tipRadius = Dial.rim - (_base * RimPainter.EQUILATERAL_HEIGHT);
+        var middle = Dial.radiansOf(bearing);
+        var tipRadius = Dial.rim - (baseWidth * RimPainter.EQUILATERAL_HEIGHT);
 
-        var leftX = Dial.pointX(left, Dial.rim);
-        var leftY = Dial.pointY(left, Dial.rim);
-        var rightX = Dial.pointX(right, Dial.rim);
-        var rightY = Dial.pointY(right, Dial.rim);
-        var tipX = Dial.pointX(point, tipRadius);
-        var tipY = Dial.pointY(point, tipRadius);
+        setCorner(0, middle + halfSpread, Dial.rim);
+        setCorner(1, middle - halfSpread, Dial.rim);
+        setCorner(2, middle, tipRadius);
+        placedBearing = bearing;
 
-        _points[0] = [leftX, leftY];
-        _points[1] = [rightX, rightY];
-        _points[2] = [tipX, tipY];
-        _pointsBearing = bearing;
+        box.aroundPoints(corners, 0);
+    }
 
-        _box.aroundCorners(leftX, leftY, rightX, rightY, tipX, tipY);
+    private function setCorner(index as Number, radians as Decimal, radius as Numeric) as Void {
+        corners[index] = [Dial.pointX(radians, radius), Dial.pointY(radians, radius)];
     }
 }

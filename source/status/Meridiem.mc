@@ -5,15 +5,16 @@ import Toybox.WatchUi;
 //! AM or PM, on a 12 hour watch only.
 class Meridiem extends Icon {
 
-    private const _MORNING = 0;
-    private const _AFTERNOON = 1;
+    //! Indexes into images
+    private const MORNING_IMAGE = 0;
+    private const AFTERNOON_IMAGE = 1;
 
-    private var _images as Array<ResourceId> = [
+    private var images as Array<ResourceId> = [
         Rez.Drawables.Am,
         Rez.Drawables.Pm
     ];
 
-    private var _morning as Boolean = true;
+    private var isMorning as Boolean = true;
 
     function initialize() {
         Icon.initialize(null);
@@ -21,17 +22,17 @@ class Meridiem extends Icon {
 
     //! The 24 hour case first, so such a watch never loads a bitmap. The
     //! half is settled here once a draw, not on every bitmap() call.
-    function on(settings as System.DeviceSettings) as Boolean {
+    function isReporting(settings as System.DeviceSettings) as Boolean {
         if (settings.is24Hour) {
             return false;
         }
 
-        _morning = Clock.isMorning(Clock.now().hour);
+        isMorning = Clock.isMorning(Clock.now().hour);
 
         return true;
     }
 
     protected function bitmap() as BitmapResource {
-        return choose(_images, _morning ? _MORNING : _AFTERNOON);
+        return choose(images, isMorning ? MORNING_IMAGE : AFTERNOON_IMAGE);
     }
 }

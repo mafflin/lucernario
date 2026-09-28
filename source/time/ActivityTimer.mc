@@ -8,25 +8,25 @@ import Toybox.Lang;
 //! Activity.Info.
 class ActivityTimer {
 
-    private var _running as Boolean = false;
-    private var _reading as MinuteGate;
+    private var running as Boolean = false;
+    private var minuteGate as MinuteGate;
 
     function initialize() {
-        _reading = new MinuteGate();
+        minuteGate = new MinuteGate();
     }
 
     //! Once per full update
     function refresh() as Void {
-        if (!_reading.opens()) {
+        if (!minuteGate.opens()) {
             return;
         }
 
-        _running = readTimer();
+        running = readTimer();
     }
 
     //! Running, paused or stopped short of being saved or discarded
     function isRunning() as Boolean {
-        return _running;
+        return running;
     }
 
     private function readTimer() as Boolean {

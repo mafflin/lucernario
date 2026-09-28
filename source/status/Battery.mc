@@ -6,16 +6,17 @@ import Toybox.WatchUi;
 //! The charge as one of eleven bitmaps, red when empty and orange when low.
 class Battery extends Icon {
 
-    private const _PERCENT_PER_LEVEL = 10;
-    private const _EMPTY_LEVEL = 0;
-    private const _LOW_LEVEL = 1;
-    private const _TOP_LEVEL = 10;
+    private const PERCENT_PER_LEVEL = 10;
+    private const EMPTY_LEVEL = 0;
+    private const LOW_LEVEL = 1;
+    private const TOP_LEVEL = 10;
 
     //! Both read against either background
-    private const _EMPTY_COLOR = Graphics.COLOR_RED;
-    private const _LOW_COLOR = Graphics.COLOR_ORANGE;
+    private const EMPTY_COLOR = Graphics.COLOR_RED;
+    private const LOW_COLOR = Graphics.COLOR_ORANGE;
 
-    private var _images as Array<ResourceId> = [
+    //! One per level
+    private var images as Array<ResourceId> = [
         Rez.Drawables.Battery0,
         Rez.Drawables.Battery10,
         Rez.Drawables.Battery20,
@@ -30,45 +31,45 @@ class Battery extends Icon {
     ];
 
     //! Read once a minute: bitmap() is reached from the partial update too
-    private var _level as Number = _EMPTY_LEVEL;
-    private var _reading as MinuteGate;
+    private var level as Number = EMPTY_LEVEL;
+    private var minuteGate as MinuteGate;
 
     function initialize() {
         Icon.initialize(null);
-        _reading = new MinuteGate();
+        minuteGate = new MinuteGate();
     }
 
     protected function bitmap() as BitmapResource {
-        if (_reading.opens()) {
-            _level = level();
+        if (minuteGate.opens()) {
+            level = readLevel();
         }
 
-        return choose(_images, _level);
+        return choose(images, level);
     }
 
     protected function tint() as Number {
-        if (_level == _EMPTY_LEVEL) {
-            return _EMPTY_COLOR;
+        if (level == EMPTY_LEVEL) {
+            return EMPTY_COLOR;
         }
 
-        if (_level == _LOW_LEVEL) {
-            return _LOW_COLOR;
+        if (level == LOW_LEVEL) {
+            return LOW_COLOR;
         }
 
         return Icon.tint();
     }
 
-    private function level() as Number {
-        var reading = System.getSystemStats().battery.toNumber() / _PERCENT_PER_LEVEL;
+    private function readLevel() as Number {
+        var charge = System.getSystemStats().battery.toNumber() / PERCENT_PER_LEVEL;
 
-        if (reading < _EMPTY_LEVEL) {
-            return _EMPTY_LEVEL;
+        if (charge < EMPTY_LEVEL) {
+            return EMPTY_LEVEL;
         }
 
-        if (reading > _TOP_LEVEL) {
-            return _TOP_LEVEL;
+        if (charge > TOP_LEVEL) {
+            return TOP_LEVEL;
         }
 
-        return reading;
+        return charge;
     }
 }

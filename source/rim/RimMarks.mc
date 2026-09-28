@@ -10,114 +10,107 @@ import Toybox.Lang;
 class RimMarks {
 
     //! Width as a share of the radius, in pixels - see RimPainter.drawRadial
-    private const _WIDTH_NUMERATOR = 1;
-    private const _WIDTH_DIVISOR = 40;
-    private const _MIN_WIDTH = 1;
+    private const WIDTH_NUMERATOR = 1;
+    private const WIDTH_DIVISOR = 40;
+    private const MIN_WIDTH = 1;
 
     //! Reach as a share of the ring
-    private const _LENGTH_NUMERATOR = 2;
-    private const _LENGTH_DIVISOR = 5;
+    private const LENGTH_NUMERATOR = 2;
+    private const LENGTH_DIVISOR = 5;
 
     //! Minor marks between hour marks: quarter hour steps
-    private const _MINOR_MARKS = 3;
-    private const _MINOR_STEPS = _MINOR_MARKS + 1;
+    private const MINOR_MARKS = 3;
+    private const STEPS_PER_HOUR = MINOR_MARKS + 1;
+    private const MARK_COUNT = Dial.HOUR_MARKS * STEPS_PER_HOUR;
 
     //! Minor reach as a share of an hour mark's
-    private const _MINOR_LENGTH_NUMERATOR = 2;
-    private const _MINOR_LENGTH_DIVISOR = 3;
-    private const _MINOR_WIDTH = 1;
-    private const _MINOR_RECOVERY_WIDTH = _MINOR_WIDTH * 2;
+    private const MINOR_LENGTH_NUMERATOR = 2;
+    private const MINOR_LENGTH_DIVISOR = 3;
+    private const MINOR_WIDTH = 1;
+    private const MINOR_RECOVERY_WIDTH = MINOR_WIDTH * 2;
 
     //! Recovery reach as a share of an hour mark's
-    private const _RECOVERY_LENGTH_DIVISOR = 4;
+    private const RECOVERY_LENGTH_DIVISOR = 4;
 
     //! Resolved in prepare()
-    private var _length as Number = 0;
-    private var _width as Number = _MIN_WIDTH;
-    private var _minorLength as Number = 0;
-    private var _recoveryLength as Number = 0;
+    private var hourLength as Number = 0;
+    private var hourWidth as Number = MIN_WIDTH;
+    private var minorLength as Number = 0;
+    private var recoveryLength as Number = 0;
 
-    private var _dayColors as DayColors;
+    private var dayColors as DayColors;
 
-    private var _recoveryShown as Boolean = false;
+    private var recoveryShown as Boolean = false;
 
     //! Marks in the recovery color, clockwise from the 24; none at zero
-    private var _recoveryMarks as Number = 0;
-    private var _recoveryColor as Number = Graphics.COLOR_WHITE;
+    private var recoveryMarks as Number = 0;
+    private var recoveryColor as Number = Graphics.COLOR_WHITE;
 
     function initialize(dayColors as DayColors) {
-        _dayColors = dayColors;
+        self.dayColors = dayColors;
     }
 
     //! After Dial.setup()
     function prepare() as Void {
-        _length = Dial.ringDepth * _LENGTH_NUMERATOR / _LENGTH_DIVISOR;
-        _width = Dial.rim * _WIDTH_NUMERATOR / _WIDTH_DIVISOR;
+        hourLength = Dial.ringDepth * LENGTH_NUMERATOR / LENGTH_DIVISOR;
+        hourWidth = Dial.rim * WIDTH_NUMERATOR / WIDTH_DIVISOR;
 
-        if (_width < _MIN_WIDTH) {
-            _width = _MIN_WIDTH;
+        if (hourWidth < MIN_WIDTH) {
+            hourWidth = MIN_WIDTH;
         }
 
-        _minorLength = _length * _MINOR_LENGTH_NUMERATOR / _MINOR_LENGTH_DIVISOR;
-        _recoveryLength = _length / _RECOVERY_LENGTH_DIVISOR;
+        minorLength = hourLength * MINOR_LENGTH_NUMERATOR / MINOR_LENGTH_DIVISOR;
+        recoveryLength = hourLength / RECOVERY_LENGTH_DIVISOR;
     }
 
     //! How far in from the rim an hour mark comes
     function reach() as Number {
-        return _length;
+        return hourLength;
     }
 
     function width() as Number {
-        return _width;
+        return hourWidth;
     }
 
     function setRecoveryShown(shown as Boolean) as Void {
-        _recoveryShown = shown;
+        recoveryShown = shown;
     }
 
     //! Once per full update; null when there are none
     function setRecoveryHours(hours as Number?) as Void {
-        if (!_recoveryShown || (hours == null)) {
-            _recoveryMarks = 0;
+        if (!recoveryShown || (hours == null)) {
+            recoveryMarks = 0;
             return;
         }
 
         // The 24 starts the count; each hour adds the mark after it.
-        _recoveryMarks = hours + 1;
+        recoveryMarks = hours + 1;
     }
 
     function setRecoveryColor(color as Number) as Void {
-        _recoveryColor = color;
+        recoveryColor = color;
     }
 
     function draw(dc as Dc) as Void {
-        var minorStep = Dial.DEGREES_PER_HOUR_MARK.toFloat() / _MINOR_STEPS;
+        var degreesPerStep = Dial.DEGREES_PER_HOUR_MARK.toFloat() / STEPS_PER_HOUR;
 
-        for (var mark = 0; mark < Dial.HOUR_MARKS; mark++) {
-            var hour = positionOf(mark);
-            var first = mark * _MINOR_STEPS;
-
-            drawMark(dc, first, hour, _width, _width, _length);
-
-            for (var step = 1; step < _MINOR_STEPS; step++) {
-                drawMark(dc, first + step, hour + (step * minorStep), _MINOR_WIDTH, _MINOR_RECOVERY_WIDTH, _minorLength);
-            }
+        for (var index = 0; index < MARK_COUNT; index++) {
+            drawMark(dc, index, index * degreesPerStep);
         }
     }
 
     //! In the day's color; among the hours left, the outer quarter of an hour
-    //! mark's reach in the recovery color at recoveryWidth. index counts
-    //! every mark clockwise from the 24.
-    private function drawMark(dc as Dc, index as Number, degrees as Numeric, width as Number, recoveryWidth as Number, length as Number) as Void {
-        RimPainter.drawRadial(dc, degrees, _dayColors.colorAt(degrees), width, length);
+    //! mark's reach in the recovery color. index counts every mark clockwise
+    //! from the 24, hour marks on every fourth.
+    private function drawMark(dc as Dc, index as Number, degrees as Float) as Void {
+        var isHour = (index % STEPS_PER_HOUR) == 0;
 
-        if (index < _recoveryMarks) {
-            RimPainter.drawRadial(dc, degrees, _recoveryColor, recoveryWidth, _recoveryLength);
+        RimPainter.setPen(dc, dayColors.colorAt(degrees), isHour ? hourWidth : MINOR_WIDTH);
+        RimPainter.drawRadial(dc, degrees, isHour ? hourLength : minorLength);
+
+        if (index < recoveryMarks) {
+            RimPainter.setPen(dc, recoveryColor, isHour ? hourWidth : MINOR_RECOVERY_WIDTH);
+            RimPainter.drawRadial(dc, degrees, recoveryLength);
         }
-    }
-
-    //! Degrees clockwise from midnight
-    private function positionOf(mark as Number) as Number {
-        return mark * Dial.DEGREES_PER_HOUR_MARK;
     }
 }

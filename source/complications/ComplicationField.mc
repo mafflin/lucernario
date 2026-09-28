@@ -7,71 +7,71 @@ import Toybox.WatchUi;
 //! picked in the editor. A Drawable so the editor can pulse it in place.
 class ComplicationField extends WatchUi.Drawable {
 
-    private const _LABEL_FORMAT = "$1$ $2$";
-    private const _FONT = Graphics.FONT_SMALL;
+    private const LABEL_FORMAT = "$1$ $2$";
+    private const FONT = Graphics.FONT_SMALL;
 
     //! Fixed, so the tap target does not shift as values change
-    private const _WIDTH_RATIO = 0.6;
+    private const WIDTH_RATIO = 0.6;
 
     //! Matches the slot id in watchface.xml
-    private var _location as Number;
+    private var slotId as Number;
 
-    private var _complicationId as Complications.Id;
-    private var _text as String = "";
-    private var _color as Number = Graphics.COLOR_WHITE;
+    private var complicationId as Complications.Id;
+    private var text as String = "";
+    private var color as Number = Graphics.COLOR_WHITE;
 
     //! defaultType shows until the user picks one
-    function initialize(location as Number, defaultType as Complications.Type) {
-        Drawable.initialize({ :identifier => location });
+    function initialize(slotId as Number, defaultType as Complications.Type) {
+        Drawable.initialize({ :identifier => slotId });
 
-        _location = location;
-        _complicationId = new Complications.Id(defaultType);
+        self.slotId = slotId;
+        complicationId = new Complications.Id(defaultType);
     }
 
     //! Once per layout
     function prepare(dc as Dc, centerX as Number, centerY as Number) as Void {
-        width = (dc.getWidth() * _WIDTH_RATIO).toNumber();
+        width = (dc.getWidth() * WIDTH_RATIO).toNumber();
         height = heightIn(dc);
         locX = (centerX - (width / 2)).toNumber();
         locY = (centerY - (height / 2)).toNumber();
     }
 
     function heightIn(dc as Dc) as Number {
-        return dc.getFontHeight(_FONT);
+        return dc.getFontHeight(FONT);
     }
 
-    function getLocation() as Number {
-        return _location;
+    function getSlotId() as Number {
+        return slotId;
     }
 
     function getComplicationId() as Complications.Id {
-        return _complicationId;
+        return complicationId;
     }
 
     function setComplicationId(complicationId as Complications.Id) as Void {
-        _complicationId = complicationId;
+        self.complicationId = complicationId;
     }
 
-    function shows(complicationId as Complications.Id) as Boolean {
-        return _complicationId.equals(complicationId);
+    function shows(other as Complications.Id) as Boolean {
+        return complicationId.equals(other);
     }
 
     function setColor(color as Number) as Void {
-        _color = color;
+        self.color = color;
     }
 
     //! Read the complication's current value
     function refresh() as Void {
         // Some watches throw on a complication they do not carry.
         try {
-            var complication = Complications.getComplication(_complicationId);
+            var complication = Complications.getComplication(complicationId);
 
-            _text = labelled(
+            text = labelled(
                 ComplicationLabel.of(complication.getType()),
                 ComplicationFormat.text(complication)
             );
         } catch (exception) {
-            _text = "";
+            text = "";
         }
     }
 
@@ -81,12 +81,12 @@ class ComplicationField extends WatchUi.Drawable {
             return;
         }
 
-        dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
             locX + (width / 2),
             locY,
-            _FONT,
-            _text,
+            FONT,
+            text,
             Graphics.TEXT_JUSTIFY_CENTER
         );
     }
@@ -109,6 +109,6 @@ class ComplicationField extends WatchUi.Drawable {
             return value;
         }
 
-        return Lang.format(_LABEL_FORMAT, [label, value]);
+        return Lang.format(LABEL_FORMAT, [label, value]);
     }
 }

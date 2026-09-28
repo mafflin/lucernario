@@ -4,9 +4,9 @@ import Toybox.Lang;
 //! that move no faster than the minute. Goes by the time the view read.
 class MinuteGate {
 
-    private const _NO_MINUTE = -1;
+    private const NO_MINUTE = -1;
 
-    private var _minute as Number = _NO_MINUTE;
+    private var lastMinute as Number = NO_MINUTE;
 
     function initialize() {
     }
@@ -15,11 +15,11 @@ class MinuteGate {
     function opens() as Boolean {
         var minute = Clock.now().min;
 
-        if (minute == _minute) {
+        if (minute == lastMinute) {
             return false;
         }
 
-        _minute = minute;
+        lastMinute = minute;
 
         return true;
     }

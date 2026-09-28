@@ -7,178 +7,191 @@ import Toybox.Math;
 class StatusBar {
 
     //! Lifts the row so it and the data container frame the time by eye
-    private const _LIFT_DIVISOR = 22;
+    private const LIFT_DIVISOR = 22;
 
-    //! Half an icon of air between items, down to _MIN_GAP on a round screen
-    private const _GAP_DIVISOR = 2;
-    private const _MIN_GAP = 2;
-    private const _MARGIN = 2;
+    //! Half an icon of air between items, down to MIN_GAP on a round screen
+    private const GAP_DIVISOR = 2;
+    private const MIN_GAP = 2;
+    private const MARGIN = 2;
 
-    private var _icons as Array<Icon>;
+    private var icons as Array<Icon>;
 
     //! Always on screen, so its artwork is the row's measure
-    private var _battery as Battery;
+    private var battery as Battery;
 
     //! Has to be told its size
-    private var _wind as Wind;
+    private var wind as Wind;
 
     //! The line below the time the row mirrors
-    private var _mirrorY as Number = 0;
+    private var mirrorY as Number = 0;
 
     //! One box answers for the whole row. Empty while nothing shows.
-    private var _row as Box;
+    private var row as Box;
 
-    function initialize(wind as WindReading) {
-        _battery = new Battery();
-        _wind = new Wind(wind);
-        _row = new Box();
+    //! Air between icons, settled with the row
+    private var gap as Number = 0;
 
-        _icons = [
-            _battery,
+    function initialize(windReading as WindReading) {
+        battery = new Battery();
+        wind = new Wind(windReading);
+        row = new Box();
+
+        icons = [
+            battery,
             new Phone(),
             new Alarm(),
-            _wind,
+            wind,
             new Meridiem()
         ] as Array<Icon>;
     }
 
     //! Once per layout
     function mirror(y as Number) as Void {
-        _mirrorY = y;
+        mirrorY = y;
     }
 
     //! false while the dial shows the bearing instead
     function setWindShown(shown as Boolean) as Void {
-        _wind.setEnabled(shown);
+        wind.setEnabled(shown);
     }
 
     function setColor(color as Number) as Void {
-        for (var i = 0; i < _icons.size(); i++) {
-            _icons[i].setTint(color);
+        for (var i = 0; i < icons.size(); i++) {
+            icons[i].setTint(color);
         }
     }
 
     function draw(dc as Dc) as Void {
-        var total = markVisible();
+        var count = countShown();
 
-        _row.clear();
+        row.clear();
 
-        if (total == 0) {
+        if (count == 0) {
             return;
         }
 
         // The wind has no bitmap to measure; it fills the battery's square.
-        _wind.setSquare(_battery.height());
+        wind.setSquare(battery.height());
 
-        var tall = tallest();
-        var centerY = middle(dc, tall);
-        var items = itemsWidth();
-        var gap = gapFor(total, centerY, items, tall);
-        var rowWidth = items + ((total - 1) * gap);
-        var x = (dc.getWidth() - rowWidth) / 2;
-
-        _row.set(x, centerY - (tall / 2), rowWidth, tall);
-
-        for (var i = 0; i < _icons.size(); i++) {
-            if (!_icons[i].shown()) {
-                continue;
-            }
-
-            _icons[i].draw(dc, x, centerY - (_icons[i].height() / 2));
-            x += _icons[i].width() + gap;
-        }
+        layOut(count);
+        drawIcons(dc);
     }
 
     //! One test for the row; past it, each item tests itself
     function redraw(dc as Dc) as Void {
-        if (!ClipRegion.covers(_row)) {
+        if (!ClipRegion.covers(row)) {
             return;
         }
 
-        for (var i = 0; i < _icons.size(); i++) {
-            _icons[i].redraw(dc);
+        for (var i = 0; i < icons.size(); i++) {
+            icons[i].redraw(dc);
+        }
+    }
+
+    //! Size the row, centered, and the gap between its icons
+    private function layOut(count as Number) as Void {
+        var rowHeight = tallestShown();
+        var top = rowCenterY(rowHeight) - (rowHeight / 2);
+        var iconsWidth = shownWidth();
+
+        gap = gapFor(count, rowHeight, chordAt(top) - iconsWidth);
+
+        var rowWidth = iconsWidth + ((count - 1) * gap);
+
+        row.set((Dial.screenWidth - rowWidth) / 2, top, rowWidth, rowHeight);
+    }
+
+    //! Each centered on the row's middle
+    private function drawIcons(dc as Dc) as Void {
+        var middle = row.top + (row.height / 2);
+        var x = row.left;
+
+        for (var i = 0; i < icons.size(); i++) {
+            var icon = icons[i];
+
+            if (!icon.isShown()) {
+                continue;
+            }
+
+            icon.draw(dc, x, middle - (icon.height() / 2));
+            x += icon.width() + gap;
         }
     }
 
     //! The row's bottom as far from the top as the frame line is from the
     //! bottom, lifted a touch
-    private function middle(dc as Dc, tall as Number) as Number {
-        var height = dc.getHeight();
+    private function rowCenterY(rowHeight as Number) as Number {
+        var screenHeight = Dial.screenHeight;
 
-        return height - _mirrorY - (tall / 2) - (height / _LIFT_DIVISOR);
+        return screenHeight - mirrorY - (rowHeight / 2) - (screenHeight / LIFT_DIVISOR);
     }
 
-    private function itemsWidth() as Number {
-        var width = 0;
+    private function shownWidth() as Number {
+        var total = 0;
 
-        for (var i = 0; i < _icons.size(); i++) {
-            if (_icons[i].shown()) {
-                width += _icons[i].width();
+        for (var i = 0; i < icons.size(); i++) {
+            if (icons[i].isShown()) {
+                total += icons[i].width();
             }
         }
 
-        return width;
+        return total;
     }
 
-    private function tallest() as Number {
-        var height = 0;
+    private function tallestShown() as Number {
+        var tallest = 0;
 
-        for (var i = 0; i < _icons.size(); i++) {
-            if (_icons[i].shown() && (_icons[i].height() > height)) {
-                height = _icons[i].height();
+        for (var i = 0; i < icons.size(); i++) {
+            if (icons[i].isShown() && (icons[i].height() > tallest)) {
+                tallest = icons[i].height();
             }
         }
 
-        return height;
+        return tallest;
     }
 
-    //! The gap gives way before the outermost item runs off the glass
-    private function gapFor(total as Number, centerY as Number, items as Number, tall as Number) as Number {
-        var gap = tall / _GAP_DIVISOR;
+    //! Half an icon, giving way before the outermost item runs off the glass:
+    //! spare is the room the icons leave
+    private function gapFor(count as Number, rowHeight as Number, spare as Number) as Number {
+        var preferred = rowHeight / GAP_DIVISOR;
 
-        if (total < 2) {
-            return gap;
+        if (count < 2) {
+            return preferred;
         }
 
-        var room = (available(centerY, tall) - items) / (total - 1);
+        var room = spare / (count - 1);
+        var fitted = (room < preferred) ? room : preferred;
 
-        if (room < gap) {
-            gap = room;
-        }
-
-        if (gap < _MIN_GAP) {
-            gap = _MIN_GAP;
-        }
-
-        return gap;
+        return (fitted < MIN_GAP) ? MIN_GAP : fitted;
     }
 
-    //! The chord of the screen at the row's far edge
-    private function available(centerY as Number, tall as Number) as Number {
+    //! The width of the screen at the row's top edge, the far one from the
+    //! middle
+    private function chordAt(top as Number) as Number {
         var rim = Dial.rim;
-        var edge = Dial.centerY - centerY + (tall / 2);
+        var fromMiddle = Dial.centerY - top;
 
-        if (edge >= rim) {
+        if (fromMiddle >= rim) {
             return Dial.screenWidth;
         }
 
-        var half = Math.sqrt((rim * rim) - (edge * edge));
-        var chord = (2 * half).toNumber() - (2 * _MARGIN);
+        var half = Math.sqrt((rim * rim) - (fromMiddle * fromMiddle));
+        var chord = (2 * half).toNumber() - (2 * MARGIN);
 
         return (chord < Dial.screenWidth) ? chord : Dial.screenWidth;
     }
 
     //! How many icons show this draw
-    private function markVisible() as Number {
+    private function countShown() as Number {
         var settings = Clock.settings();
-        var total = 0;
+        var count = 0;
 
-        for (var i = 0; i < _icons.size(); i++) {
-            if (_icons[i].mark(settings)) {
-                total++;
+        for (var i = 0; i < icons.size(); i++) {
+            if (icons[i].updateShown(settings)) {
+                count++;
             }
         }
 
-        return total;
+        return count;
     }
 }
