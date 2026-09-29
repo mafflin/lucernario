@@ -1,15 +1,22 @@
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.Math;
 
-//! The hour hand: a mark at the hour, twice as wide as an hour mark and a
-//! third longer, in the rim's colors inverted - see DayColors - and the
-//! accent color until the sun is known. Reaching past the marks, it is put
-//! back when the seconds hand's clip cuts into it: a tick or two a minute.
+//! The hour hand: a rhombus, the seconds hand's arrow two degrees narrower
+//! and mirrored inward across its base, the outer tip on the minor marks'
+//! tips. In the rim's colors inverted - see DayColors - and the accent color
+//! until the sun is known. The seconds hand passes over it, so it is put back
+//! when that clip cuts into it.
 class HourHand {
 
-    private const WIDTH_FACTOR = 2;
-    private const LENGTH_NUMERATOR = 4;
-    private const LENGTH_DIVISOR = 3;
+    //! Across the middle, in degrees at the ring's inner edge
+    private const WIDTH_DEGREES = 5;
+
+    //! Round the outline, so the polygon does not cross itself
+    private const OUTER_TIP = 0;
+    private const LEFT = 1;
+    private const INNER_TIP = 2;
+    private const RIGHT = 3;
 
     private var dayColors as DayColors;
 
@@ -18,29 +25,32 @@ class HourHand {
     private var drawnColor as Number = Graphics.COLOR_WHITE;
 
     //! Resolved in prepare()
-    private var width as Number = 0;
-    private var length as Number = 0;
+    private var tipRadius as Number = 0;
+    private var middleRadius as Float = 0.0;
+    private var innerTipRadius as Float = 0.0;
+    private var halfWidth as Float = 0.0;
 
-    //! Where it was last drawn, its ends on the glass, and the box around them
+    //! Where it was last drawn, and the box around it
     private var position as Float = 0.0;
-    private var ends as Array<[Numeric, Numeric]>;
+    private var corners as Array<[Numeric, Numeric]>;
     private var box as Box;
 
     function initialize(dayColors as DayColors) {
         self.dayColors = dayColors;
-        ends = [[0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
+        corners = [[0, 0], [0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
         box = new Box();
     }
 
     //! After the marks are prepared
-    function prepare(markReach as Number, markWidth as Number) as Void {
-        width = markWidth * WIDTH_FACTOR;
-        length = markReach * LENGTH_NUMERATOR / LENGTH_DIVISOR;
-    }
+    function prepare(minorReach as Number) as Void {
+        var fullWidth = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(WIDTH_DEGREES / 2.0));
 
-    //! How far in from the rim the pen comes
-    function reach() as Number {
-        return length + RimPainter.penRadius(width);
+        tipRadius = Dial.rim - minorReach;
+        var halfLength = fullWidth * RimPainter.EQUILATERAL_HEIGHT;
+
+        middleRadius = (tipRadius - halfLength).toFloat();
+        innerTipRadius = (tipRadius - (2 * halfLength)).toFloat();
+        halfWidth = (fullWidth / 2).toFloat();
     }
 
     function setColor(color as Number) as Void {
@@ -50,7 +60,7 @@ class HourHand {
     //! After the day colors have refreshed
     function draw(dc as Dc) as Void {
         position = Dial.positionOfMinute(currentMinute());
-        placeBox();
+        place();
 
         var inverted = dayColors.invertedColorAt(position);
         drawnColor = accentColor;
@@ -70,20 +80,35 @@ class HourHand {
     }
 
     private function paint(dc as Dc) as Void {
-        RimPainter.setPen(dc, drawnColor, width);
-        RimPainter.drawRadial(dc, position, length);
+        RimPainter.fill(dc, corners, drawnColor);
     }
 
-    //! From the rim to the inner end; the overshoot off the glass cannot be
-    //! cut into
-    private function placeBox() as Void {
+    private function place() as Void {
         var radians = Dial.radiansOf(position);
-        var inner = Dial.rim - length;
+        var outX = Math.cos(radians);
 
-        ends[0] = [Dial.pointX(radians, Dial.rim), Dial.pointY(radians, Dial.rim)];
-        ends[1] = [Dial.pointX(radians, inner), Dial.pointY(radians, inner)];
+        // Screen y grows downward.
+        var outY = -Math.sin(radians);
 
-        box.aroundPoints(ends, RimPainter.penRadius(width));
+        // Across is out turned a quarter.
+        var acrossX = -outY * halfWidth;
+        var acrossY = outX * halfWidth;
+        var middleX = Dial.centerX + (middleRadius * outX);
+        var middleY = Dial.centerY + (middleRadius * outY);
+
+        setCorner(OUTER_TIP, Dial.centerX + (tipRadius * outX), Dial.centerY + (tipRadius * outY));
+        setCorner(LEFT, middleX + acrossX, middleY + acrossY);
+        setCorner(INNER_TIP, Dial.centerX + (innerTipRadius * outX), Dial.centerY + (innerTipRadius * outY));
+        setCorner(RIGHT, middleX - acrossX, middleY - acrossY);
+
+        box.aroundPoints(corners, 0);
+    }
+
+    private function setCorner(index as Number, x as Decimal, y as Decimal) as Void {
+        var corner = corners[index];
+
+        corner[0] = Dial.pixel(x);
+        corner[1] = Dial.pixel(y);
     }
 
     //! Minutes past midnight: the hand stands between the hour marks

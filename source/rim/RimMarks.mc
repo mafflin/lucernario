@@ -75,6 +75,11 @@ class RimMarks {
         return evenLength;
     }
 
+    //! How far in from the rim a minor mark's pen comes
+    function minorReach() as Number {
+        return minorLength + RimPainter.penRadius(MINOR_WIDTH);
+    }
+
     //! An even hour mark's: the odd ones are half as wide
     function width() as Number {
         return hourWidth;

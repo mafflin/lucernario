@@ -4,9 +4,9 @@ the largest font the watch has. Everything else keeps out of its way.
 **The rim** carries a 24-hour dial, numbered every four hours, with a fine mark
 every quarter hour. The marks and numerals are amber from sunrise to sunset
 and sky blue through the night, so a glance at the dial tells you how much
-daylight is left. A broad hand tracks the hour in the opposite color, and an
-arrow counts the seconds just inside the marks — it keeps going in low power
-mode on watches whose budget allows it.
+daylight is left. A small diamond among the marks tracks the hour in the
+opposite color, and an arrow just inside them counts the seconds — it
+keeps going in low power mode on watches whose budget allows it.
 
 **Above the time**, a status row shows only what is worth reporting: battery,
 phone connection, alarm, AM/PM, and wind — one arrow pointing the way it

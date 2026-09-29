@@ -44,9 +44,9 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after, shaded to the style |
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends; off on the simple styles |
-| `source/rim/HourHand.mc` | The hour hand, a mark twice as wide as the hour marks and a third longer, in the rim's colors inverted |
+| `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 6° across and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
 | `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the complicated styles |
-| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour hand, on the complicated styles |
+| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour marks, on the complicated styles |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch, and the test against it |
 | `source/rim/Box.mc` | The box around a shape, for that test |
@@ -164,18 +164,18 @@ puts the rim back there, then clips to where it is going and draws it. The
 hand is an arrow set in far enough that even the corners of its clip box
 stay off the marks, round pen ends included, so a tick never repaints
 them: only the numeral nearest the hand's last position, the status row, the
-wind bearing and the hour hand, both of which reach past the marks, the steps
-hand, and only when the box has cut into them. If that
+wind bearing, which reaches past the marks, the hour hand, which it passes
+over, and the steps hand, and only when the box has cut into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
 
-The rim marks and the hour hand are drawn as lines running inward from the
-rim, with the width as a pen width in pixels. An arc cannot be made narrow
-enough: `drawArc` takes its span in degrees and the renderer works in whole
-ones, so every width from one degree to two comes out as the same mark. A
-pixel at the rim is roughly a quarter of a degree, which is a useful step on
-a shape this small. The pen is round, so a line runs half its width past each
+The rim marks are drawn as lines running inward from the rim, with the
+width as a pen width in pixels. An arc cannot be made narrow enough:
+`drawArc` takes its span in degrees and the renderer works in whole ones, so
+every width from one degree to two comes out as the same mark. A pixel at the
+rim is roughly a quarter of a degree, which is a useful step on a shape this
+small. The pen is round, so a line runs half its width past each
 end; every clearance and clip box counts that in.
 
 The rim is 24 hour marks with three thin minor marks between each pair, one
@@ -212,12 +212,12 @@ above that. It reaches past the marks, so a partial update puts it back when
 the seconds hand's clip cuts into it, as it does the hour hand.
 
 The complicated styles also carry the goal hand: an accent colored dot, as
-wide across as two hour marks, just inside the hour hand's reach with two
-pixels between them, so it passes under the hand without touching it. It goes round once from the 24 to the goal picked in the goal slot and
-stays at the 24 past it. Each goal comes off `ActivityMonitor.Info` rather
-than the complication, which carries no goal: `steps` over `stepGoal`,
-`floorsClimbed` over `floorsClimbedGoal`, and `activeMinutesWeek.total` over
-`activeMinutesWeekGoal` (a weekly goal). With no goal to read, the dot stays
+wide across as two hour marks, three pixels inside the hour marks' inner
+ends, passing under the hour hand. It goes round once from the 24 to the
+goal picked in the goal slot and stays at the 24 past it. Each goal comes off
+`ActivityMonitor.Info` rather than the complication, which carries no goal:
+`steps` over `stepGoal`, `floorsClimbed` over `floorsClimbedGoal`, and
+`activeMinutesWeek.total` over `activeMinutesWeekGoal` (a weekly goal). With no goal to read, the dot stays
 off. The activity monitor is read once a minute, one read shared with the
 recovery hours and skipped on the styles that show neither; a new goal shows
 at once, off the last read. It lies in the seconds hand's path, so a partial

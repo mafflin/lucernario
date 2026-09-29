@@ -12,8 +12,8 @@ class SecondsHand {
     private const WIDTH_DEGREES = 8;
 
     //! Air between the tip and the marks' pen ends: the box's diagonal
-    //! reach, a pixel of smoothing, and one for the corners themselves
-    private const MARK_GAP = 5;
+    //! reach and a pixel of smoothing
+    private const MARK_GAP = 3;
 
     private const TIP = 0;
     private const LEFT = 1;

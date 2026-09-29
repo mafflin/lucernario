@@ -221,8 +221,8 @@ class LucernarioView extends WatchUi.WatchFace {
         numerals.prepare(dc, markReach);
         secondsHand.prepare(markReach, markWidth);
         windBearing.prepare(secondsHand.baseWidth());
-        hourHand.prepare(markReach, markWidth);
-        goalHand.prepare(hourHand.reach(), markWidth);
+        hourHand.prepare(rimMarks.minorReach());
+        goalHand.prepare(markReach, markWidth);
     }
 
     private function placeFields(dc as Dc) as Void {
