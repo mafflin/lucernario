@@ -184,12 +184,12 @@ inner ends of their marks - left off on the simple styles.
 
 On the complicated styles the hours left to recover
 (`ActivityMonitor.Info.timeToRecovery`) take the data color in place of the
-day's, each mark in its usual shape, not the numerals: the 24, and one more
-mark for each hour, hour and minor marks alike, clockwise from it - 1 hour colors the 24 and the
-minor mark after it, 16 hours the marks from the 24 through the 4. The whole
-dial is 95 hours, and more than that colors every mark. With none left, none
-are colored. Read once a minute; the marks are never touched by a partial
-one.
+day's, the minor marks among them twice as wide, not the numerals: the 24, and
+one more mark for each hour, hour and minor marks alike, clockwise from it - 1
+hour colors the 24 and the minor mark after it, 16 hours the marks from the 24
+through the 4. The whole dial is 95 hours, and more than that colors every
+mark. With none left, none are colored. Read once a minute; the marks are
+never touched by a partial one.
 
 While an activity is under way the system draws its own indicator at the top
 of the screen, over the 24, so the 24 is left off then. `ActivityTimer` reads

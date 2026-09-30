@@ -4,8 +4,8 @@ import Toybox.Lang;
 //! 24 hour marks, midnight at the top, the even ones longer and wider, with
 //! three minor marks between each pair. Colored with the day - see DayColors.
 //! On the complicated style the hours left to recover take the data color
-//! instead: the 24, then one mark per hour clockwise, hour and minor alike.
-//! The whole dial is 95 hours.
+//! instead, the minor marks among them twice as wide: the 24, then one mark
+//! per hour clockwise, hour and minor alike. The whole dial is 95 hours.
 class RimMarks {
 
     //! Width as a share of the radius, in pixels - see RimPainter.drawRadial
@@ -28,6 +28,7 @@ class RimMarks {
     private const MINOR_LENGTH_NUMERATOR = 2;
     private const MINOR_LENGTH_DIVISOR = 3;
     private const MINOR_WIDTH = 1;
+    private const MINOR_RECOVERY_WIDTH = MINOR_WIDTH * 2;
 
     //! Resolved in prepare()
     private var evenLength as Number = 0;
@@ -105,14 +106,20 @@ class RimMarks {
         }
     }
 
-    //! In the day's color, or the recovery color among the hours left. index
-    //! counts every mark clockwise from the 24, hour marks on every fourth.
+    //! In the day's color, or the recovery color among the hours left, the
+    //! minor marks twice as wide there. index counts every mark clockwise from
+    //! the 24, hour marks on every fourth.
     private function drawMark(dc as Dc, index as Number, degrees as Float) as Void {
         var isHour = (index % STEPS_PER_HOUR) == 0;
-        var color = (index < recoveryMarks) ? recoveryColor : dayColors.colorAt(degrees);
+        var recovering = index < recoveryMarks;
+        var color = recovering ? recoveryColor : dayColors.colorAt(degrees);
 
-        RimPainter.setPen(dc, color, isHour ? hourWidthAt(index) : MINOR_WIDTH);
+        RimPainter.setPen(dc, color, isHour ? hourWidthAt(index) : minorWidth(recovering));
         RimPainter.drawRadial(dc, degrees, isHour ? hourLengthAt(index) : minorLength);
+    }
+
+    private function minorWidth(recovering as Boolean) as Number {
+        return recovering ? MINOR_RECOVERY_WIDTH : MINOR_WIDTH;
     }
 
     private function hourLengthAt(index as Number) as Number {
