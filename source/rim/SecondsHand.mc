@@ -40,11 +40,11 @@ class SecondsHand {
 
     //! After Dial.setup()
     function prepare(markReach as Number, markWidth as Number) as Void {
-        var fullWidth = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(WIDTH_DEGREES / 2.0));
+        var fullWidth = RimPainter.widthAcross(WIDTH_DEGREES);
 
         tipRadius = Dial.rim - markReach - RimPainter.penRadius(markWidth) - MARK_GAP;
-        baseRadius = (tipRadius - (fullWidth * RimPainter.EQUILATERAL_HEIGHT)).toFloat();
-        halfWidth = (fullWidth / 2).toFloat();
+        baseRadius = tipRadius - (fullWidth * RimPainter.EQUILATERAL_HEIGHT);
+        halfWidth = fullWidth / 2;
         drawnSecond = null;
     }
 

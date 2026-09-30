@@ -387,7 +387,6 @@ class LucernarioView extends WatchUi.WatchFace {
         hourHand.setColor(color);
         goalHand.setColor(color);
         windBearing.setColor(color);
-        rimMarks.setRecoveryColor(color);
     }
 
     //! The data color: everything else, and the rim until the sun is known
@@ -396,6 +395,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         timeDisplay.setColor(color);
         dayColors.setFallbackColor(color);
+        rimMarks.setRecoveryColor(color);
         statusBar.setColor(color);
 
         for (var i = 0; i < fields.size(); i++) {

@@ -2,9 +2,8 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! The hour hand: a rhombus, the seconds hand's arrow two degrees narrower
-//! and mirrored inward across its base, the outer tip on the minor marks'
-//! tips. In the rim's colors inverted - see DayColors - and the accent color
+//! The hour hand: a rhombus, the seconds hand's arrow made narrower and
+//! mirrored inward across its base, the outer tip on the minor marks' tips. In the rim's colors inverted - see DayColors - and the accent color
 //! until the sun is known. The seconds hand passes over it, so it is put back
 //! when that clip cuts into it.
 class HourHand {
@@ -43,14 +42,13 @@ class HourHand {
 
     //! After the marks are prepared
     function prepare(minorReach as Number) as Void {
-        var fullWidth = 2 * (Dial.rim - Dial.ringDepth) * Math.sin(Math.toRadians(WIDTH_DEGREES / 2.0));
-
-        tipRadius = Dial.rim - minorReach;
+        var fullWidth = RimPainter.widthAcross(WIDTH_DEGREES);
         var halfLength = fullWidth * RimPainter.EQUILATERAL_HEIGHT;
 
-        middleRadius = (tipRadius - halfLength).toFloat();
-        innerTipRadius = (tipRadius - (2 * halfLength)).toFloat();
-        halfWidth = (fullWidth / 2).toFloat();
+        tipRadius = Dial.rim - minorReach;
+        middleRadius = tipRadius - halfLength;
+        innerTipRadius = tipRadius - (2 * halfLength);
+        halfWidth = fullWidth / 2;
     }
 
     function setColor(color as Number) as Void {

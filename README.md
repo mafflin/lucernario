@@ -44,7 +44,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after, shaded to the style |
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
 | `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends; off on the simple styles |
-| `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 6° across and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
+| `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 5° across to its 8° and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
 | `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the complicated styles |
 | `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour marks, on the complicated styles |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
@@ -74,10 +74,10 @@ not Connect IQ app settings. Currently configurable:
   `source/app/Styles.mc` decodes it. Ids must stay in step with
   `watchface.xml`.
 - **Accent color** — the seconds and goal hands, the wind bearing in a light
-  wind, the recovery hours, and the hour hand until the sun is known: the
-  things meant to stand apart.
-- **Data color** — the time, the status icons and the data container, and
-  the rim marks and numerals until the sun is known.
+  wind, and the hour hand until the sun is known: the things meant to stand
+  apart.
+- **Data color** — the time, the status icons, the data container and the
+  recovery hours, and the rim marks and numerals until the sun is known.
 - **Data container** — one complication slot centered below the time. The
   types it offers are listed one by one in `watchface.xml` rather than opened
   up with `allowAny`, which keeps the picker to what reads well in a slot this
@@ -183,10 +183,9 @@ every quarter hour, and the numerals 24, 4, 8, 12, 16 and 20 against the
 inner ends of their marks - left off on the simple styles.
 
 On the complicated styles the hours left to recover
-(`ActivityMonitor.Info.timeToRecovery`) take the accent color on the outer
-quarter of an hour mark's reach, on every mark and twice as wide on the
-minor ones, not the numerals: the 24, and one more mark for each hour, hour
-and minor marks alike, clockwise from it - 1 hour colors the 24 and the
+(`ActivityMonitor.Info.timeToRecovery`) take the data color in place of the
+day's, each mark in its usual shape, not the numerals: the 24, and one more
+mark for each hour, hour and minor marks alike, clockwise from it - 1 hour colors the 24 and the
 minor mark after it, 16 hours the marks from the 24 through the 4. The whole
 dial is 95 hours, and more than that colors every mark. With none left, none
 are colored. Read once a minute; the marks are never touched by a partial
@@ -212,7 +211,7 @@ above that. It reaches past the marks, so a partial update puts it back when
 the seconds hand's clip cuts into it, as it does the hour hand.
 
 The complicated styles also carry the goal hand: an accent colored dot, as
-wide across as two hour marks, three pixels inside the hour marks' inner
+wide across as two hour marks, four pixels inside the hour marks' inner
 ends, passing under the hour hand. It goes round once from the 24 to the
 goal picked in the goal slot and stays at the 24 past it. Each goal comes off
 `ActivityMonitor.Info` rather than the complication, which carries no goal:

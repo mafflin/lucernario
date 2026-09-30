@@ -2,11 +2,10 @@ import Toybox.Graphics;
 import Toybox.Lang;
 
 //! 24 hour marks, midnight at the top, the even ones longer and wider, with
-//! three minor marks between each pair. Colored with the day - see DayColors. On the complicated style the
-//! hours left to recover take the accent color on the outer quarter of an
-//! odd hour mark's reach, twice as wide on the minor marks: the 24, then one
-//! mark per hour clockwise, hour and minor alike. The whole dial is 95
-//! hours.
+//! three minor marks between each pair. Colored with the day - see DayColors.
+//! On the complicated style the hours left to recover take the data color
+//! instead: the 24, then one mark per hour clockwise, hour and minor alike.
+//! The whole dial is 95 hours.
 class RimMarks {
 
     //! Width as a share of the radius, in pixels - see RimPainter.drawRadial
@@ -29,10 +28,6 @@ class RimMarks {
     private const MINOR_LENGTH_NUMERATOR = 2;
     private const MINOR_LENGTH_DIVISOR = 3;
     private const MINOR_WIDTH = 1;
-    private const MINOR_RECOVERY_WIDTH = MINOR_WIDTH * 2;
-
-    //! Recovery reach as a share of an odd hour mark's
-    private const RECOVERY_LENGTH_DIVISOR = 4;
 
     //! Resolved in prepare()
     private var evenLength as Number = 0;
@@ -40,7 +35,6 @@ class RimMarks {
     private var hourWidth as Number = MIN_WIDTH;
     private var oddHourWidth as Number = MIN_WIDTH;
     private var minorLength as Number = 0;
-    private var recoveryLength as Number = 0;
 
     private var dayColors as DayColors;
 
@@ -67,7 +61,6 @@ class RimMarks {
         oddHourWidth = (hourWidth + 1) / 2;
 
         minorLength = oddLength * MINOR_LENGTH_NUMERATOR / MINOR_LENGTH_DIVISOR;
-        recoveryLength = oddLength / RECOVERY_LENGTH_DIVISOR;
     }
 
     //! How far in from the rim an even hour mark comes: the longest
@@ -112,19 +105,14 @@ class RimMarks {
         }
     }
 
-    //! In the day's color; among the hours left, the outer quarter of an hour
-    //! mark's reach in the recovery color. index counts every mark clockwise
-    //! from the 24, hour marks on every fourth.
+    //! In the day's color, or the recovery color among the hours left. index
+    //! counts every mark clockwise from the 24, hour marks on every fourth.
     private function drawMark(dc as Dc, index as Number, degrees as Float) as Void {
         var isHour = (index % STEPS_PER_HOUR) == 0;
+        var color = (index < recoveryMarks) ? recoveryColor : dayColors.colorAt(degrees);
 
-        RimPainter.setPen(dc, dayColors.colorAt(degrees), isHour ? hourWidthAt(index) : MINOR_WIDTH);
+        RimPainter.setPen(dc, color, isHour ? hourWidthAt(index) : MINOR_WIDTH);
         RimPainter.drawRadial(dc, degrees, isHour ? hourLengthAt(index) : minorLength);
-
-        if (index < recoveryMarks) {
-            RimPainter.setPen(dc, recoveryColor, isHour ? hourWidthAt(index) : MINOR_RECOVERY_WIDTH);
-            RimPainter.drawRadial(dc, degrees, recoveryLength);
-        }
     }
 
     private function hourLengthAt(index as Number) as Number {

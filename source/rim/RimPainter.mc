@@ -2,14 +2,21 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! Draws the rim's shapes: lines running in from the rim for the marks and
-//! the hour hand, filled triangles for the seconds hand and the wind. All
+//! Draws the rim's shapes: lines running in from the rim for the marks,
+//! filled polygons for the hands and the wind. All
 //! rely on the smoothing the view turns on once per update. The pen is
 //! round, so a line runs past each end by penRadius.
 module RimPainter {
 
     //! An equilateral triangle's height over its base
     const EQUILATERAL_HEIGHT = 0.866;
+
+    //! How wide a hand spanning this many degrees is at the ring's inner edge
+    function widthAcross(degrees as Number) as Float {
+        var inner = Dial.rim - Dial.ringDepth;
+
+        return (2 * inner * Math.sin(Math.toRadians(degrees / 2.0))).toFloat();
+    }
 
     //! Before drawRadial: a mark is as wide as the pen
     function setPen(dc as Dc, color as Number, widthPixels as Number) as Void {
