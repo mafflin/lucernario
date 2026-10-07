@@ -2,11 +2,11 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! 24 hour marks, midnight at the top, all the same size, with three minor
+//! 24 hour marks, noon at the top, all the same size, with three minor
 //! marks between each pair. Colored with the day - see DayColors - the mark
 //! nearest solar noon orange and, if minor, twice as wide.
 //! On every style but Numerals the hours left to recover take the data color
-//! instead, the minor marks among them twice as wide: the 24, then one mark
+//! instead, the minor marks among them twice as wide: the 12, then one mark
 //! per hour clockwise, hour and minor alike. The whole dial is 95 hours.
 class RimMarks {
 
@@ -47,7 +47,7 @@ class RimMarks {
 
     private var recoveryShown as Boolean = false;
 
-    //! Marks in the recovery color, clockwise from the 24; none at zero
+    //! Marks in the recovery color, clockwise from the 12; none at zero
     private var recoveryMarks as Number = 0;
     private var recoveryColor as Number = Graphics.COLOR_WHITE;
 
@@ -95,7 +95,7 @@ class RimMarks {
             return;
         }
 
-        // The 24 starts the count; each hour adds the mark after it.
+        // The 12 starts the count; each hour adds the mark after it.
         recoveryMarks = hours + 1;
     }
 
@@ -115,7 +115,7 @@ class RimMarks {
 
     //! In the day's color, orange nearest solar noon, or the recovery color
     //! among the hours left, minor marks twice as wide at noon and among the
-    //! hours left. index counts every mark clockwise from the 24, hour marks
+    //! hours left. index counts every mark clockwise from the 12, hour marks
     //! on every fourth.
     private function drawMark(dc as Dc, index as Number, degrees as Float) as Void {
         var isHour = (index % STEPS_PER_HOUR) == 0;

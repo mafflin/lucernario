@@ -2,9 +2,10 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! 24, 4, 8, 12, 16 and 20 against the inner ends of their marks, colored
-//! with the day. Turned to follow the marks, 8 through 16 flipped so they
-//! do not read upside down; a watch without vector fonts gets them upright.
+//! 12, 16, 20, 24, 4 and 8 clockwise from the top, against the inner ends of
+//! their marks, colored with the day. Turned to follow the marks, 20 through 4
+//! flipped so they do not read upside down; a watch without vector fonts gets
+//! them upright.
 //! The seconds hand crosses one every ten seconds, so a partial update puts
 //! back only the nearest. Left off on Data and Data Lite.
 class RimNumerals {
@@ -12,6 +13,9 @@ class RimNumerals {
     private const COUNT = 6;
     private const HOURS_APART = Dial.HOUR_MARKS / COUNT;
     private const SECONDS_APART = Dial.SECONDS_PER_TURN / COUNT;
+
+    //! Noon, half the dial round from midnight - see Dial.MIDNIGHT_DEGREES
+    private const TOP_HOUR = Dial.HOUR_MARKS / 2;
 
     //! Air between the marks and the digits, as a share of the ring
     private const GAP_DIVISOR = 5;
@@ -41,7 +45,7 @@ class RimNumerals {
     private var dayColors as DayColors;
     private var enabled as Boolean = true;
 
-    //! The 24 is left off while the system's activity indicator sits over it
+    //! The 12 is left off while the system's activity indicator sits over it
     private var topHidden as Boolean = false;
 
     //! Per numeral, taken in draw() so a partial update need not work it out
@@ -57,10 +61,7 @@ class RimNumerals {
         boxes = new [COUNT] as Array<Box>;
 
         for (var index = 0; index < COUNT; index++) {
-            // Midnight reads as 24, not 0.
-            var hour = (index == 0) ? Dial.HOUR_MARKS : (index * HOURS_APART);
-
-            texts[index] = hour.toString();
+            texts[index] = hourAt(index).toString();
             boxes[index] = new Box();
         }
     }
@@ -135,7 +136,14 @@ class RimNumerals {
         }
     }
 
-    //! Degrees clockwise from midnight
+    //! The hour a numeral reads, midnight as 24, not 0
+    private function hourAt(index as Number) as Number {
+        var hour = ((index * HOURS_APART) + TOP_HOUR) % Dial.HOUR_MARKS;
+
+        return (hour == 0) ? Dial.HOUR_MARKS : hour;
+    }
+
+    //! Degrees clockwise from the top
     private function positionOf(index as Number) as Number {
         return index * HOURS_APART * Dial.DEGREES_PER_HOUR_MARK;
     }

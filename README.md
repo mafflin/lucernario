@@ -41,12 +41,12 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/ActivityReading.mc` | The activity monitor, read once a minute for the recovery hours and the goal hand |
 | `source/time/Recovery.mc` | Hours left to recover, off the activity monitor |
 | `source/time/GoalProgress.mc` | Progress to the goal hand's goal, off the activity monitor |
-| `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 24 |
+| `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 12 |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after |
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
-| `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends; off on Data and Data Lite |
+| `source/rim/RimNumerals.mc` | 12, 16, 20, 24, 4 and 8, turned like the marks, against their inner ends; off on Data and Data Lite |
 | `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 5° across to its 8° and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
 | `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on Numerals & Data and Data |
 | `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour marks, on every style but Numerals |
@@ -186,23 +186,24 @@ small. The pen is round, so a line runs half its width past each
 end; every clearance and clip box counts that in.
 
 The rim is 24 hour marks with three thin minor marks between each pair, one
-every quarter hour, and the numerals 24, 4, 8, 12, 16 and 20 against the
-inner ends of their marks - left off on `Data` and `Data Lite`.
+every quarter hour, and the numerals 12, 16, 20, 24, 4 and 8 against the
+inner ends of their marks - left off on `Data` and `Data Lite`. Noon is at
+the top and midnight at the bottom, so the sun travels the upper half.
 
 On every style but `Numerals` the hours left to recover
 (`ActivityMonitor.Info.timeToRecovery`) take the data color in place of the
-day's, the minor marks among them twice as wide, not the numerals: the 24, and
+day's, the minor marks among them twice as wide, not the numerals: the 12, and
 one more mark for each hour, hour and minor marks alike, clockwise from it - 1
-hour colors the 24 and the minor mark after it, 16 hours the marks from the 24
-through the 4. The whole dial is 95 hours, and more than that colors every
+hour colors the 12 and the minor mark after it, 16 hours the marks from the 12
+through the 16. The whole dial is 95 hours, and more than that colors every
 mark. With none left, none are colored. Read once a minute; the marks are
 never touched by a partial one.
 
 While an activity is under way the system draws its own indicator at the top
-of the screen, over the 24, so the 24 is left off then. `ActivityTimer` reads
+of the screen, over the 12, so the 12 is left off then. `ActivityTimer` reads
 that off `Activity.Info.timerState` once a minute, which not every watch
-hands a watch face; where it does not, the 24 stays. The stopwatch has no API at all and
-is not covered.
+hands a watch face; where it does not, the 12 stays. The stopwatch has no API
+at all and is not covered.
 
 On `Data` a sun field sits below the data container, in `FONT_XTINY`: a
 ringed sun for the sunrise, a solid one for the sunset.
@@ -244,8 +245,8 @@ the seconds hand's clip cuts into it, as it does the hour hand.
 
 The same styles also carry the goal hand: an accent colored dot, as
 wide across as two hour marks, four pixels inside the hour marks' inner
-ends, passing under the hour hand. It goes round once from the 24 to the
-goal picked in the goal slot and stays at the 24 past it. Each goal comes off
+ends, passing under the hour hand. It goes round once from the 12 to the
+goal picked in the goal slot and stays at the 12 past it. Each goal comes off
 `ActivityMonitor.Info` rather than the complication, which carries no goal:
 `steps` over `stepGoal`, `floorsClimbed` over `floorsClimbedGoal`, and
 `activeMinutesWeek.total` over `activeMinutesWeekGoal` (a weekly goal). With no goal to read, the dot stays

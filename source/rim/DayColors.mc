@@ -46,12 +46,12 @@ class DayColors {
         zenithPosition = Dial.positionOfMinute(noon);
     }
 
-    //! Solar noon in degrees clockwise from midnight, null until the sun is known
+    //! Solar noon in degrees clockwise from the top, null until the sun is known
     function zenith() as Float? {
         return zenithPosition;
     }
 
-    //! The color at a moment of the day, in degrees clockwise from midnight
+    //! The color at a place on the dial, in degrees clockwise from the top
     function colorAt(degrees as Numeric) as Number {
         var isDay = isDayAt(degrees);
 

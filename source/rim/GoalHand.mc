@@ -69,7 +69,7 @@ class GoalHand extends WatchUi.Drawable {
         }
     }
 
-    //! A box of its own at the 24 when not shown, so redraw() finds nothing
+    //! A box of its own at the 12 when not shown, so redraw() finds nothing
     function getBoundingBox() as Graphics.BoundingBox {
         var outline = box;
 

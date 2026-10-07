@@ -13,6 +13,9 @@ module Dial {
     //! Dial zero is at the top; screen zero is at three o'clock, counterclockwise
     const TOP_DEGREES = 90;
 
+    //! Midnight at the bottom, noon at the top: the sun crosses the upper half
+    const MIDNIGHT_DEGREES = HALF_TURN;
+
     const SECONDS_PER_TURN = 60;
     const DEGREES_PER_SECOND = DEGREES_PER_CIRCLE / SECONDS_PER_TURN;
 
@@ -41,9 +44,11 @@ module Dial {
         ringDepth = rim * RING_DEPTH_NUMERATOR / RING_DEPTH_DIVISOR;
     }
 
-    //! Degrees clockwise from midnight. A float: a minute is a quarter degree.
+    //! Degrees clockwise from the top. A float: a minute is a quarter degree.
     function positionOfMinute(minutes as Number) as Float {
-        return minutes.toFloat() * DEGREES_PER_CIRCLE / Clock.MINUTES_PER_DAY;
+        var degrees = (minutes.toFloat() * DEGREES_PER_CIRCLE / Clock.MINUTES_PER_DAY) + MIDNIGHT_DEGREES;
+
+        return (degrees < DEGREES_PER_CIRCLE) ? degrees : (degrees - DEGREES_PER_CIRCLE);
     }
 
     //! The pixel at a screen angle and radius. Screen y grows downward.
