@@ -15,9 +15,10 @@ class DayColors {
     //! Until the sun is known
     private var fallbackColor as Number = Graphics.COLOR_WHITE;
 
-    //! Sunrise and sunset on the dial, null when not known
+    //! Sunrise, sunset and solar noon on the dial, null when not known
     private var sunrisePosition as Float? = null;
     private var sunsetPosition as Float? = null;
+    private var zenithPosition as Float? = null;
 
     function initialize(daylight as Daylight) {
         self.daylight = daylight;
@@ -31,15 +32,23 @@ class DayColors {
     function refresh() as Void {
         var sunrise = daylight.sunrise();
         var sunset = daylight.sunset();
+        var noon = daylight.zenith();
 
-        if ((sunrise == null) || (sunset == null)) {
+        if ((sunrise == null) || (sunset == null) || (noon == null)) {
             sunrisePosition = null;
             sunsetPosition = null;
+            zenithPosition = null;
             return;
         }
 
         sunrisePosition = Dial.positionOfMinute(sunrise);
         sunsetPosition = Dial.positionOfMinute(sunset);
+        zenithPosition = Dial.positionOfMinute(noon);
+    }
+
+    //! Solar noon in degrees clockwise from midnight, null until the sun is known
+    function zenith() as Float? {
+        return zenithPosition;
     }
 
     //! The color at a moment of the day, in degrees clockwise from midnight

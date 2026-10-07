@@ -1,8 +1,10 @@
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.Math;
 
 //! 24 hour marks, midnight at the top, all the same size, with three minor
-//! marks between each pair. Colored with the day - see DayColors.
+//! marks between each pair. Colored with the day - see DayColors - the mark
+//! nearest solar noon orange and, if minor, twice as wide.
 //! On every style but Numerals the hours left to recover take the data color
 //! instead, the minor marks among them twice as wide: the 24, then one mark
 //! per hour clockwise, hour and minor alike. The whole dial is 95 hours.
@@ -29,14 +31,19 @@ class RimMarks {
     private const MINOR_LENGTH_NUMERATOR = 2;
     private const MINOR_LENGTH_DIVISOR = 3;
     private const MINOR_WIDTH = 1;
-    private const MINOR_RECOVERY_WIDTH = MINOR_WIDTH * 2;
+    private const WIDE_MINOR_WIDTH = MINOR_WIDTH * 2;
 
     //! Resolved in prepare()
     private var hourLength as Number = 0;
     private var hourWidth as Number = MIN_WIDTH;
     private var minorLength as Number = 0;
 
+    private const ZENITH_COLOR = Palette.ORANGE;
+
     private var dayColors as DayColors;
+
+    //! The mark nearest solar noon, null until the sun is known
+    private var zenithIndex as Number? = null;
 
     private var recoveryShown as Boolean = false;
 
@@ -99,24 +106,42 @@ class RimMarks {
     function draw(dc as Dc) as Void {
         var degreesPerStep = Dial.DEGREES_PER_HOUR_MARK.toFloat() / STEPS_PER_HOUR;
 
+        zenithIndex = indexNearest(dayColors.zenith(), degreesPerStep);
+
         for (var index = 0; index < MARK_COUNT; index++) {
             drawMark(dc, index, index * degreesPerStep);
         }
     }
 
-    //! In the day's color, or the recovery color among the hours left, the
-    //! minor marks twice as wide there. index counts every mark clockwise from
-    //! the 24, hour marks on every fourth.
+    //! In the day's color, orange nearest solar noon, or the recovery color
+    //! among the hours left, minor marks twice as wide at noon and among the
+    //! hours left. index counts every mark clockwise from the 24, hour marks
+    //! on every fourth.
     private function drawMark(dc as Dc, index as Number, degrees as Float) as Void {
         var isHour = (index % STEPS_PER_HOUR) == 0;
         var recovering = index < recoveryMarks;
-        var color = recovering ? recoveryColor : dayColors.colorAt(degrees);
+        var color = recovering ? recoveryColor : colorOf(index, degrees);
 
-        RimPainter.setPen(dc, color, isHour ? hourWidth : minorWidth(recovering));
+        RimPainter.setPen(dc, color, isHour ? hourWidth : minorWidth(index));
         RimPainter.drawRadial(dc, degrees, isHour ? hourLength : minorLength);
     }
 
-    private function minorWidth(recovering as Boolean) as Number {
-        return recovering ? MINOR_RECOVERY_WIDTH : MINOR_WIDTH;
+    private function colorOf(index as Number, degrees as Float) as Number {
+        return (index == zenithIndex) ? ZENITH_COLOR : dayColors.colorAt(degrees);
+    }
+
+    //! The mark nearest a place on the dial, null for none
+    private function indexNearest(degrees as Float?, degreesPerStep as Float) as Number? {
+        if (degrees == null) {
+            return null;
+        }
+
+        return Math.round(degrees / degreesPerStep).toNumber() % MARK_COUNT;
+    }
+
+    private function minorWidth(index as Number) as Number {
+        var isWide = (index < recoveryMarks) || (index == zenithIndex);
+
+        return isWide ? WIDE_MINOR_WIDTH : MINOR_WIDTH;
     }
 }

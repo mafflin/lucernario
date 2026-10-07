@@ -109,7 +109,9 @@ The color of the rim marks and numerals is not configurable: amber from the
 exact minute the sun rises to the minute it sets and sky blue the rest of the
 day, from the sunrise and sunset complications, the same numbers the data
 container shows. Each mark and numeral takes the color of the moment it
-stands for. Until the sun is known they are drawn in the data color.
+stands for. The one mark nearest solar noon, halfway from sunrise to sunset,
+is orange; a recovery mark keeps the data color. Until the sun is known they
+are drawn in the data color.
 
 The hour hand takes the same two colors the other way round: sky blue by day
 and amber through the night, so it stands out from the marks it sits among.
