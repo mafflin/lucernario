@@ -16,10 +16,15 @@ module Clock {
     var time as System.ClockTime? = null;
     var deviceSettings as System.DeviceSettings? = null;
 
-    //! Once per update, before anything draws
+    //! Once per full update, before anything draws
     function read() as Void {
-        time = System.getClockTime();
+        readTime();
         deviceSettings = System.getDeviceSettings();
+    }
+
+    //! For a partial update, which needs nothing but the second
+    function readTime() as Void {
+        time = System.getClockTime();
     }
 
     //! Reads if nothing has yet, for a caller outside an update

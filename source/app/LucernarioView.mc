@@ -154,7 +154,7 @@ class LucernarioView extends WatchUi.WatchFace {
             return;
         }
 
-        Clock.read();
+        Clock.readTime();
         smooth(dc);
         secondsHand.drawPartial(dc, restoreRimCallback);
     }
