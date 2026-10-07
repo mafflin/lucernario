@@ -17,7 +17,8 @@ battery, steps, heart rate, body battery, stress, calories, floors, intensity
 minutes, date, weekday and date, sunrise, sunset, altitude, pressure,
 notifications, weekly run and bike distance, recovery time, run and bike VO2
 max, training status, pulse ox, respiration, solar input, temperature and
-today's high and low.
+today's high and low. On Data, a countdown below it shows the
+minutes left through the last hour before sunrise or sunset.
 
 **Configured on the watch.** Style, accent color, data color and the data field
 are all set in Garmin's native watch face editor — no phone, no settings menus.

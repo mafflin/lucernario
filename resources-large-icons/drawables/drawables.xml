@@ -1,5 +1,5 @@
 <!--
-    The 36px status bar icons, for the larger screens.
+    The 36px status bar icons and the 24px suns, for the larger screens.
 
     These ids deliberately repeat resources/drawables/drawables.xml: monkey.jungle
     puts this directory after the base one on the resourcePath of every device
@@ -30,4 +30,7 @@
 
     <bitmap id="Am" filename="meridiem/am.png" packingFormat="png" />
     <bitmap id="Pm" filename="meridiem/pm.png" packingFormat="png" />
+
+    <bitmap id="Sunrise" filename="sun/sunrise.png" packingFormat="png" />
+    <bitmap id="Sunset" filename="sun/sunset.png" packingFormat="png" />
 </drawables>

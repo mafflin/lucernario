@@ -21,6 +21,11 @@ module Styles {
         return style != NUMERALS;
     }
 
+    //! The sunrise and sunset countdown below the data field
+    function hasSunCountdown(style as Number) as Boolean {
+        return style == DATA;
+    }
+
     //! The wind on the dial rather than in the status row
     function hasWindBearing(style as Number) as Boolean {
         return (style == NUMERALS_AND_DATA) || (style == DATA);

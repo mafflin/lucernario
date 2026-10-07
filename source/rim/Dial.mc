@@ -19,7 +19,6 @@ module Dial {
     //! A full circle is a day, one mark an hour
     const HOUR_MARKS = 24;
     const DEGREES_PER_HOUR_MARK = DEGREES_PER_CIRCLE / HOUR_MARKS;
-    const MINUTES_PER_DAY = HOUR_MARKS * Clock.MINUTES_PER_HOUR;
 
     //! The ring the rim is sized off, as a share of the radius
     const RING_DEPTH_NUMERATOR = 3;
@@ -44,7 +43,7 @@ module Dial {
 
     //! Degrees clockwise from midnight. A float: a minute is a quarter degree.
     function positionOfMinute(minutes as Number) as Float {
-        return minutes.toFloat() * DEGREES_PER_CIRCLE / MINUTES_PER_DAY;
+        return minutes.toFloat() * DEGREES_PER_CIRCLE / Clock.MINUTES_PER_DAY;
     }
 
     //! The pixel at a screen angle and radius. Screen y grows downward.

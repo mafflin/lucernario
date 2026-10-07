@@ -35,6 +35,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
+| `source/time/SunCountdown.mc` | Minutes to the next sunrise or sunset, in the hour before it, on Data |
 | `source/time/ActivityReading.mc` | The activity monitor, read once a minute for the recovery hours and the goal hand |
 | `source/time/Recovery.mc` | Hours left to recover, off the activity monitor |
 | `source/time/GoalProgress.mc` | Progress to the goal hand's goal, off the activity monitor |
@@ -193,6 +194,15 @@ of the screen, over the 24, so the 24 is left off then. `ActivityTimer` reads
 that off `Activity.Info.timerState` once a minute, which not every watch
 hands a watch face; where it does not, the 24 stays. The stopwatch has no API at all and
 is not covered.
+
+On `Data` a countdown sits below the data container, in `FONT_XTINY` and the
+data color: a ringed sun for the sunrise or a solid one for the sunset, then
+the minutes left to it - 46 with 46 minutes to go. It shows only through the
+hour before the event and is gone once the event comes, off the same sunrise
+and sunset complications as the rim colors. The suns are 18px and 24px, smaller
+than the status row's, to stand beside the digits. It lies in the
+seconds hand's path on the smaller screens, so a partial update puts it back
+when the clip cuts into it.
 
 The status row carries battery, phone, alarm, wind and AM/PM. The wind is one
 arrow in the row, pointing downwind (the bearing is where the wind comes from,
