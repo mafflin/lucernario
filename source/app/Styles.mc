@@ -21,8 +21,8 @@ module Styles {
         return style != NUMERALS;
     }
 
-    //! The sunrise and sunset countdown below the data field
-    function hasSunCountdown(style as Number) as Boolean {
+    //! The sun field below the data field
+    function hasSunField(style as Number) as Boolean {
         return style == DATA;
     }
 

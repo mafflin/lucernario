@@ -34,8 +34,10 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
 | `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
-| `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications |
-| `source/time/SunCountdown.mc` | Minutes to the next sunrise or sunset, in the hour before it, on Data |
+| `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications, solar noon between them, and dawn and dusk |
+| `source/time/Twilight.mc` | Civil dawn and dusk (the sun 6° down), from the latitude and the date |
+| `source/time/Latitude.mc` | The latitude, from the weather's location or the last fix |
+| `source/time/SunField.mc` | The sun below the data field on Data: countdown, twilight and solar noon |
 | `source/time/ActivityReading.mc` | The activity monitor, read once a minute for the recovery hours and the goal hand |
 | `source/time/Recovery.mc` | Hours left to recover, off the activity monitor |
 | `source/time/GoalProgress.mc` | Progress to the goal hand's goal, off the activity monitor |
@@ -195,14 +197,30 @@ that off `Activity.Info.timerState` once a minute, which not every watch
 hands a watch face; where it does not, the 24 stays. The stopwatch has no API at all and
 is not covered.
 
-On `Data` a countdown sits below the data container, in `FONT_XTINY` and the
-data color: a ringed sun for the sunrise or a solid one for the sunset, then
-the minutes left to it - 46 with 46 minutes to go. It shows only through the
-hour before the event and is gone once the event comes, off the same sunrise
-and sunset complications as the rim colors. The suns are 18px and 24px, smaller
-than the status row's, to stand beside the digits. It lies in the
-seconds hand's path on the smaller screens, so a partial update puts it back
-when the clip cuts into it.
+On `Data` a sun field sits below the data container, in `FONT_XTINY`: a
+ringed sun for the sunrise, a solid one for the sunset.
+
+- Through the hour before sunrise or sunset, the sun and the minutes left to
+  it - 46 with 46 minutes to go - in the data color, and gone once the event
+  comes. Before sunrise it turns orange (`Palette.ORANGE`, 0xFF5500) once
+  dawn has come.
+- From sunset to dusk, the solid sun alone, orange. From dawn, the ringed sun
+  alone, orange, when dawn comes more than an hour before sunrise.
+- Within 30 minutes either side of solar noon, the solid sun alone, in the
+  data color.
+
+Sunrise and sunset come off the same complications as the rim colors, solar
+noon is halfway between them. Garmin gives no dawn or dusk, so they are
+civil twilight, the sun 6° below the horizon, worked out in
+`source/time/Twilight.mc` from the date and the latitude: the weather's
+observation location, or the last fix, with no positioning permission. With
+neither, the latitude comes from the day's length - except within about five
+days of an equinox, when every latitude has a twelve hour day; then there is
+no twilight to show.
+
+The suns are 18px and 24px, smaller than the status row's, to stand beside
+the digits. The field lies in the seconds hand's path on the smaller screens,
+so a partial update puts it back when the clip cuts into it.
 
 The status row carries battery, phone, alarm, wind and AM/PM. The wind is one
 arrow in the row, pointing downwind (the bearing is where the wind comes from,

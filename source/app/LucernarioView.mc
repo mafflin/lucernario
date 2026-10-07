@@ -8,10 +8,10 @@ import Toybox.WatchUi;
 class LucernarioView extends WatchUi.WatchFace {
 
     //! Shares of the screen height: the line the status row mirrors, the
-    //! data container's drop below it, and the countdown's below that
+    //! data container's drop below it, and the sun field's below that
     private const FRAME_RATIO = 0.66;
     private const FIELD_DROP_RATIO = 0.02;
-    private const COUNTDOWN_DROP_RATIO = 0.02;
+    private const SUN_DROP_RATIO = 0.02;
 
     private const BACKGROUND = Graphics.COLOR_BLACK;
 
@@ -23,7 +23,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
     private var timeDisplay as TimeDisplay;
     private var daylight as Daylight;
-    private var sunCountdown as SunCountdown;
+    private var sunField as SunField;
     private var dayColors as DayColors;
     private var rimMarks as RimMarks;
     private var numerals as RimNumerals;
@@ -64,7 +64,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         timeDisplay = new TimeDisplay();
         daylight = new Daylight();
-        sunCountdown = new SunCountdown(daylight);
+        sunField = new SunField(daylight);
         dayColors = new DayColors(daylight);
         rimMarks = new RimMarks(dayColors);
         numerals = new RimNumerals(dayColors);
@@ -132,7 +132,7 @@ class LucernarioView extends WatchUi.WatchFace {
         windBearing.draw(dc);
         statusBar.draw(dc);
         timeDisplay.draw(dc);
-        sunCountdown.draw(dc);
+        sunField.draw(dc);
         drawEditable(dc);
         hourHand.draw(dc);
         drawSecondsHand(dc);
@@ -155,7 +155,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
         numerals.redraw(dc, second);
         statusBar.redraw(dc);
-        sunCountdown.redraw(dc);
+        sunField.redraw(dc);
         windBearing.redraw(dc);
         goalHand.redraw(dc);
         hourHand.redraw(dc);
@@ -237,10 +237,10 @@ class LucernarioView extends WatchUi.WatchFace {
         var top = frame + (Dial.screenHeight * FIELD_DROP_RATIO).toNumber();
 
         var fieldHeight = centerField.heightIn(dc);
-        var countdownTop = top + fieldHeight + (Dial.screenHeight * COUNTDOWN_DROP_RATIO).toNumber();
+        var sunTop = top + fieldHeight + (Dial.screenHeight * SUN_DROP_RATIO).toNumber();
 
         centerField.prepare(dc, Dial.centerX, top + (fieldHeight / 2));
-        sunCountdown.prepare(dc, Dial.centerX, countdownTop);
+        sunField.prepare(dc, Dial.centerX, sunTop);
 
         statusBar.mirror(frame);
     }
@@ -257,7 +257,7 @@ class LucernarioView extends WatchUi.WatchFace {
     //! Everything the draw reads, before anything draws
     private function refreshReadings() as Void {
         daylight.refresh();
-        sunCountdown.refresh();
+        sunField.refresh();
         windReading.refresh();
         activityTimer.refresh();
         refreshActivity();
@@ -379,7 +379,7 @@ class LucernarioView extends WatchUi.WatchFace {
         activityShown = Styles.hasActivity(style);
 
         numerals.setEnabled(Styles.hasNumerals(style));
-        sunCountdown.setEnabled(Styles.hasSunCountdown(style));
+        sunField.setEnabled(Styles.hasSunField(style));
         windBearing.setEnabled(windBearingShown);
         statusBar.setWindShown(!windBearingShown);
         rimMarks.setRecoveryShown(activityShown);
@@ -401,7 +401,7 @@ class LucernarioView extends WatchUi.WatchFace {
         var color = colorOf(dataColor);
 
         timeDisplay.setColor(color);
-        sunCountdown.setColor(color);
+        sunField.setColor(color);
         dayColors.setFallbackColor(color);
         rimMarks.setRecoveryColor(color);
         statusBar.setColor(color);

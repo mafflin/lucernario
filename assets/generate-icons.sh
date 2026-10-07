@@ -65,7 +65,7 @@ pair() {
 pair alarm.svg alarm/alarm.png
 pair phone.svg phone/phone.png
 
-# The suns stand beside the digits of the countdown below the data field,
+# The suns stand beside the digits of the sun field below the data field,
 # FONT_XTINY, so they are smaller than the row: 18px, and 24px on the large
 # screens, where a unit of the 24 unit art is a whole pixel. A ring for the
 # sunrise, a solid sun for the sunset. The ring is the solid sun with a hole
