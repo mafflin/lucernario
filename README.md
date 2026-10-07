@@ -29,7 +29,7 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/app/LucernarioView.mc` | Owns the elements, applies configuration, clears the screen |
 | `source/app/LucernarioDelegate.mc` | Receives live edits from the native watch face editor |
 | `source/app/Palette.mc` | The colors the code names, in step with `watchface.xml` |
-| `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`, and the colors each implies |
+| `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`, and what each puts on the rim |
 | `source/time/TimeDisplay.mc` | Formats and draws the time |
 | `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
 | `source/time/Fonts.mc` | Measures the ink height of a font |
@@ -41,12 +41,12 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 24 |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
-| `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after, shaded to the style |
+| `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after |
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
-| `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends; off on the simple styles |
+| `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends; off on Data and Data Lite |
 | `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 5° across to its 8° and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
-| `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on the complicated styles |
-| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour marks, on the complicated styles |
+| `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on Numerals & Data and Data |
+| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour marks, on every style but Numerals |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch, and the test against it |
 | `source/rim/Box.mc` | The box around a shape, for that test |
@@ -64,14 +64,12 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
-- **Style** — `Dark` (default), `Light`, `Dark Complicated`, `Light
-  Complicated`, `Dark Simple` or `Light Simple`. The complicated styles move the
-  wind out of the status row and onto the dial, show the hours left to
-  recover on the rim and add the goal hand. The simple styles are the
-  complicated ones with the rim numerals left off, and everything said of
-  the complicated styles below holds for them too. The editor has no
-  background setting, so the style id is what carries it;
-  `source/app/Styles.mc` decodes it. Ids must stay in step with
+- **Style** — `Numerals` (default), `Numerals & Data`, `Data` or `Data
+  Lite`, named for what the rim carries. All but `Numerals` show the hours
+  left to recover on the rim and add the goal hand. `Numerals & Data` and
+  `Data` also move the wind out of the status row and onto the dial. `Data`
+  and `Data Lite` leave the rim numerals off. The background is always
+  black. `source/app/Styles.mc` decodes the id. Ids must stay in step with
   `watchface.xml`.
 - **Accent color** — the seconds and goal hands, the wind bearing in a light
   wind, and the hour hand until the sun is known: the things meant to stand
@@ -89,25 +87,24 @@ not Connect IQ app settings. Currently configurable:
   holds until the editor has said anything at all. Requires the
   `ComplicationSubscriber` permission.
 - **Goal** — a second complication slot, used only to pick the goal hand's
-  goal on the complicated styles: steps (default), floors climbed or
+  goal on every style but `Numerals`: steps (default), floors climbed or
   intensity minutes. The editor shows it on every style, since a slot cannot
-  be tied to one, and it does nothing on the others. There is no "none"
+  be tied to one, and it does nothing on `Numerals`. There is no "none"
   entry either; the style is what turns the hand off.
 
-Both colors offer the same thirty named colors, declared explicitly in
+Both colors offer the same 29 named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
 color, and with `allowAny` the fēnix 8 Solar filled its picker with garbled
 entries. Every channel is 00, 55, AA or FF — the 64 color MIP palette — so
-none of them dither on those screens. Black is there for the light style.
+none of them dither on those screens. Black is left out: the background is
+black.
 
-Left unset, both fall back to whatever reads against the style's background:
-white on the dark style, black on the light one. A color the user has chosen
-is kept as it is when the style changes.
+Left unset, both fall back to white. A color the user has chosen is kept as
+it is when the style changes.
 
 The color of the rim marks and numerals is not configurable: amber from the
 exact minute the sun rises to the minute it sets and sky blue the rest of the
-day — Amber and Sky on the dark style, Dark Amber and Dark Sky on the light
-one — from the sunrise and sunset complications, the same numbers the data
+day, from the sunrise and sunset complications, the same numbers the data
 container shows. Each mark and numeral takes the color of the moment it
 stands for. Until the sun is known they are drawn in the data color.
 
@@ -180,9 +177,9 @@ end; every clearance and clip box counts that in.
 
 The rim is 24 hour marks with three thin minor marks between each pair, one
 every quarter hour, and the numerals 24, 4, 8, 12, 16 and 20 against the
-inner ends of their marks - left off on the simple styles.
+inner ends of their marks - left off on `Data` and `Data Lite`.
 
-On the complicated styles the hours left to recover
+On every style but `Numerals` the hours left to recover
 (`ActivityMonitor.Info.timeToRecovery`) take the data color in place of the
 day's, the minor marks among them twice as wide, not the numerals: the 24, and
 one more mark for each hour, hour and minor marks alike, clockwise from it - 1
@@ -203,14 +200,14 @@ so a southerly, 180, points up), with the strength said in color: the
 data color up to 20 km/h, orange above that, red above 40. None of them have
 a setting: each icon shows whenever the thing it reports is worth reporting.
 
-On the complicated styles the wind leaves the row for the dial: an
+On `Numerals & Data` and `Data` the wind leaves the row for the dial: an
 equilateral triangle the size of the seconds hand, standing on the rim at
 the bearing the wind blows from and pointing the way it blows, north at the
 top. It takes the accent color in a light wind and the same orange and red
 above that. It reaches past the marks, so a partial update puts it back when
 the seconds hand's clip cuts into it, as it does the hour hand.
 
-The complicated styles also carry the goal hand: an accent colored dot, as
+The same styles also carry the goal hand: an accent colored dot, as
 wide across as two hour marks, four pixels inside the hour marks' inner
 ends, passing under the hour hand. It goes round once from the 24 to the
 goal picked in the goal slot and stays at the 24 past it. Each goal comes off
@@ -223,9 +220,8 @@ at once, off the last read. It lies in the seconds hand's path, so a partial
 update puts it back when the clip cuts into it.
 
 The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
-and tinted to the data color; untinted it would be invisible on the light
-style. The battery overrides that for its two lowest levels, which stay red
-and orange.
+and tinted to the data color. The battery overrides that for its two lowest
+levels, which stay red and orange.
 
 The wind is the one item with no artwork: `Wind.paint()` overrides
 `Icon.paint()` and fills three corners it turns itself. A bitmap cannot be
@@ -269,7 +265,8 @@ sh assets/generate-icons.sh
 which needs `rsvg-convert` (librsvg) and `python3`. Each path is refilled
 white on the way through, because the SVGs are black on transparent: the
 status icons are
-tinted at draw time and would be invisible untinted on the dark style, and the
+tinted at draw time and would be invisible untinted on the black background,
+and the
 launcher icon sits in the device's dark app list.
 
 The status icons render at 24px into `resources/` and 36px into

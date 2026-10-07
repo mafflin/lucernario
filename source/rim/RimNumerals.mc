@@ -6,7 +6,7 @@ import Toybox.Math;
 //! with the day. Turned to follow the marks, 8 through 16 flipped so they
 //! do not read upside down; a watch without vector fonts gets them upright.
 //! The seconds hand crosses one every ten seconds, so a partial update puts
-//! back only the nearest. Left off on the simple styles.
+//! back only the nearest. Left off on Data and Data Lite.
 class RimNumerals {
 
     private const COUNT = 6;

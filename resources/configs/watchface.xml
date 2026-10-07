@@ -2,20 +2,18 @@
     <watchface-config>
         <!-- Ids must match the Styles module in source/app/Styles.mc -->
         <styles>
-            <style id="1" label="@Strings.styleDark" default="true"/>
-            <style id="2" label="@Strings.styleLight"/>
-            <style id="3" label="@Strings.styleDarkComplicated"/>
-            <style id="4" label="@Strings.styleLightComplicated"/>
-            <style id="5" label="@Strings.styleDarkSimple"/>
-            <style id="6" label="@Strings.styleLightSimple"/>
+            <style id="1" label="@Strings.styleNumerals" default="true"/>
+            <style id="2" label="@Strings.styleNumeralsAndData"/>
+            <style id="3" label="@Strings.styleData"/>
+            <style id="4" label="@Strings.styleDataLite"/>
         </styles>
         <!-- An explicit palette rather than allowAny: the editor wants a
              label per color, and with allowAny the fenix 8 Solar filled its
              picker with garbled entries.
 
              Every channel is 00, 55, AA or FF - the 64 color MIP palette -
-             so none of these dither on those screens. Black is there for
-             the light style.
+             so none of these dither on those screens. No black: the
+             background is black.
 
              Accent colors the hands; data colors the time, the status row
              and the data field, and the rim until the sun is known. -->
@@ -23,7 +21,6 @@
             <color label="@Strings.ColorWhite" default="true">0xFFFFFF</color>
             <color label="@Strings.ColorGray">0xAAAAAA</color>
             <color label="@Strings.ColorDarkGray">0x555555</color>
-            <color label="@Strings.ColorBlack">0x000000</color>
             <color label="@Strings.ColorLightRed">0xFF5555</color>
             <color label="@Strings.ColorRed">0xFF0000</color>
             <color label="@Strings.ColorDarkRed">0xAA0000</color>
@@ -55,7 +52,6 @@
             <color label="@Strings.ColorWhite" default="true">0xFFFFFF</color>
             <color label="@Strings.ColorGray">0xAAAAAA</color>
             <color label="@Strings.ColorDarkGray">0x555555</color>
-            <color label="@Strings.ColorBlack">0x000000</color>
             <color label="@Strings.ColorLightRed">0xFF5555</color>
             <color label="@Strings.ColorRed">0xFF0000</color>
             <color label="@Strings.ColorDarkRed">0xAA0000</color>
@@ -120,7 +116,7 @@
                 <type>Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE</type>              <!-- TEMP -->
                 <type>Complications.COMPLICATION_TYPE_HIGH_LOW_TEMPERATURE</type>             <!-- no label -->
             </complication>
-            <!-- The goal hand's goal; each type needs a case in GoalProgress -->
+            <!-- The goal hand's goal, unused on Numerals; each type needs a case in GoalProgress -->
             <complication id="2">
                 <type default="true">Complications.COMPLICATION_TYPE_STEPS</type>
                 <type>Complications.COMPLICATION_TYPE_FLOORS_CLIMBED</type>

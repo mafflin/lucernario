@@ -1,40 +1,28 @@
-import Toybox.Graphics;
 import Toybox.Lang;
 
-//! The editor's styles. The editor has no background setting, so the style
-//! carries it. Ids must match the <style> ids in watchface.xml.
+//! The editor's styles, named for what the rim carries. Ids must match the
+//! <style> ids in watchface.xml.
 module Styles {
     enum Value {
-        DARK = 1,
-        LIGHT = 2,
-        DARK_COMPLICATED = 3,
-        LIGHT_COMPLICATED = 4,
-        DARK_SIMPLE = 5,
-        LIGHT_SIMPLE = 6
+        NUMERALS = 1,
+        NUMERALS_AND_DATA = 2,
+        DATA = 3,
+        DATA_LITE = 4
     }
 
-    const DEFAULT = DARK;
+    const DEFAULT = NUMERALS;
 
-    function backgroundOf(style as Number) as Number {
-        return isLight(style) ? Graphics.COLOR_WHITE : Graphics.COLOR_BLACK;
+    function hasNumerals(style as Number) as Boolean {
+        return (style == NUMERALS) || (style == NUMERALS_AND_DATA);
     }
 
-    //! The color to fall back on: whatever reads against the background
-    function foregroundOf(style as Number) as Number {
-        return isLight(style) ? Graphics.COLOR_BLACK : Graphics.COLOR_WHITE;
+    //! Recovery marks and the goal hand, both off the activity monitor
+    function hasActivity(style as Number) as Boolean {
+        return style != NUMERALS;
     }
 
-    function isLight(style as Number) as Boolean {
-        return (style == LIGHT) || (style == LIGHT_COMPLICATED) || (style == LIGHT_SIMPLE);
-    }
-
-    //! Wind bearing, recovery marks and the goal hand; the simple styles too
-    function isComplicated(style as Number) as Boolean {
-        return (style == DARK_COMPLICATED) || (style == LIGHT_COMPLICATED) || isSimple(style);
-    }
-
-    //! Complicated, without the rim numerals
-    function isSimple(style as Number) as Boolean {
-        return (style == DARK_SIMPLE) || (style == LIGHT_SIMPLE);
+    //! The wind on the dial rather than in the status row
+    function hasWindBearing(style as Number) as Boolean {
+        return (style == NUMERALS_AND_DATA) || (style == DATA);
     }
 }

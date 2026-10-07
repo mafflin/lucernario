@@ -113,9 +113,8 @@ class Icon {
         return loaded as BitmapResource;
     }
 
-    //! The artwork is white on transparent, so it is tinted: untinted it
-    //! would vanish on the light style. Overridden by the wind, which draws
-    //! itself.
+    //! The artwork is white on transparent, tinted to the data color.
+    //! Overridden by the wind, which draws itself.
     protected function paint(dc as Dc, x as Number, y as Number) as Void {
         if (!(dc has :drawBitmap2)) {
             dc.drawBitmap(x, y, bitmap());

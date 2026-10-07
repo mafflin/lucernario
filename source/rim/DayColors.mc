@@ -1,21 +1,16 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! The rim's colors: amber from sunrise to sunset, sky blue after - bright
-//! on the dark style, dark on the light one. The data color until the sun
-//! is known. Shared by the marks, the numerals and the hour hand, which
-//! takes the other color so it stands out from the marks around it.
+//! The rim's colors: amber from sunrise to sunset, sky blue after. The data
+//! color until the sun is known. Shared by the marks, the numerals and the
+//! hour hand, which takes the other color so it stands out from the marks
+//! around it.
 class DayColors {
 
-    private const DARK_STYLE_DAY = Palette.AMBER;
-    private const DARK_STYLE_NIGHT = Palette.SKY;
-    private const LIGHT_STYLE_DAY = Palette.DARK_AMBER;
-    private const LIGHT_STYLE_NIGHT = Palette.DARK_SKY;
+    private const DAY_COLOR = Palette.AMBER;
+    private const NIGHT_COLOR = Palette.SKY;
 
     private var daylight as Daylight;
-
-    private var dayColor as Number = DARK_STYLE_DAY;
-    private var nightColor as Number = DARK_STYLE_NIGHT;
 
     //! Until the sun is known
     private var fallbackColor as Number = Graphics.COLOR_WHITE;
@@ -30,11 +25,6 @@ class DayColors {
 
     function setFallbackColor(color as Number) as Void {
         fallbackColor = color;
-    }
-
-    function setLight(isLight as Boolean) as Void {
-        dayColor = isLight ? LIGHT_STYLE_DAY : DARK_STYLE_DAY;
-        nightColor = isLight ? LIGHT_STYLE_NIGHT : DARK_STYLE_NIGHT;
     }
 
     //! Once per full update, after the daylight has refreshed
@@ -60,7 +50,7 @@ class DayColors {
             return fallbackColor;
         }
 
-        return isDay ? dayColor : nightColor;
+        return isDay ? DAY_COLOR : NIGHT_COLOR;
     }
 
     //! The night color by day and the day color by night, null until the sun
@@ -72,7 +62,7 @@ class DayColors {
             return null;
         }
 
-        return isDay ? nightColor : dayColor;
+        return isDay ? NIGHT_COLOR : DAY_COLOR;
     }
 
     //! Null until the sun is known

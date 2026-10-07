@@ -12,11 +12,13 @@ class LucernarioView extends WatchUi.WatchFace {
     private const FRAME_RATIO = 0.66;
     private const FIELD_DROP_RATIO = 0.02;
 
-    private var style as Number = Styles.DEFAULT;
-    private var background as Number = Graphics.COLOR_BLACK;
+    private const BACKGROUND = Graphics.COLOR_BLACK;
+
+    //! Until the editor has picked a color
+    private const DEFAULT_COLOR = Graphics.COLOR_WHITE;
 
     //! Gates the activity read
-    private var complicated as Boolean = false;
+    private var activityShown as Boolean = false;
 
     private var timeDisplay as TimeDisplay;
     private var daylight as Daylight;
@@ -255,7 +257,7 @@ class LucernarioView extends WatchUi.WatchFace {
 
     //! Shared by recovery and the goal hand
     private function refreshActivity() as Void {
-        if (!complicated) {
+        if (!activityShown) {
             return;
         }
 
@@ -277,7 +279,7 @@ class LucernarioView extends WatchUi.WatchFace {
     }
 
     private function paintBackground(dc as Dc) as Void {
-        dc.setColor(background, background);
+        dc.setColor(BACKGROUND, BACKGROUND);
         dc.clear();
     }
 
@@ -360,23 +362,17 @@ class LucernarioView extends WatchUi.WatchFace {
     }
 
     private function applyStyle(styleId as Number?) as Void {
-        style = Styles.DEFAULT;
+        var style = (styleId != null) ? styleId : Styles.DEFAULT;
 
-        if (styleId != null) {
-            style = styleId;
-        }
+        var windBearingShown = Styles.hasWindBearing(style);
 
-        background = Styles.backgroundOf(style);
-        dayColors.setLight(Styles.isLight(style));
-        numerals.setEnabled(!Styles.isSimple(style));
+        activityShown = Styles.hasActivity(style);
 
-        // Each element holds its own switch for the complicated style.
-        complicated = Styles.isComplicated(style);
-
-        windBearing.setEnabled(complicated);
-        statusBar.setWindShown(!complicated);
-        rimMarks.setRecoveryShown(complicated);
-        goalHand.setEnabled(complicated);
+        numerals.setEnabled(Styles.hasNumerals(style));
+        windBearing.setEnabled(windBearingShown);
+        statusBar.setWindShown(!windBearingShown);
+        rimMarks.setRecoveryShown(activityShown);
+        goalHand.setEnabled(activityShown);
     }
 
     //! The accent color: what is meant to stand apart from the rest
@@ -403,13 +399,13 @@ class LucernarioView extends WatchUi.WatchFace {
         }
     }
 
-    //! An editor color, or whatever reads against the style's background
+    //! An editor color, or the default
     private function colorOf(chosen as WatchFaceConfig.Color?) as Number {
         if ((chosen != null) && (chosen.color != null)) {
             return chosen.color as Number;
         }
 
-        return Styles.foregroundOf(style);
+        return DEFAULT_COLOR;
     }
 
     private function applyComplications(slots as Array<WatchFaceConfig.ComplicationRef>?) as Void {

@@ -3,7 +3,7 @@ import Toybox.Lang;
 
 //! 24 hour marks, midnight at the top, the even ones longer and wider, with
 //! three minor marks between each pair. Colored with the day - see DayColors.
-//! On the complicated style the hours left to recover take the data color
+//! On every style but Numerals the hours left to recover take the data color
 //! instead, the minor marks among them twice as wide: the 24, then one mark
 //! per hour clockwise, hour and minor alike. The whole dial is 95 hours.
 class RimMarks {

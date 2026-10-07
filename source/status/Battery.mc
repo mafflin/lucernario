@@ -11,7 +11,6 @@ class Battery extends Icon {
     private const LOW_LEVEL = 1;
     private const TOP_LEVEL = 10;
 
-    //! Both read against either background
     private const EMPTY_COLOR = Graphics.COLOR_RED;
     private const LOW_COLOR = Graphics.COLOR_ORANGE;
 
