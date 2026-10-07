@@ -3,7 +3,8 @@ import Toybox.Lang;
 
 //! Today's sunrise and sunset, off the complications - the same numbers the
 //! data container shows - solar noon halfway between, and dawn and dusk
-//! either side of noon. Read once a minute.
+//! either side of noon. Read once a minute; the twilight, which asks the
+//! weather and the activity for the latitude, only when the sun has moved.
 class Daylight {
 
     //! Minutes past midnight, null when not known
@@ -27,8 +28,15 @@ class Daylight {
             return;
         }
 
-        sunriseMinute = minutesOf(sunriseId);
-        sunsetMinute = minutesOf(sunsetId);
+        var sunrise = minutesOf(sunriseId);
+        var sunset = minutesOf(sunsetId);
+
+        if ((sunrise == sunriseMinute) && (sunset == sunsetMinute)) {
+            return;
+        }
+
+        sunriseMinute = sunrise;
+        sunsetMinute = sunset;
         refreshTwilight();
     }
 
