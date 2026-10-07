@@ -2,6 +2,8 @@
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
   <iq:application id="8f3c1d5a4b7e46f29c0a1e8d2b6f74c3" type="watchface" name="@Strings.AppName" entry="LucernarioApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="5.1.0">
     <iq:products>
+      <iq:product id="approachs7243mm"/>
+      <iq:product id="approachs7247mm"/>
       <iq:product id="d2mach2"/>
       <iq:product id="d2mach2pro"/>
       <iq:product id="enduro3"/>
@@ -26,6 +28,7 @@
       <iq:product id="fr970"/>
       <iq:product id="venu441mm"/>
       <iq:product id="venu445mm"/>
+      <iq:product id="venux1"/>
       <iq:product id="vivoactive6"/>
     </iq:products>
     <iq:permissions>
