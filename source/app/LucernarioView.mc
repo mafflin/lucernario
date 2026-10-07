@@ -97,12 +97,14 @@ class LucernarioView extends WatchUi.WatchFace {
         Dial.setup(dc);
         prepareRim(dc);
         placeFields(dc);
-        loadSettings();
 
         // The editor shows a snapshot; live updates are not worth the power.
+        // Before the settings: a saved pick then swaps the subscription.
         if (!editMode) {
             subscribeToComplications();
         }
+
+        loadSettings();
     }
 
     //! Apply the editor's settings. editedType is null while initializing.
@@ -467,11 +469,22 @@ class LucernarioView extends WatchUi.WatchFace {
             return;
         }
 
-        if (complicationId != null) {
+        if ((complicationId != null) && !field.shows(complicationId)) {
+            swapSubscription(field.getComplicationId(), complicationId);
             field.setComplicationId(complicationId);
         }
 
         field.refresh();
+    }
+
+    //! Live updates follow the pick; none in the editor
+    private function swapSubscription(from as Complications.Id, to as Complications.Id) as Void {
+        if (editMode) {
+            return;
+        }
+
+        Complications.unsubscribeFromUpdates(from);
+        Complications.subscribeToUpdates(to);
     }
 
     //! null until picked: steps stand
