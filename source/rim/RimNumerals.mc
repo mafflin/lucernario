@@ -70,7 +70,7 @@ class RimNumerals {
         chooseFont(dc);
 
         var fontHeight = dc.getFontHeight(font);
-        var ink = Fonts.inkHeightOf(dc, font);
+        var ink = Fonts.inkHeightOf(font);
         var middle = Dial.rim - markReach - (Dial.ringDepth / GAP_DIVISOR) - (ink / 2);
 
         // Center the digits, not the font box: shift the anchor by half the
@@ -157,14 +157,11 @@ class RimNumerals {
         return angle % Dial.DEGREES_PER_CIRCLE;
     }
 
-    //! A vector font if the watch can turn text, the system font otherwise
+    //! A vector font if the watch carries one of the faces, the system font
+    //! upright otherwise
     private function chooseFont(dc as Dc) as Void {
         font = SYSTEM_FONT;
         isTurned = false;
-
-        if (!(Graphics has :getVectorFont) || !(dc has :drawAngledText)) {
-            return;
-        }
 
         var vectorFont = Graphics.getVectorFont({
             :face => FACES,

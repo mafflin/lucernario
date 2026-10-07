@@ -43,8 +43,8 @@ class Box {
         );
     }
 
-    //! Around a shape's corners, and penReach past them on every side
-    function aroundPoints(points as Array<[Numeric, Numeric]>, penReach as Number) as Void {
+    //! Around a shape's corners
+    function aroundPoints(points as Array<[Numeric, Numeric]>) as Void {
         var minX = points[0][0].toNumber();
         var minY = points[0][1].toNumber();
         var maxX = minX;
@@ -60,14 +60,12 @@ class Box {
             if (y > maxY) { maxY = y; }
         }
 
-        var pad = penReach + ClipRegion.PADDING;
-
         // The far pixel is inside, so the count is one more than the difference.
         set(
-            minX - pad,
-            minY - pad,
-            (maxX - minX) + 1 + (2 * pad),
-            (maxY - minY) + 1 + (2 * pad)
+            minX - ClipRegion.PADDING,
+            minY - ClipRegion.PADDING,
+            (maxX - minX) + 1 + (2 * ClipRegion.PADDING),
+            (maxY - minY) + 1 + (2 * ClipRegion.PADDING)
         );
     }
 }

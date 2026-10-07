@@ -106,7 +106,7 @@ class SecondsHand {
         setCorner(LEFT, baseX + acrossX, baseY + acrossY);
         setCorner(RIGHT, baseX - acrossX, baseY - acrossY);
 
-        box.aroundPoints(corners, 0);
+        box.aroundPoints(corners);
         drawnSecond = second;
     }
 

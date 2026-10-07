@@ -62,7 +62,7 @@ class SunField {
 
     //! Once per layout, top being where the data field ends
     function prepare(dc as Dc, centerX as Number, top as Number) as Void {
-        var ascent = Fonts.inkHeightOf(dc, FONT);
+        var ascent = Fonts.inkHeightOf(FONT);
         var digitHeight = Math.round(ascent * DIGIT_SHARE).toNumber();
 
         self.centerX = centerX;

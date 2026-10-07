@@ -99,7 +99,7 @@ class HourHand {
         setCorner(INNER_TIP, Dial.centerX + (innerTipRadius * outX), Dial.centerY + (innerTipRadius * outY));
         setCorner(RIGHT, middleX - acrossX, middleY - acrossY);
 
-        box.aroundPoints(corners, 0);
+        box.aroundPoints(corners);
     }
 
     private function setCorner(index as Number, x as Decimal, y as Decimal) as Void {

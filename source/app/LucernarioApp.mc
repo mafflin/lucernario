@@ -27,10 +27,6 @@ class LucernarioApp extends Application.AppBase {
     function getInitialView() as [Views] or [Views, InputDelegates] {
         var view = new LucernarioView(editMode);
 
-        if (WatchUi has :WatchFaceDelegate) {
-            return [ view, new LucernarioDelegate(view) ];
-        }
-
-        return [ view ];
+        return [ view, new LucernarioDelegate(view) ];
     }
 }

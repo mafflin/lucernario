@@ -30,18 +30,7 @@ class ActivityTimer {
     }
 
     private function readTimer() as Boolean {
-        // Naming a member the watch lacks is an error, not an exception.
-        if (!(Activity has :getActivityInfo)) {
-            return false;
-        }
-
-        var info = Activity.getActivityInfo();
-
-        if ((info == null) || !(info has :timerState)) {
-            return false;
-        }
-
-        var state = info.timerState;
+        var state = Activity.getActivityInfo().timerState;
 
         return (state != null) && (state != Activity.TIMER_STATE_OFF);
     }

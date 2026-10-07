@@ -89,10 +89,13 @@ class WindBearing {
         setCorner(2, middle, tipRadius);
         placedBearing = bearing;
 
-        box.aroundPoints(corners, 0);
+        box.aroundPoints(corners);
     }
 
     private function setCorner(index as Number, radians as Decimal, radius as Numeric) as Void {
-        corners[index] = [Dial.pointX(radians, radius), Dial.pointY(radians, radius)];
+        var corner = corners[index];
+
+        corner[0] = Dial.pointX(radians, radius);
+        corner[1] = Dial.pointY(radians, radius);
     }
 }
