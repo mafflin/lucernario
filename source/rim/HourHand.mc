@@ -3,8 +3,9 @@ import Toybox.Lang;
 import Toybox.Math;
 
 //! The hour hand: a rhombus, the seconds hand's arrow made narrower and
-//! mirrored inward across its base, the outer tip on the minor marks' tips. In the rim's colors inverted - see DayColors - and the accent color
-//! until the sun is known. The seconds hand passes over it, so it is put back
+//! mirrored inward across its base, the outer tip on the minor marks' tips.
+//! In the rim's colors inverted - see DayColors - and the accent color until
+//! the sun is known. The seconds hand passes over it, so it is put back
 //! when that clip cuts into it.
 class HourHand {
 

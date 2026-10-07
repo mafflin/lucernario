@@ -4,7 +4,7 @@ import Toybox.Math;
 
 //! 24 hour marks, noon at the top, all the same size, with three minor
 //! marks between each pair. Colored with the day - see DayColors - the mark
-//! nearest solar noon orange and, if minor, twice as wide.
+//! nearest solar noon in the night's color and, if minor, twice as wide.
 //! On every style but Numerals the hours left to recover take the data color
 //! instead, the minor marks among them twice as wide: the 12, then one mark
 //! per hour clockwise, hour and minor alike. The whole dial is 95 hours.
@@ -38,7 +38,8 @@ class RimMarks {
     private var hourWidth as Number = MIN_WIDTH;
     private var minorLength as Number = 0;
 
-    private const ZENITH_COLOR = Palette.ORANGE;
+    //! The night's color, to stand out among the day's marks around it
+    private const ZENITH_COLOR = Palette.SKY;
 
     private var dayColors as DayColors;
 
@@ -113,7 +114,7 @@ class RimMarks {
         }
     }
 
-    //! In the day's color, orange nearest solar noon, or the recovery color
+    //! In the day's color, the night's nearest solar noon, or the recovery color
     //! among the hours left, minor marks twice as wide at noon and among the
     //! hours left. index counts every mark clockwise from the 12, hour marks
     //! on every fourth.

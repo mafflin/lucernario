@@ -5,7 +5,7 @@ the largest font the watch has. Everything else keeps out of its way.
 numbered every four hours, with a fine mark every quarter hour. The marks and
 numerals are amber from sunrise to sunset and sky blue through the night, so a
 glance at the dial tells you how much daylight is left. The mark nearest solar
-noon is orange. A small diamond among the marks tracks the hour in the
+noon is sky blue. A small diamond among the marks tracks the hour in the
 opposite color, and an arrow just inside them counts the seconds — it keeps
 going in low power mode on MIP watches whose budget allows it. On an AMOLED
 watch the always-on display shows the time alone.
