@@ -48,6 +48,9 @@ class LucernarioView extends WatchUi.WatchFace {
 
     private var isAwake as Boolean = true;
 
+    //! AMOLED: asleep, only the time shows
+    private var needsBurnInProtection as Boolean = false;
+
     //! Whether the system lets the hand move every second in low power mode
     private var partialUpdatesAllowed as Boolean;
 
@@ -89,6 +92,7 @@ class LucernarioView extends WatchUi.WatchFace {
     //! Size everything for this screen and load the editor's settings
     function onLayout(dc as Dc) as Void {
         canSmooth = (dc has :setAntiAlias);
+        needsBurnInProtection = Clock.settings().requiresBurnInProtection;
 
         Dial.setup(dc);
         prepareRim(dc);
@@ -123,6 +127,12 @@ class LucernarioView extends WatchUi.WatchFace {
         }
 
         Clock.read();
+
+        if (isAlwaysOn()) {
+            drawAlwaysOn(dc);
+            return;
+        }
+
         refreshReadings();
         smooth(dc);
         paintBackground(dc);
@@ -322,9 +332,22 @@ class LucernarioView extends WatchUi.WatchFace {
         }
     }
 
-    //! In low power mode the hand shows only if it can keep moving
+    private function isAlwaysOn() as Boolean {
+        return needsBurnInProtection && !isAwake;
+    }
+
+    //! Only the time, within the burn-in rules; the rest comes back on waking
+    private function drawAlwaysOn(dc as Dc) as Void {
+        smooth(dc);
+        paintBackground(dc);
+        timeDisplay.draw(dc);
+        secondsHand.forget();
+    }
+
+    //! In low power mode the hand shows only if it can keep moving, and
+    //! never on a screen that needs burn-in protection
     private function handIsVisible() as Boolean {
-        return isAwake || partialUpdatesAllowed;
+        return isAwake || (partialUpdatesAllowed && !needsBurnInProtection);
     }
 
     private function pulse(drawable as WatchUi.Drawable, boundingBox as Graphics.BoundingBox) as ComplicationDrawableRef {

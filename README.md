@@ -170,6 +170,11 @@ costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
 
+Watches with an AMOLED screen never get partial updates, and in always-on
+mode they blank a face that lights more than a tenth of the screen. Where
+`DeviceSettings.requiresBurnInProtection` is set, the face asleep is the
+time alone on black; everything else comes back on waking.
+
 The rim marks are drawn as lines running inward from the rim, with the
 width as a pen width in pixels. An arc cannot be made narrow enough:
 `drawArc` takes its span in degrees and the renderer works in whole ones, so

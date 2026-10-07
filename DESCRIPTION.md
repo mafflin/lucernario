@@ -6,7 +6,8 @@ every quarter hour. The marks and numerals are amber from sunrise to sunset
 and sky blue through the night, so a glance at the dial tells you how much
 daylight is left. A small diamond among the marks tracks the hour in the
 opposite color, and an arrow just inside them counts the seconds — it
-keeps going in low power mode on watches whose budget allows it.
+keeps going in low power mode on MIP watches whose budget allows it. On an
+AMOLED watch the always-on display shows the time alone.
 
 **Above the time**, a status row shows only what is worth reporting: battery,
 phone connection, alarm, AM/PM, and wind — one arrow pointing the way it
@@ -29,5 +30,6 @@ are all set in Garmin's native watch face editor — no phone, no settings menus
   the dial; Data and Data Lite leave the rim numerals off
 - 29 accent colors for the seconds and goal hands and 29 for the time,
   status row and data field, chosen to stay clean on MIP displays
-- Always-on seconds hand where the power budget allows
+- Always-on seconds hand on MIP watches where the power budget allows;
+  always-on time on AMOLED
 - Open source under the MIT License: github.com/mafflin/lucernario
