@@ -54,11 +54,11 @@ module ComplicationFormat {
         var type = complication.getType();
 
         if (isTimeOfDay(type)) {
-            return clockTime(seconds(value));
+            return clockTime(wholeNumber(value));
         }
 
         if (isDuration(type)) {
-            return duration(seconds(value));
+            return duration(wholeNumber(value));
         }
 
         if (type == Complications.COMPLICATION_TYPE_HIGH_LOW_TEMPERATURE) {
@@ -284,7 +284,7 @@ module ComplicationFormat {
         return 0.0;
     }
 
-    function seconds(value as Complications.Value) as Number {
+    function wholeNumber(value as Complications.Value) as Number {
         if (value instanceof Lang.Number) {
             return value;
         }

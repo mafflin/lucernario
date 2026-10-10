@@ -75,7 +75,7 @@ class Daylight {
                 return null;
             }
 
-            return ComplicationFormat.seconds(value) / Clock.SECONDS_PER_MINUTE;
+            return ComplicationFormat.wholeNumber(value) / Clock.SECONDS_PER_MINUTE;
         } catch (exception) {
             return null;
         }

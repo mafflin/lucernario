@@ -25,7 +25,6 @@ class LucernarioView extends WatchUi.WatchFace {
     private var secondsHand as SecondsHand;
     private var hourHand as HourHand;
     private var goalHand as GoalHand;
-    private var windReading as WindReading;
     private var activityTimer as ActivityTimer;
     private var activityReading as ActivityReading;
     private var goalProgress as GoalProgress;
@@ -65,12 +64,11 @@ class LucernarioView extends WatchUi.WatchFace {
         numerals = new RimNumerals(dayColors);
         secondsHand = new SecondsHand();
         hourHand = new HourHand(dayColors);
-        windReading = new WindReading();
         activityTimer = new ActivityTimer();
         activityReading = new ActivityReading();
         goalProgress = new GoalProgress();
         goalHand = new GoalHand(goalProgress);
-        statusBar = new StatusBar(windReading);
+        statusBar = new StatusBar();
 
         centerField = new ComplicationField(SlotId.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
         fields = [centerField];
@@ -251,7 +249,6 @@ class LucernarioView extends WatchUi.WatchFace {
     //! Everything the draw reads, before anything draws
     private function refreshReadings() as Void {
         daylight.refresh();
-        windReading.refresh();
         activityTimer.refresh();
         refreshActivity();
         dayColors.refresh();

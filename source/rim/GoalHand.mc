@@ -2,23 +2,30 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-//! A dot going round once to the goal, a few pixels inside the hour marks
+//! A dot going round once to the goal, a few pixels inside the hour marks.
+//! A ring until the goal is done, solid once it is, back at the 12.
 class GoalHand extends WatchUi.Drawable {
 
     //! Air between the dot and the hour marks' pen ends
     private const MARK_GAP = 4;
     private const MIN_RADIUS = 2;
 
+    //! The ring's width, as a share of the dot's radius, at least MIN_RING
+    private const RING_DIVISOR = 2;
+    private const MIN_RING = 2;
+
     private var progress as GoalProgress;
     private var color as Number = Graphics.COLOR_WHITE;
 
     //! Resolved in prepare(): the dot's size, and the circle its center runs on
     private var dotRadius as Number = MIN_RADIUS;
+    private var ringWidth as Number = MIN_RING;
     private var orbitRadius as Number = 0;
 
     //! As last drawn; empty when not shown
     private var dotX as Number = 0;
     private var dotY as Number = 0;
+    private var isDone as Boolean = false;
     private var box as Box;
 
     function initialize(progress as GoalProgress) {
@@ -30,7 +37,8 @@ class GoalHand extends WatchUi.Drawable {
 
     //! After the marks are prepared
     function prepare(markReach as Number, markWidth as Number) as Void {
-        dotRadius = (markWidth < MIN_RADIUS) ? MIN_RADIUS : markWidth;
+        dotRadius = Numbers.max(markWidth, MIN_RADIUS);
+        ringWidth = Numbers.max(dotRadius / RING_DIVISOR, MIN_RING);
         orbitRadius = Dial.rim - markReach - RimPainter.penRadius(markWidth) - MARK_GAP - dotRadius;
     }
 
@@ -82,6 +90,7 @@ class GoalHand extends WatchUi.Drawable {
 
         dotX = Dial.pointX(radians, orbitRadius);
         dotY = Dial.pointY(radians, orbitRadius);
+        isDone = (share >= 1.0);
         surround(box, dotX, dotY);
     }
 
@@ -93,6 +102,14 @@ class GoalHand extends WatchUi.Drawable {
 
     private function paint(dc as Dc) as Void {
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(dotX, dotY, dotRadius);
+
+        if (isDone) {
+            dc.fillCircle(dotX, dotY, dotRadius);
+            return;
+        }
+
+        // The pen reaches half its width either side of the radius.
+        dc.setPenWidth(ringWidth);
+        dc.drawCircle(dotX, dotY, dotRadius - (ringWidth / 2));
     }
 }

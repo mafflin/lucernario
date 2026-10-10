@@ -11,8 +11,9 @@ going in low power mode on MIP watches whose budget allows it. On an AMOLED
 watch the always-on display shows the time alone.
 
 **Above the time**, a status row shows only what is worth reporting: battery,
-phone connection, alarm, AM/PM, and wind — one arrow pointing the way it
-blows, turning orange and then red as it picks up.
+phone connection, alarm, recovery time left, AM/PM, and wind — a ring with a
+wedge pointing the way it blows, turning amber and then orange as it picks
+up.
 
 **Below the time**, one data field you choose from 26 built-in complications:
 battery, steps, heart rate, body battery, stress, calories, floors, intensity

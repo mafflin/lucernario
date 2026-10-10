@@ -16,44 +16,38 @@ class StatusBar {
 
     private var icons as Array<Icon>;
 
-    //! Always on screen, so its artwork is the row's measure
-    private var battery as Battery;
-
-    //! Has to be told its size
-    private var wind as Wind;
-
     //! The line below the time the row mirrors
     private var mirrorY as Number = 0;
 
     //! One box answers for the whole row. Empty while nothing shows.
     private var row as Box;
 
-    //! Air between icons, settled with the row
+    //! Settled each draw
+    private var rowHeight as Number = 0;
     private var gap as Number = 0;
 
-    function initialize(windReading as WindReading) {
-        battery = new Battery();
-        wind = new Wind(windReading);
+    function initialize() {
         row = new Box();
 
         icons = [
-            battery,
+            new Battery(),
             new Phone(),
             new Alarm(),
-            wind,
+            new Recovery(),
+            new Wind(),
             new Meridiem()
         ] as Array<Icon>;
-    }
-
-    //! Once per layout
-    function mirror(y as Number) as Void {
-        mirrorY = y;
     }
 
     function setColor(color as Number) as Void {
         for (var i = 0; i < icons.size(); i++) {
             icons[i].setTint(color);
         }
+    }
+
+    //! Once per layout
+    function mirror(y as Number) as Void {
+        mirrorY = y;
     }
 
     function draw(dc as Dc) as Void {
@@ -64,9 +58,6 @@ class StatusBar {
         if (count == 0) {
             return;
         }
-
-        // The wind has no bitmap to measure; it fills the battery's square.
-        wind.setSquare(battery.height());
 
         layOut(count);
         drawIcons(dc);
@@ -85,11 +76,12 @@ class StatusBar {
 
     //! Size the row, centered, and the gap between its icons
     private function layOut(count as Number) as Void {
-        var rowHeight = tallestShown();
-        var top = rowCenterY(rowHeight) - (rowHeight / 2);
+        rowHeight = tallestShown();
+
+        var top = rowCenterY() - (rowHeight / 2);
         var iconsWidth = shownWidth();
 
-        gap = gapFor(count, rowHeight, chordAt(top) - iconsWidth);
+        gap = gapFor(count, chordAt(top) - iconsWidth);
 
         var rowWidth = iconsWidth + ((count - 1) * gap);
 
@@ -115,7 +107,7 @@ class StatusBar {
 
     //! The row's bottom as far from the top as the frame line is from the
     //! bottom, lifted a touch
-    private function rowCenterY(rowHeight as Number) as Number {
+    private function rowCenterY() as Number {
         var screenHeight = Dial.screenHeight;
 
         return screenHeight - mirrorY - (rowHeight / 2) - (screenHeight / LIFT_DIVISOR);
@@ -147,7 +139,7 @@ class StatusBar {
 
     //! Half an icon, giving way before the outermost item runs off the glass:
     //! spare is the room the icons leave
-    private function gapFor(count as Number, rowHeight as Number, spare as Number) as Number {
+    private function gapFor(count as Number, spare as Number) as Number {
         var preferred = rowHeight / GAP_DIVISOR;
 
         if (count < 2) {
@@ -155,9 +147,8 @@ class StatusBar {
         }
 
         var room = spare / (count - 1);
-        var fitted = (room < preferred) ? room : preferred;
 
-        return (fitted < MIN_GAP) ? MIN_GAP : fitted;
+        return Numbers.max(Numbers.min(room, preferred), MIN_GAP);
     }
 
     //! The width of the screen at the row's top edge, the far one from the
@@ -173,7 +164,7 @@ class StatusBar {
         var half = Math.sqrt((rim * rim) - (fromMiddle * fromMiddle));
         var chord = (2 * half).toNumber() - (2 * MARGIN);
 
-        return (chord < Dial.screenWidth) ? chord : Dial.screenWidth;
+        return Numbers.min(chord, Dial.screenWidth);
     }
 
     //! How many icons show this draw

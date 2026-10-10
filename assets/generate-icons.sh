@@ -23,10 +23,14 @@ SMALL=resources/drawables
 LARGE=resources-large-icons/drawables
 FLATTEN=assets/flatten-alpha.py
 
+# Degrees to turn the artwork clockwise about its middle, or empty for none.
+# Only the wind sets it.
+TURN=
+
 # The source with every path refilled white and the viewBox replaced.
 #   $1 source svg   $2 viewBox
 artwork() {
-    sed -e 's|<path |<path fill="#FFFFFF" |g' \
+    sed -e "s|<path |<path fill=\"#FFFFFF\" ${TURN:+transform=\"rotate($TURN 12 12)\" }|g" \
         -e "s|viewBox=\"[^\"]*\"|viewBox=\"$2\"|" \
         "$SRC/$1"
 }
@@ -64,15 +68,26 @@ pair() {
 
 pair alarm.svg alarm/alarm.png
 pair phone.svg phone/phone.png
-
-# direction.svg is not rendered any more: the wind arrow is three corners
-# turned and filled in source/Wind.mc, which is the only way it comes out
-# straight on a MIP panel. The file stays as the drawing those corners were
-# taken off.
+pair recovery.svg recovery/recovery.png
 
 for level in 0 10 20 30 40 50 60 70 80 90 100; do
     pair "battery-$level.svg" "battery/battery_$level.png"
 done
+
+# The wind: a ring with a wedge in it pointing where the wind goes, one
+# icon to each eighth of the compass, so each is drawn and flattened as it
+# stands rather than turned on the watch. Named for where the wind comes
+# from, as the weather gives it. The art points north, a wind from the
+# south, and is turned for the rest.
+for direction in "n 180" "ne 225" "e 270" "se 315" "s 0" "sw 45" "w 90" "nw 135"; do
+    set -- $direction
+    TURN=$2
+    pair wind/bearing.svg "wind/wind_$1.png"
+done
+TURN=
+
+# The same ring alone, for a wind that is unknown or calm.
+pair wind/calm.svg wind/wind_calm.png
 
 # AM and PM are letters, not a symbol: the art is 18 units by 10 inside the
 # same 24 unit box, so rendering it square would leave a small pair of letters

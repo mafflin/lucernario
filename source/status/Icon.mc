@@ -7,8 +7,6 @@ import Toybox.WatchUi;
 //! report.
 class Icon {
 
-    private const NONE_CHOSEN = -1;
-
     //! Where the last full draw put it, empty if it was not drawn
     private var box as Box;
 
@@ -18,13 +16,15 @@ class Icon {
     private var loaded as BitmapResource? = null;
 
     //! For icons that pick from a set
-    private var chosenIndex as Number = NONE_CHOSEN;
+    private var chosenId as ResourceId? = null;
 
     //! Asked of the bitmap once: loading is not free
     private var measuredWidth as Number? = null;
     private var measuredHeight as Number? = null;
 
     private var shown as Boolean = false;
+
+    //! The artwork is white on transparent and tinted as it draws
     private var plainTint as Number = Graphics.COLOR_WHITE;
 
     //! resourceId is null for icons that override bitmap()
@@ -98,24 +98,28 @@ class Icon {
         return loaded as BitmapResource;
     }
 
-    //! Overridden by the battery and the wind, which say something with color
+    //! Overridden by the icons that say something with color
     protected function tint() as Number {
         return plainTint;
     }
 
     //! One of a set, held until the choice moves
     protected function choose(images as Array<ResourceId>, index as Number) as BitmapResource {
-        if (index != chosenIndex) {
-            chosenIndex = index;
-            loaded = WatchUi.loadResource(images[index]) as BitmapResource;
+        return chooseResource(images[index]);
+    }
+
+    //! As choose(), for a set picked by the resource itself. Its members
+    //! share a size: it is measured once.
+    protected function chooseResource(resourceId as ResourceId) as BitmapResource {
+        if (resourceId != chosenId) {
+            chosenId = resourceId;
+            loaded = WatchUi.loadResource(resourceId) as BitmapResource;
         }
 
         return loaded as BitmapResource;
     }
 
-    //! The artwork is white on transparent, tinted to the data color.
-    //! Overridden by the wind, which draws itself.
-    protected function paint(dc as Dc, x as Number, y as Number) as Void {
+    private function paint(dc as Dc, x as Number, y as Number) as Void {
         dc.drawBitmap2(x, y, bitmap(), { :tintColor => tint() });
     }
 

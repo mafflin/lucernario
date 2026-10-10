@@ -29,6 +29,8 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/app/LucernarioView.mc` | Owns the elements, applies configuration, clears the screen |
 | `source/app/LucernarioDelegate.mc` | Receives live edits from the native watch face editor |
 | `source/app/Palette.mc` | The colors the code names, in step with `watchface.xml` |
+| `source/app/Numbers.mc` | The smaller and the larger of two numbers |
+| `source/app/CurrentWeather.mc` | The weather the phone last sent, and the m/s to km/h factor |
 | `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`, and what each puts on the rim |
 | `source/time/TimeDisplay.mc` | Formats and draws the time |
 | `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
@@ -44,16 +46,17 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
 | `source/rim/RimNumerals.mc` | 12, 16, 20, 24, 4 and 8, turned like the marks, against their inner ends; off on Plain |
 | `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 5° across to its 8° and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
-| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour marks |
+| `source/rim/GoalHand.mc` | The goal hand, a ring just inside the hour marks, solid once the goal is done |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch, and the test against it |
 | `source/rim/Box.mc` | The box around a shape, for that test |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
-| `source/status/WindReading.mc` | The wind's bearing and strength, for the row's arrow |
-| `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
+| `source/status/WindReading.mc` | The wind's bearing, calm and strength, for the row's wind icon |
+| `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Recovery`/`Wind`/`Meridiem` extend it |
 | `source/complications/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
 | `source/complications/SlotId.mc` | The editor's slot ids, mirroring `watchface.xml` |
 | `source/complications/ComplicationLabel.mc` | A short name per complication type |
+| `source/complications/ComplicationReader.mc` | Reads a complication, null on a watch that throws for it |
 | `source/complications/ComplicationFormat.mc` | Turns a complication's raw value into readable text |
 | `resources/configs/watchface.xml` | Declares which settings the editor offers |
 
@@ -185,16 +188,27 @@ that off `Activity.Info.timerState` once a minute, which not every watch
 hands a watch face; where it does not, the 12 stays. The stopwatch has no API
 at all and is not covered.
 
-The status row carries battery, phone, alarm, wind and AM/PM. The wind is one
-arrow in the row, pointing downwind (the bearing is where the wind comes from,
-so a southerly, 180, points up), with the strength said in color: the
-data color up to 20 km/h, orange above that, red above 40. None of them have
-a setting: each icon shows whenever the thing it reports is worth reporting.
+The status row carries battery, phone, alarm, recovery, wind and AM/PM.
+None of them have a setting: each icon shows whenever the thing it reports is
+worth reporting.
+
+- **Recovery** shows while the recovery time complication has any left. It
+  takes the data color up to a day, amber (`Palette.AMBER`) past a day and
+  orange (`Palette.ORANGE`, 0xFF5500) past two. The complication carries
+  minutes; the icon is read once a minute.
+- **Wind** is always shown: a ring with a wedge in it pointing downwind (the
+  bearing is where the wind comes from, so a southerly, 180, points up),
+  snapped to the nearest eighth of the compass, and the ring alone when the
+  wind is unknown or calm (under 0.5 km/h, which rounds to 0). The strength
+  is said in color: the data color up to 20 km/h, amber above that, orange
+  above 40.
 
 Both styles carry the goal hand: an accent colored dot, as
 wide across as two hour marks, four pixels inside the hour marks' inner
 ends, passing under the hour hand. It goes round once from the 12 to the
-goal picked in the goal slot and stays at the 12 past it. Each goal comes off
+goal picked in the goal slot and stays at the 12 past it. It is a ring
+while the goal is in progress - its line half the dot's radius, at least
+2px - and solid once the goal is done. Each goal comes off
 `ActivityMonitor.Info` rather than the complication, which carries no goal:
 `steps` over `stepGoal`, `floorsClimbed` over `floorsClimbedGoal`, and
 `activeMinutesWeek.total` over `activeMinutesWeekGoal` (a weekly goal). With no goal to read, the dot stays
@@ -204,16 +218,15 @@ update puts it back when the clip cuts into it.
 
 The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
 and tinted to the data color. The battery overrides that for its two lowest
-levels, which stay red and orange.
+levels, which stay orange and amber, and the recovery and the wind for their
+longer and stronger readings.
 
-The wind is the one item with no artwork: `Wind.paint()` overrides
-`Icon.paint()` and fills three corners it turns itself. A bitmap cannot be
-turned without the bilinear filter, the filter makes part opaque pixels out
-of an arrow that had none, and a MIP panel cannot composite those - it keeps
-or drops each one as it draws, so the tail used to thicken and thin with the
-bearing. Corners turned in code have nothing to sample, and they are smoothed
-by the same `setAntiAlias` the rim marks rely on. It has no bitmap to measure
-either, so `StatusBar.draw()` hands it the square the battery is running at.
+The wind is one bitmap to each eighth of the compass rather than one bitmap
+turned on the watch. A bitmap cannot be turned without the bilinear filter,
+the filter makes part opaque pixels out of artwork that had none, and a MIP
+panel cannot composite those - it keeps or drops each one as it draws, so a
+turned icon thickens and thins with the bearing. Turned at generation time,
+each eighth is flattened as it stands.
 
 Icons come in two sizes, 24px in `resources/` and 36px in
 `resources-large-icons/`, selected by the `resourcePath` lines in
@@ -275,9 +288,9 @@ pixels and come out 3px. The 36px set is not flattened - AMOLED screens do
 composite, and their soft edges are the reason they look right - so its box is
 left cropped to the ratio.
 
-`direction.svg` is no longer rendered: the wind arrow is drawn rather than
-placed, for the reason above. The file stays as the drawing its corners were
-taken off.
+The wind's eight icons all come from `wind/bearing.svg`, which points north
+- a wind from the south - and is turned about its middle for the rest; the
+script's `TURN` does that. `wind/calm.svg` is the same ring alone.
 
 The launcher icon is 65x65, which is what fenix847mm asks for. Devices that
 want another size scale the image and emit a build warning; to silence one, drop a correctly sized copy in

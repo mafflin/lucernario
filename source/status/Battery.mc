@@ -1,9 +1,8 @@
-import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.WatchUi;
 
-//! The charge as one of eleven bitmaps, red when empty and orange when low.
+//! The charge as one of eleven bitmaps, orange when empty and amber when low.
 class Battery extends Icon {
 
     private const PERCENT_PER_LEVEL = 10;
@@ -11,8 +10,9 @@ class Battery extends Icon {
     private const LOW_LEVEL = 1;
     private const TOP_LEVEL = 10;
 
-    private const EMPTY_COLOR = Graphics.COLOR_RED;
-    private const LOW_COLOR = Graphics.COLOR_ORANGE;
+    //! Both read against the black background
+    private const EMPTY_COLOR = Palette.ORANGE;
+    private const LOW_COLOR = Palette.AMBER;
 
     //! One per level
     private var images as Array<ResourceId> = [
@@ -67,14 +67,6 @@ class Battery extends Icon {
     private function readLevel() as Number {
         var charge = System.getSystemStats().battery.toNumber() / PERCENT_PER_LEVEL;
 
-        if (charge < EMPTY_LEVEL) {
-            return EMPTY_LEVEL;
-        }
-
-        if (charge > TOP_LEVEL) {
-            return TOP_LEVEL;
-        }
-
-        return charge;
+        return Numbers.min(Numbers.max(charge, EMPTY_LEVEL), TOP_LEVEL);
     }
 }

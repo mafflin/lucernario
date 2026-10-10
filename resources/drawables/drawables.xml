@@ -11,6 +11,7 @@
 
     <bitmap id="Alarm" filename="alarm/alarm.png" packingFormat="png" />
     <bitmap id="Phone" filename="phone/phone.png" packingFormat="png" />
+    <bitmap id="Recovery" filename="recovery/recovery.png" packingFormat="png" />
 
     <bitmap id="Battery0" filename="battery/battery_0.png" packingFormat="png" />
     <bitmap id="Battery10" filename="battery/battery_10.png" packingFormat="png" />
@@ -23,6 +24,17 @@
     <bitmap id="Battery80" filename="battery/battery_80.png" packingFormat="png" />
     <bitmap id="Battery90" filename="battery/battery_90.png" packingFormat="png" />
     <bitmap id="Battery100" filename="battery/battery_100.png" packingFormat="png" />
+
+    <!-- Named for where the wind comes from, and the ring alone for none; Wind picks -->
+    <bitmap id="WindN" filename="wind/wind_n.png" packingFormat="png" />
+    <bitmap id="WindNe" filename="wind/wind_ne.png" packingFormat="png" />
+    <bitmap id="WindE" filename="wind/wind_e.png" packingFormat="png" />
+    <bitmap id="WindSe" filename="wind/wind_se.png" packingFormat="png" />
+    <bitmap id="WindS" filename="wind/wind_s.png" packingFormat="png" />
+    <bitmap id="WindSw" filename="wind/wind_sw.png" packingFormat="png" />
+    <bitmap id="WindW" filename="wind/wind_w.png" packingFormat="png" />
+    <bitmap id="WindNw" filename="wind/wind_nw.png" packingFormat="png" />
+    <bitmap id="WindCalm" filename="wind/wind_calm.png" packingFormat="png" />
 
     <bitmap id="Am" filename="meridiem/am.png" packingFormat="png" />
     <bitmap id="Pm" filename="meridiem/pm.png" packingFormat="png" />

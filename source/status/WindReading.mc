@@ -1,27 +1,28 @@
-import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Weather;
 
-//! The wind off the weather: bearing, strength in three steps, and the color
-//! for each step, for the row's arrow.
+//! The wind off the weather: bearing, whether it is calm, strength in three
+//! steps, and the color for each step.
 class WindReading {
 
-    //! The API reports m/s; the limits read as km/h
-    private const KMH_PER_MS = 3.6;
+    //! The limits read as km/h
     private const LIGHT_LIMIT_KMH = 20;
     private const MODERATE_LIMIT_KMH = 40;
+
+    //! Below this the speed rounds to 0 km/h, as the weather field shows it
+    private const CALM_LIMIT_KMH = 0.5;
 
     private const LIGHT = 0;
     private const MODERATE = 1;
     private const STRONG = 2;
 
     //! A light wind is the ordinary case and keeps its drawer's color
-    private const MODERATE_COLOR = Graphics.COLOR_ORANGE;
-    private const STRONG_COLOR = Graphics.COLOR_RED;
+    private const MODERATE_COLOR = Palette.AMBER;
+    private const STRONG_COLOR = Palette.ORANGE;
 
     //! Where the wind blows from, north up; null when unknown
     private var currentBearing as Number? = null;
 
+    private var calm as Boolean = false;
     private var strength as Number = LIGHT;
 
     //! Once a minute: the phone refills the weather by the hour at best
@@ -31,16 +32,17 @@ class WindReading {
         minuteGate = new MinuteGate();
     }
 
-    //! Once per full update
+    //! Once per draw of the row; reads at most once a minute
     function refresh() as Void {
         if (!minuteGate.opens()) {
             return;
         }
 
         currentBearing = null;
+        calm = false;
         strength = LIGHT;
 
-        var conditions = currentConditions();
+        var conditions = CurrentWeather.conditions();
 
         if (conditions == null) {
             return;
@@ -52,15 +54,23 @@ class WindReading {
             return;
         }
 
+        var speed = conditions.windSpeed;
+
         currentBearing = bearing;
-        strength = strengthFor(conditions.windSpeed);
+        calm = (speed != null) ? ((speed * CurrentWeather.KMH_PER_MS) < CALM_LIMIT_KMH) : false;
+        strength = strengthFor(speed);
     }
 
     function bearing() as Number? {
         return currentBearing;
     }
 
-    //! Orange when moderate, red when strong, the given color otherwise
+    //! A bearing without a speed is not calm
+    function isCalm() as Boolean {
+        return calm;
+    }
+
+    //! Amber when moderate, orange when strong, the given color otherwise
     function colorFor(lightColor as Number) as Number {
         if (strength == STRONG) {
             return STRONG_COLOR;
@@ -73,22 +83,13 @@ class WindReading {
         return lightColor;
     }
 
-    //! Null on a watch without weather, or before the phone has sent any
-    private function currentConditions() as Weather.CurrentConditions? {
-        if (!(Toybox has :Weather)) {
-            return null;
-        }
-
-        return Weather.getCurrentConditions();
-    }
-
     //! A bearing without a speed counts as light
     private function strengthFor(speed as Numeric?) as Number {
         if (speed == null) {
             return LIGHT;
         }
 
-        var kmh = speed * KMH_PER_MS;
+        var kmh = speed * CurrentWeather.KMH_PER_MS;
 
         if (kmh <= LIGHT_LIMIT_KMH) {
             return LIGHT;
