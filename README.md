@@ -22,24 +22,30 @@ the system has.
 
 Sources are grouped by the part of the face they draw. The compiler picks up
 every `.mc` under `source/`, so a new file goes in whichever folder fits.
+Everything but `source/rim/` (and `Styles`, `ActivityTimer` and `Fonts`, which
+serve it) is shared with Cerchio and kept the same.
 
 | Path | Purpose |
 | --- | --- |
 | `source/app/LucernarioApp.mc` | App entry point; detects the watch face editor at startup |
-| `source/app/LucernarioView.mc` | Owns the elements, applies configuration, clears the screen |
-| `source/app/LucernarioDelegate.mc` | Receives live edits from the native watch face editor |
-| `source/app/Palette.mc` | The colors the code names, in step with `watchface.xml` |
-| `source/app/Numbers.mc` | The smaller and the larger of two numbers |
+| `source/app/LucernarioView.mc` | Owns the elements; draws the face off screen once a minute and the seconds over it |
+| `source/app/LucernarioDelegate.mc` | Receives live edits and the power budget notice |
+| `source/app/Editor.mc` | Applies the editor's settings; answers what to pulse and what was tapped |
+| `source/app/FaceBuffer.mc` | The off screen face, and whether it is current |
+| `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`: whether the rim has numerals |
+| `source/app/Palette.mc` | The colors the code names |
+| `source/app/Numbers.mc` | Smaller, larger, and whether a value falls in a span round a circle |
 | `source/app/CurrentWeather.mc` | The weather the phone last sent, and the m/s to km/h factor |
-| `source/app/Styles.mc` | Style ids, mirroring `watchface.xml`, and what each puts on the rim |
 | `source/time/TimeDisplay.mc` | Formats and draws the time |
-| `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
-| `source/time/Fonts.mc` | Measures the ink height of a font |
+| `source/time/Clock.mc` | Clock units, minutes of the day and the 12/24 hour rule |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
-| `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications, and solar noon between them |
-| `source/time/ActivityReading.mc` | The activity monitor, read once a minute for the goal hand |
-| `source/time/GoalProgress.mc` | Progress to the goal hand's goal, off the activity monitor |
+| `source/time/GoalProgress.mc` | Progress to the day's steps goal |
 | `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 12 |
+| `source/time/Fonts.mc` | Measures the ink height of a font |
+| `source/sun/Sun.mc` | The one shared `Daylight` |
+| `source/sun/Daylight.mc` | Sunrise and sunset off the complications, solar noon, dawn and dusk |
+| `source/sun/Twilight.mc` | Civil dawn and dusk (the sun 6° down), from the latitude and the date |
+| `source/sun/Latitude.mc` | The latitude, from the weather's location or the last fix |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after |
@@ -47,17 +53,19 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/rim/RimNumerals.mc` | 12, 16, 20, 24, 4 and 8, turned like the marks, against their inner ends; off on Plain |
 | `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 5° across to its 8° and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
 | `source/rim/GoalHand.mc` | The goal hand, a ring just inside the hour marks, solid once the goal is done |
-| `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
-| `source/rim/ClipRegion.mc` | The box a partial update may touch, and the test against it |
-| `source/rim/Box.mc` | The box around a shape, for that test |
+| `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out inside the marks |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
+| `source/status/Icon.mc` | A tinted bitmap; `Battery`/`Phone`/`Alarm`/`Recovery`/`Wind`/`Meridiem` extend it, and the fields use it |
 | `source/status/WindReading.mc` | The wind's bearing, calm and strength, for the row's wind icon |
-| `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Recovery`/`Wind`/`Meridiem` extend it |
-| `source/complications/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
-| `source/complications/SlotId.mc` | The editor's slot ids, mirroring `watchface.xml` |
-| `source/complications/ComplicationLabel.mc` | A short name per complication type |
+| `source/status/IconText.mc` | An icon and its digits on one line, for the data fields |
+| `source/complications/DataFields.mc` | The two fields side by side, centered as one, and their live updates |
+| `source/complications/ComplicationField.mc` | One field; a Drawable so the editor can pulse it |
+| `source/complications/FieldKinds.mc` | The kind and icon each complication type is shown with |
+| `source/complications/FieldKind.mc` | How a field shows a type; `*Kind.mc` format their own |
+| `source/complications/WeatherIcon.mc` | The weather's conditions as one icon, a moon at night |
+| `source/complications/ValueFormat.mc` | What the kinds format with |
 | `source/complications/ComplicationReader.mc` | Reads a complication, null on a watch that throws for it |
-| `source/complications/ComplicationFormat.mc` | Turns a complication's raw value into readable text |
+| `source/complications/SlotId.mc` | The editor's slot ids, mirroring `watchface.xml` |
 | `resources/configs/watchface.xml` | Declares which settings the editor offers |
 
 ## Configuration
@@ -70,23 +78,16 @@ not Connect IQ app settings. Currently configurable:
   `Plain` leaves them off. The background is always black.
   `source/app/Styles.mc` decodes the id. Ids must stay in step with
   `watchface.xml`.
-- **Accent color** — the seconds and goal hands, and the hour hand until
-  the sun is known: the things meant to stand apart.
-- **Data color** — the time, the status icons and the data container, and
-  the rim marks and numerals until the sun is known.
-- **Data container** — one complication slot centered below the time. The
-  types it offers are listed one by one in `watchface.xml` rather than opened
-  up with `allowAny`, which keeps the picker to what reads well in a slot this
-  size; the cost is that complications published by other Connect IQ apps are
-  not offered at all. Its slot id lives in `source/complications/SlotId.mc` and must
-  stay in step with `watchface.xml`. It defaults to the weekday and the date,
-  named twice: `default="true"` in `watchface.xml` is what the editor offers,
-  and the type handed to `ComplicationField` in `LucernarioView` is what the slot
-  holds until the editor has said anything at all. Requires the
-  `ComplicationSubscriber` permission.
-- **Goal** — a second complication slot, used only to pick the goal hand's
-  goal: steps (default), floors climbed or intensity minutes. There is no
-  "none" entry; the hand is always on.
+- **Accent color** — the seconds, hour and goal hands; the hour hand only
+  until the sun is known.
+- **Data color** — the time, the status icons and the data fields, and the
+  rim marks and numerals until the sun is known.
+- **Data fields** — two complication slots side by side below the time,
+  left defaulting to steps and right to the weekday and date. The types are
+  listed one by one in `watchface.xml` rather than opened up with
+  `allowAny`, and each has a case in `FieldKinds`; the two lists are meant to
+  stay in step. Slot ids live in `source/complications/SlotId.mc`. Requires
+  the `ComplicationSubscriber` permission.
 
 Both colors offer the same 29 named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
@@ -98,89 +99,31 @@ black.
 Left unset, both fall back to white. A color the user has chosen is kept as
 it is when the style changes.
 
+## The rim
+
 The color of the rim marks and numerals is not configurable: amber from the
 exact minute the sun rises to the minute it sets and sky blue the rest of the
-day, from the sunrise and sunset complications, the same numbers the data
-container shows. Each mark and numeral takes the color of the moment it
-stands for. The one mark nearest solar noon, halfway from sunrise to sunset,
-is sky blue, the night's color, to stand out among the amber. Until the sun
-is known they are drawn in the data color.
+day, from the sunrise and sunset complications. Each mark and numeral takes
+the color of the moment it stands for. The one mark nearest solar noon,
+halfway from sunrise to sunset, is sky blue, the night's color, to stand out
+among the amber. Until the sun is known they are drawn in the data color.
 
 The hour hand takes the same two colors the other way round: sky blue by day
 and amber through the night, so it stands out from the marks it sits among.
 Until the sun is known it is drawn in the accent color.
-
-The status row mirrors a line at 66% of the screen height, lifted by 1/22 of
-the height; the data container starts 2% below that line.
-
-The system hands over a raw value and almost never formats it, so
-`ComplicationFormat` does. Most types are a count that `Complication.unit`
-finishes off, but some need more: sunrise and sunset are a time of day (19:13,
-not 69238) and recovery time is a duration, both carried in seconds. The
-current temperature arrives in Celsius however the watch is set, with the
-`UNIT_TEMPERATURE` enum rather than a string for a unit, so it is converted
-against `temperatureUnits` and shown in whole degrees with a degree mark. The
-sea level pressure arrives in pascals, six figures wide, and is shown in bars
-to three decimals, which is what it takes for weather to move the number at
-all; the `BAR` label carries the unit, and `DeviceSettings` has no pressure
-unit to follow in any case. The altitude is meters however the watch is set, and is
-converted against `elevationUnits` and shown in whole meters or feet; the
-weekly run and bike distances are meters too, converted against
-`distanceUnits` and shown to a tenth of a kilometer or mile. The battery, the
-pulse ox and the solar input are percentages that arrive as a bare number, so
-they are given the sign. The
-high and low is the one type the system formats itself, as a string along the
-lines of "H 21 / L 12" and with no mark on either number; the mark goes in
-after each of them. Anything else falls through to value plus unit.
-
-The container draws a short label in front of the value. The system's own
-`shortLabel` and `longLabel` run long enough to overflow the slot, so
-`source/complications/ComplicationLabel.mc` carries a four character name per type instead,
-one case per type offered in `watchface.xml`; the types whose value already
-reads as what it is, like the date and the training status, get none.
-
-A complication type above the face's `minApiLevel` cannot be offered at all,
-because naming the symbol is what fails rather than reaching it. A `switch`
-walks its case labels until one matches, so a case for a type the watch has
-never heard of is evaluated on every type the table does not know, and brings
-the watch down with a Symbol Not Found error - which is an error rather than
-an exception, so the `try` in `ComplicationField.refresh()` cannot catch it.
-`COMPLICATION_TYPE_SLEEP_SCORE` is API 6.0.2 against this face's floor of
-5.1.0 and is left out for that reason; every type the face does offer is API
-4.2.0.
-
-There are no pictograms to use instead: `Complication.getIcon()` is documented
-as working only for user complications, meaning ones published by other
-Connect IQ apps, and returns null for the built-in types.
-
-The seconds hand keeps sweeping in low power mode through
-`LucernarioView.onPartialUpdate()`: it clips to the pixels the hand is vacating,
-puts the rim back there, then clips to where it is going and draws it. The
-hand is an arrow set in far enough that even the corners of its clip box
-stay off the marks, round pen ends included, so a tick never repaints
-them: only the numeral nearest the hand's last position, the status row,
-the hour hand, which it passes over, and the goal hand, and only when the box has cut into them. If that
-costs more than the system allows, `onPowerBudgetExceeded` fires on the
-delegate, partial updates are switched off, and the hand comes off the screen
-while asleep rather than standing still.
-
-Watches with an AMOLED screen never get partial updates, and in always-on
-mode they blank a face that lights more than a tenth of the screen. Where
-`DeviceSettings.requiresBurnInProtection` is set, the face asleep is the
-time alone on black; everything else comes back on waking.
 
 The rim marks are drawn as lines running inward from the rim, with the
 width as a pen width in pixels. An arc cannot be made narrow enough:
 `drawArc` takes its span in degrees and the renderer works in whole ones, so
 every width from one degree to two comes out as the same mark. A pixel at the
 rim is roughly a quarter of a degree, which is a useful step on a shape this
-small. The pen is round, so a line runs half its width past each
-end; every clearance and clip box counts that in.
+small. The pen is round, so a line runs half its width past each end; every
+clearance counts that in.
 
 The rim is 24 hour marks with three thin minor marks between each pair, one
 every quarter hour, and the numerals 12, 16, 20, 24, 4 and 8 against the
-inner ends of their marks - left off on `Plain`. Noon is at
-the top and midnight at the bottom, so the sun travels the upper half.
+inner ends of their marks - left off on `Plain`. Noon is at the top and
+midnight at the bottom, so the sun travels the upper half.
 
 While an activity is under way the system draws its own indicator at the top
 of the screen, over the 12, so the 12 is left off then. `ActivityTimer` reads
@@ -188,38 +131,55 @@ that off `Activity.Info.timerState` once a minute, which not every watch
 hands a watch face; where it does not, the 12 stays. The stopwatch has no API
 at all and is not covered.
 
-The status row carries battery, phone, alarm, recovery, wind and AM/PM.
-None of them have a setting: each icon shows whenever the thing it reports is
-worth reporting.
+The goal hand is an accent colored dot, as wide across as two hour marks,
+four pixels inside the hour marks' inner ends, passing under the hour hand.
+It goes round once from the 12 as the day's steps goal (`steps` over
+`stepGoal`, read once a minute) is done, and stays at the 12 past it. It is
+a ring while the goal is in progress - its line half the dot's radius, at
+least 2px - and solid once the goal is done. With no goal to read, it stays
+off.
 
+## Drawing
+
+Everything but the seconds hand is drawn off screen once a minute, into a
+`BufferedBitmap` that `FaceBuffer` holds. A full update copies it to the
+screen and draws the seconds hand over it; anything that changes the face -
+a setting, the editor pulsing a field, waking - invalidates it.
+
+The seconds hand keeps sweeping in low power mode through
+`LucernarioView.onPartialUpdate()`: it clips to the box around the hand's
+old position and its new one, copies the off screen face back there, and
+draws the hand. Every second's corners and box are worked out once per
+screen. A data field's live update redraws only the fields' row, off screen,
+and copies that box to the screen. If a partial update costs more than the
+system allows, `onPowerBudgetExceeded` fires on the delegate, partial updates
+are switched off, and the hand comes off the screen while asleep rather than
+standing still. Without room in the graphics pool for the buffer the face is
+drawn straight on screen, and the hand does not show while asleep.
+
+Watches with an AMOLED screen never get partial updates, and in always-on
+mode they blank a face that lights more than a tenth of the screen. Where
+`DeviceSettings.requiresBurnInProtection` is set, the face asleep is the
+time alone on black; everything else comes back on waking.
+
+## Status row
+
+The status row mirrors a line at 66% of the screen height, lifted by 1/22 of
+the height; the data fields start 2% below that line. It carries battery,
+phone, alarm, recovery, wind and AM/PM. None of them have a setting: each
+icon shows whenever the thing it reports is worth reporting.
+
+- **Battery** stays orange at its lowest level and amber at the next.
 - **Recovery** shows while the recovery time complication has any left. It
   takes the data color up to a day, amber (`Palette.AMBER`) past a day and
   orange (`Palette.ORANGE`, 0xFF5500) past two. The complication carries
-  minutes; the icon is read once a minute.
+  minutes.
 - **Wind** is always shown: a ring with a wedge in it pointing downwind (the
   bearing is where the wind comes from, so a southerly, 180, points up),
   snapped to the nearest eighth of the compass, and the ring alone when the
   wind is unknown or calm (under 0.5 km/h, which rounds to 0). The strength
   is said in color: the data color up to 20 km/h, amber above that, orange
   above 40.
-
-Both styles carry the goal hand: an accent colored dot, as
-wide across as two hour marks, four pixels inside the hour marks' inner
-ends, passing under the hour hand. It goes round once from the 12 to the
-goal picked in the goal slot and stays at the 12 past it. It is a ring
-while the goal is in progress - its line half the dot's radius, at least
-2px - and solid once the goal is done. Each goal comes off
-`ActivityMonitor.Info` rather than the complication, which carries no goal:
-`steps` over `stepGoal`, `floorsClimbed` over `floorsClimbedGoal`, and
-`activeMinutesWeek.total` over `activeMinutesWeekGoal` (a weekly goal). With no goal to read, the dot stays
-off. The activity monitor is read once a minute; a new goal shows
-at once, off the last read. It lies in the seconds hand's path, so a partial
-update puts it back when the clip cuts into it.
-
-The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
-and tinted to the data color. The battery overrides that for its two lowest
-levels, which stay orange and amber, and the recovery and the wind for their
-longer and stronger readings.
 
 The wind is one bitmap to each eighth of the compass rather than one bitmap
 turned on the watch. A bitmap cannot be turned without the bilinear filter,
@@ -228,14 +188,63 @@ panel cannot composite those - it keeps or drops each one as it draws, so a
 turned icon thickens and thins with the bearing. Turned at generation time,
 each eighth is flattened as it stands.
 
-Icons come in two sizes, 24px in `resources/` and 36px in
-`resources-large-icons/`, selected by the `resourcePath` lines in
-`monkey.jungle`. Both are generated from `assets/icons/`; see Icon artwork
-below.
+## Data fields
+
+Each field is an icon and its value in `FONT_TINY`, the two fields side by
+side and centered as one. The system hands over a raw value and almost never
+formats it, so the kind `FieldKinds` picks per type does:
+
+- **Weather** - an icon for the conditions beside the temperature; the
+  complication's own value goes unread. Between sunset and sunrise a sun
+  gives way to a moon, or to its cloud alone.
+- **Sunset** - the sun's next turn: the sunset while the sun is up and the
+  sunrise while it is down, by the 12/24 hour setting, its icon orange
+  through dawn and dusk. Read again every minute.
+- **Recovery time** - whole hours, rounded up; the complication carries
+  minutes.
+- **Temperature**, **high and low** - Celsius however the watch is set,
+  converted against `temperatureUnits`, whole degrees with a mark. The high
+  and low is the one type the system formats itself, as "H 21 / L 12" or
+  similar; a mark goes in after each number.
+- **Altitude** - meters, converted against `elevationUnits`, whole units.
+- **Weekly run and bike** - meters, converted against `distanceUnits`, to a
+  tenth of a kilometer or mile; a week without a run shows 0.0.
+- **Battery** - given the percent sign.
+- The rest show the value with whatever unit the system supplies; the dates
+  read as what they are and get no icon.
+
+Garmin gives no dawn or dusk, so they are civil twilight, the sun 6° below
+the horizon, worked out in `source/sun/Twilight.mc` from the date and the
+latitude: the weather's observation location, or the last fix, with no
+positioning permission. With neither, the latitude comes from the day's
+length - except within about five days of an equinox, when every latitude
+has a twelve hour day; then there is no twilight to show.
+
+A complication type above the face's `minApiLevel` cannot be offered at all,
+because naming the symbol is what fails rather than reaching it. A `switch`
+walks its case labels until one matches, so a case for a type the watch has
+never heard of is evaluated on every type the table does not know, and brings
+the watch down with a Symbol Not Found error - which is an error rather than
+an exception, so no `try` can catch it. `COMPLICATION_TYPE_SLEEP_SCORE` is
+API 6.0.2 against this face's floor of 5.1.0 and is left out for that
+reason.
+
+`Complication.getIcon()` is documented as working only for user
+complications, meaning ones published by other Connect IQ apps, and returns
+null for the built-in types, so the field icons are the face's own.
+
+## Icons
+
+The icon artwork is white on transparent, so it is drawn with `drawBitmap2`
+and tinted as it draws. Status icons come in two sizes, 24px in `resources/`
+and 36px in `resources-large-icons/`, and the suns and field icons in 24px
+and 32px, selected by the `resourcePath` lines in `monkey.jungle`. All are
+generated from `assets/icons/`; see Icon artwork below.
 
 `resources/configs/watchface.xml` declares what the editor shows.
-`LucernarioView.updateConfiguration()` applies it, and is called both at startup
-(from `onLayout`) and on every edit (from `LucernarioDelegate`).
+`LucernarioView.updateConfiguration()` applies it through `Editor`, and is
+called both at startup (from `onLayout`) and on every edit (from
+`LucernarioDelegate`).
 
 ## Testing the settings
 
@@ -291,6 +300,10 @@ left cropped to the ratio.
 The wind's eight icons all come from `wind/bearing.svg`, which points north
 - a wind from the south - and is turned about its middle for the rest; the
 script's `TURN` does that. `wind/calm.svg` is the same ring alone.
+
+The weather icons in `assets/icons/weather/` are Material Design Icons
+(pictogrammers.com/library/mdi, Apache 2.0), @mdi/svg 7.4.47, renamed without
+their `weather-` prefix.
 
 The launcher icon is 65x65, which is what fenix847mm asks for. Devices that
 want another size scale the image and emit a build warning; to silence one, drop a correctly sized copy in

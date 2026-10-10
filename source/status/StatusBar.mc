@@ -6,7 +6,7 @@ import Toybox.Math;
 //! whenever it has something to report.
 class StatusBar {
 
-    //! Lifts the row so it and the data container frame the time by eye
+    //! Lifts the row so it and the data fields frame the time by eye
     private const LIFT_DIVISOR = 22;
 
     //! Half an icon of air between items, down to MIN_GAP on a round screen
@@ -19,16 +19,13 @@ class StatusBar {
     //! The line below the time the row mirrors
     private var mirrorY as Number = 0;
 
-    //! One box answers for the whole row. Empty while nothing shows.
-    private var row as Box;
-
     //! Settled each draw
+    private var rowLeft as Number = 0;
+    private var rowTop as Number = 0;
     private var rowHeight as Number = 0;
     private var gap as Number = 0;
 
     function initialize() {
-        row = new Box();
-
         icons = [
             new Battery(),
             new Phone(),
@@ -53,8 +50,6 @@ class StatusBar {
     function draw(dc as Dc) as Void {
         var count = countShown();
 
-        row.clear();
-
         if (count == 0) {
             return;
         }
@@ -63,35 +58,21 @@ class StatusBar {
         drawIcons(dc);
     }
 
-    //! One test for the row; past it, each item tests itself
-    function redraw(dc as Dc) as Void {
-        if (!ClipRegion.covers(row)) {
-            return;
-        }
-
-        for (var i = 0; i < icons.size(); i++) {
-            icons[i].redraw(dc);
-        }
-    }
-
     //! Size the row, centered, and the gap between its icons
     private function layOut(count as Number) as Void {
         rowHeight = tallestShown();
+        rowTop = rowCenterY() - (rowHeight / 2);
 
-        var top = rowCenterY() - (rowHeight / 2);
         var iconsWidth = shownWidth();
 
-        gap = gapFor(count, chordAt(top) - iconsWidth);
-
-        var rowWidth = iconsWidth + ((count - 1) * gap);
-
-        row.set((Dial.screenWidth - rowWidth) / 2, top, rowWidth, rowHeight);
+        gap = gapFor(count, chordAt(rowTop) - iconsWidth);
+        rowLeft = (Dial.screenWidth - (iconsWidth + ((count - 1) * gap))) / 2;
     }
 
     //! Each centered on the row's middle
     private function drawIcons(dc as Dc) as Void {
-        var middle = row.top + (row.height / 2);
-        var x = row.left;
+        var middle = rowTop + (rowHeight / 2);
+        var x = rowLeft;
 
         for (var i = 0; i < icons.size(); i++) {
             var icon = icons[i];

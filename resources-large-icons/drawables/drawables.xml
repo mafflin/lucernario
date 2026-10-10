@@ -1,5 +1,6 @@
 <!--
-    The 36px status bar icons, for the larger screens.
+    The 36px status bar icons and the 32px suns and data field icons, for the
+    larger screens.
 
     These ids deliberately repeat resources/drawables/drawables.xml: monkey.jungle
     puts this directory after the base one on the resourcePath of every device
@@ -42,4 +43,52 @@
 
     <bitmap id="Am" filename="meridiem/am.png" packingFormat="png" />
     <bitmap id="Pm" filename="meridiem/pm.png" packingFormat="png" />
+
+    <bitmap id="Sunrise" filename="sun/sunrise.png" packingFormat="png" />
+    <bitmap id="Sunset" filename="sun/sunset.png" packingFormat="png" />
+
+    <bitmap id="FieldBattery" filename="field/battery.png" packingFormat="png" />
+    <bitmap id="FieldCalories" filename="field/calories.png" packingFormat="png" />
+    <bitmap id="FieldSteps" filename="field/steps.png" packingFormat="png" />
+    <bitmap id="FieldTimer" filename="field/timer.png" packingFormat="png" />
+    <bitmap id="FieldAltitude" filename="field/altitude.png" packingFormat="png" />
+    <bitmap id="FieldNotifications" filename="field/notifications.png" packingFormat="png" />
+    <bitmap id="FieldHeart" filename="field/heart.png" packingFormat="png" />
+    <bitmap id="FieldRun" filename="field/run.png" packingFormat="png" />
+    <bitmap id="FieldBike" filename="field/bike.png" packingFormat="png" />
+    <bitmap id="FieldRecovery" filename="field/recovery.png" packingFormat="png" />
+    <bitmap id="FieldHuman" filename="field/human.png" packingFormat="png" />
+    <bitmap id="FieldThermometer" filename="field/thermometer.png" packingFormat="png" />
+
+    <!-- The weather field's conditions; WeatherIcon picks -->
+    <bitmap id="WeatherSunny" filename="field/weather/sunny.png" packingFormat="png" />
+    <bitmap id="WeatherNight" filename="field/weather/night.png" packingFormat="png" />
+    <bitmap id="WeatherPartlyCloudy" filename="field/weather/partly-cloudy.png" packingFormat="png" />
+    <bitmap id="WeatherNightPartlyCloudy" filename="field/weather/night-partly-cloudy.png" packingFormat="png" />
+    <bitmap id="WeatherCloudy" filename="field/weather/cloudy.png" packingFormat="png" />
+    <bitmap id="WeatherRainy" filename="field/weather/rainy.png" packingFormat="png" />
+    <bitmap id="WeatherPouring" filename="field/weather/pouring.png" packingFormat="png" />
+    <bitmap id="WeatherPartlyRainy" filename="field/weather/partly-rainy.png" packingFormat="png" />
+    <bitmap id="WeatherSnowy" filename="field/weather/snowy.png" packingFormat="png" />
+    <bitmap id="WeatherSnowyHeavy" filename="field/weather/snowy-heavy.png" packingFormat="png" />
+    <bitmap id="WeatherPartlySnowy" filename="field/weather/partly-snowy.png" packingFormat="png" />
+    <bitmap id="WeatherSnowyRainy" filename="field/weather/snowy-rainy.png" packingFormat="png" />
+    <bitmap id="WeatherPartlySnowyRainy" filename="field/weather/partly-snowy-rainy.png" packingFormat="png" />
+    <bitmap id="WeatherLightningRainy" filename="field/weather/lightning-rainy.png" packingFormat="png" />
+    <bitmap id="WeatherLightning" filename="field/weather/lightning.png" packingFormat="png" />
+    <bitmap id="WeatherPartlyLightning" filename="field/weather/partly-lightning.png" packingFormat="png" />
+    <bitmap id="WeatherHail" filename="field/weather/hail.png" packingFormat="png" />
+    <bitmap id="WeatherWindy" filename="field/weather/windy.png" packingFormat="png" />
+    <bitmap id="WeatherWindyVariant" filename="field/weather/windy-variant.png" packingFormat="png" />
+    <bitmap id="WeatherFog" filename="field/weather/fog.png" packingFormat="png" />
+    <bitmap id="WeatherHazy" filename="field/weather/hazy.png" packingFormat="png" />
+    <bitmap id="WeatherDust" filename="field/weather/dust.png" packingFormat="png" />
+    <bitmap id="WeatherSmoke" filename="field/weather/smoke.png" packingFormat="png" />
+    <bitmap id="WeatherVolcano" filename="field/weather/volcano.png" packingFormat="png" />
+    <bitmap id="WeatherSnowflake" filename="field/weather/snowflake.png" packingFormat="png" />
+    <bitmap id="WeatherTornado" filename="field/weather/tornado.png" packingFormat="png" />
+    <bitmap id="WeatherHurricane" filename="field/weather/hurricane.png" packingFormat="png" />
+    <bitmap id="WeatherHurricaneOutline" filename="field/weather/hurricane-outline.png" packingFormat="png" />
+    <bitmap id="WeatherCloudQuestion" filename="field/weather/cloud-question.png" packingFormat="png" />
+    <bitmap id="WeatherUnknown" filename="field/weather/unknown.png" packingFormat="png" />
 </drawables>

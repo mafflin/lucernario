@@ -1,18 +1,14 @@
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Math;
 
 //! 12, 16, 20, 24, 4 and 8 clockwise from the top, against the inner ends of
 //! their marks, colored with the day. Turned to follow the marks, 20 through 4
 //! flipped so they do not read upside down; a watch without vector fonts gets
-//! them upright.
-//! The seconds hand crosses one every ten seconds, so a partial update puts
-//! back only the nearest. Left off on Data and Data Lite.
+//! them upright. Left off on Plain.
 class RimNumerals {
 
     private const COUNT = 6;
     private const HOURS_APART = Dial.HOUR_MARKS / COUNT;
-    private const SECONDS_APART = Dial.SECONDS_PER_TURN / COUNT;
 
     //! Noon, half the dial round from midnight - see Dial.MIDNIGHT_DEGREES
     private const TOP_HOUR = Dial.HOUR_MARKS / 2;
@@ -40,7 +36,6 @@ class RimNumerals {
     private var xs as Array<Number>;
     private var ys as Array<Number>;
     private var angles as Array<Number>;
-    private var boxes as Array<Box>;
 
     private var dayColors as DayColors;
     private var enabled as Boolean = true;
@@ -48,21 +43,15 @@ class RimNumerals {
     //! The 12 is left off while the system's activity indicator sits over it
     private var topHidden as Boolean = false;
 
-    //! Per numeral, taken in draw() so a partial update need not work it out
-    private var colors as Array<Number>;
-
     function initialize(dayColors as DayColors) {
         self.dayColors = dayColors;
-        colors = new [COUNT] as Array<Number>;
         texts = new [COUNT] as Array<String>;
         xs = new [COUNT] as Array<Number>;
         ys = new [COUNT] as Array<Number>;
         angles = new [COUNT] as Array<Number>;
-        boxes = new [COUNT] as Array<Box>;
 
         for (var index = 0; index < COUNT; index++) {
             texts[index] = hourAt(index).toString();
-            boxes[index] = new Box();
         }
     }
 
@@ -80,7 +69,6 @@ class RimNumerals {
 
         for (var index = 0; index < COUNT; index++) {
             place(index, middle, shift);
-            boxAround(index, dc.getTextWidthInPixels(texts[index], font), fontHeight);
         }
     }
 
@@ -92,20 +80,9 @@ class RimNumerals {
         topHidden = hideTop;
 
         for (var index = 0; index < COUNT; index++) {
-            colors[index] = dayColors.colorAt(positionOf(index));
-
             if (isShown(index)) {
                 paint(dc, index);
             }
-        }
-    }
-
-    //! Put back the numeral nearest the hand's last second, if cut into
-    function redraw(dc as Dc, second as Number) as Void {
-        var nearest = ((second + (SECONDS_APART / 2)) / SECONDS_APART) % COUNT;
-
-        if (isShown(nearest) && ClipRegion.covers(boxes[nearest])) {
-            paint(dc, nearest);
         }
     }
 
@@ -127,7 +104,7 @@ class RimNumerals {
     }
 
     private function paint(dc as Dc, index as Number) as Void {
-        dc.setColor(colors[index], Graphics.COLOR_TRANSPARENT);
+        dc.setColor(dayColors.colorAt(positionOf(index)), Graphics.COLOR_TRANSPARENT);
 
         if (isTurned) {
             dc.drawAngledText(xs[index], ys[index], font as VectorFont, texts[index], JUSTIFY, angles[index]);
@@ -180,19 +157,5 @@ class RimNumerals {
             font = vectorFont;
             isTurned = true;
         }
-    }
-
-    //! The upright box the turned text fills
-    private function boxAround(index as Number, textWidth as Number, textHeight as Number) as Void {
-        var radians = Math.toRadians(angles[index]);
-        var cosine = Math.cos(radians).abs();
-        var sine = Math.sin(radians).abs();
-
-        boxes[index].aroundCenter(
-            xs[index],
-            ys[index],
-            Dial.pixel((textWidth * cosine) + (textHeight * sine)),
-            Dial.pixel((textWidth * sine) + (textHeight * cosine))
-        );
     }
 }

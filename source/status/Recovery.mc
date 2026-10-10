@@ -32,7 +32,7 @@ class Recovery extends Icon {
         if (minuteGate.opens()) {
             var value = ComplicationReader.valueOf(recoveryId);
 
-            minutes = (value != null) ? ComplicationFormat.wholeNumber(value) : 0;
+            minutes = (value != null) ? ValueFormat.wholeNumber(value) : 0;
         }
 
         return minutes > 0;

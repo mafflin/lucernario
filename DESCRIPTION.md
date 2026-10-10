@@ -10,25 +10,23 @@ opposite color, and an arrow just inside them counts the seconds — it keeps
 going in low power mode on MIP watches whose budget allows it. On an AMOLED
 watch the always-on display shows the time alone.
 
-**Above the time**, a status row shows only what is worth reporting: battery,
-phone connection, alarm, recovery time left, AM/PM, and wind — a ring with a
-wedge pointing the way it blows, turning amber and then orange as it picks
-up.
+**Above the time**, battery, phone, alarm, recovery time, amber past a day
+and orange past two, the wind as a wedge on a ring pointing where it blows,
+amber when moderate and orange when strong, and AM/PM, shown only when there
+is something to report. **Below it**, two data fields of your choice, each an
+icon and its value: the weather as an icon for the conditions beside the
+temperature, and the sun as its next sunset or sunrise, its icon orange
+through dawn and dusk.
 
-**Below the time**, one data field you choose from 26 built-in complications:
-battery, steps, heart rate, body battery, stress, calories, floors, intensity
-minutes, date, weekday and date, sunrise, sunset, altitude, pressure,
-notifications, weekly run and bike distance, recovery time, run and bike VO2
-max, training status, pulse ox, respiration, solar input, temperature and
-today's high and low.
-
-**Configured on the watch.** Style, accent color, data color and the data field
-are all set in Garmin's native watch face editor — no phone, no settings menus.
+**Configured on the watch.** Style, accent color, data color and the data
+fields are all set in Garmin's native watch face editor — no phone, no
+settings menus.
 
 - Numerals or Plain: Plain leaves the rim numerals off
-- A goal hand for steps, floors or intensity minutes
-- 29 accent colors for the seconds and goal hands and 29 for the time,
-  status row and data field, chosen to stay clean on MIP displays
+- A goal hand glides round from the 12 as your steps goal is done, a ring
+  until it is done and solid once it is
+- 29 accent colors for the hands and 29 for the time, status row and data
+  fields, chosen to stay clean on MIP displays
 - Always-on seconds hand on MIP watches where the power budget allows;
   always-on time on AMOLED
 - Open source under the MIT License: github.com/mafflin/lucernario

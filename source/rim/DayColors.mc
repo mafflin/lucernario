@@ -28,7 +28,7 @@ class DayColors {
         fallbackColor = color;
     }
 
-    //! Once per full update, after the daylight has refreshed
+    //! Whenever the sun has moved
     function refresh() as Void {
         var sunrise = daylight.sunrise();
         var sunset = daylight.sunset();

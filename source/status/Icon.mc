@@ -3,12 +3,9 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.WatchUi;
 
-//! One status bar item. No settings: it shows whenever it has something to
-//! report.
+//! A tinted bitmap: a status bar item, which shows whenever it has something
+//! to report, or a data field's icon.
 class Icon {
-
-    //! Where the last full draw put it, empty if it was not drawn
-    private var box as Box;
 
     //! For icons with just the one bitmap
     private var resourceId as ResourceId?;
@@ -30,7 +27,6 @@ class Icon {
     //! resourceId is null for icons that override bitmap()
     function initialize(resourceId as ResourceId?) {
         self.resourceId = resourceId;
-        box = new Box();
     }
 
     //! Whether there is anything to report. Overridden per icon.
@@ -38,24 +34,20 @@ class Icon {
         return true;
     }
 
+    function setTint(color as Number) as Void {
+        plainTint = color;
+    }
+
     //! Settle whether the icon shows this draw. Compared to true: a setting
     //! like alarmCount is null on a watch without the feature.
     function updateShown(settings as System.DeviceSettings) as Boolean {
         shown = (isReporting(settings) == true);
-
-        if (!shown) {
-            forget();
-        }
 
         return shown;
     }
 
     function isShown() as Boolean {
         return shown;
-    }
-
-    function setTint(color as Number) as Void {
-        plainTint = color;
     }
 
     function width() as Number {
@@ -70,23 +62,8 @@ class Icon {
         return measuredHeight as Number;
     }
 
-    //! So a partial update does not put it back on a repainted screen
-    function forget() as Void {
-        box.clear();
-    }
-
     function draw(dc as Dc, x as Number, y as Number) as Void {
-        box.set(x, y, width(), height());
-        paint(dc, x, y);
-    }
-
-    //! Put it back if the clip has cut into it
-    function redraw(dc as Dc) as Void {
-        if (!ClipRegion.covers(box)) {
-            return;
-        }
-
-        paint(dc, box.left, box.top);
+        dc.drawBitmap2(x, y, bitmap(), { :tintColor => tint() });
     }
 
     //! Overridden by icons that pick from a set
@@ -98,7 +75,7 @@ class Icon {
         return loaded as BitmapResource;
     }
 
-    //! Overridden by the icons that say something with color
+    //! Overridden by the battery, which says something with color
     protected function tint() as Number {
         return plainTint;
     }
@@ -117,10 +94,6 @@ class Icon {
         }
 
         return loaded as BitmapResource;
-    }
-
-    private function paint(dc as Dc, x as Number, y as Number) as Void {
-        dc.drawBitmap2(x, y, bitmap(), { :tintColor => tint() });
     }
 
     private function measure() as Void {

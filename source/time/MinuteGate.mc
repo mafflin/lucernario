@@ -13,7 +13,7 @@ class MinuteGate {
 
     //! true the first time it is asked in each minute
     function opens() as Boolean {
-        var minute = Clock.now().min;
+        var minute = Clock.minuteOfDay();
 
         if (minute == lastMinute) {
             return false;

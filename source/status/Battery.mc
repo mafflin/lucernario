@@ -29,8 +29,7 @@ class Battery extends Icon {
         Rez.Drawables.Battery100
     ];
 
-    //! Read once a minute, on the full draw: bitmap() is reached from the
-    //! partial update too
+    //! Read once a minute
     private var level as Number = EMPTY_LEVEL;
     private var minuteGate as MinuteGate;
 
@@ -39,16 +38,11 @@ class Battery extends Icon {
         minuteGate = new MinuteGate();
     }
 
-    //! Always; the read rides along, once a draw
-    function isReporting(settings as System.DeviceSettings) as Boolean {
+    protected function bitmap() as BitmapResource {
         if (minuteGate.opens()) {
             level = readLevel();
         }
 
-        return true;
-    }
-
-    protected function bitmap() as BitmapResource {
         return choose(images, level);
     }
 

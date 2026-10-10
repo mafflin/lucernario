@@ -4,53 +4,46 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-//! The watch face: owns the elements and applies the configuration.
+//! The watch face: owns the elements. Everything but the seconds is drawn
+//! off screen once a minute; an update copies it and adds the seconds hand.
 class LucernarioView extends WatchUi.WatchFace {
 
-    //! Shares of the screen height: the line the status row mirrors and the
-    //! data container's drop below it
+    //! Shares of the screen height: the line the status row mirrors, and the
+    //! data fields' drop below it
     private const FRAME_RATIO = 0.66;
     private const FIELD_DROP_RATIO = 0.02;
 
     private const BACKGROUND = Graphics.COLOR_BLACK;
-
-    //! Until the editor has picked a color
-    private const DEFAULT_COLOR = Graphics.COLOR_WHITE;
 
     private var timeDisplay as TimeDisplay;
     private var daylight as Daylight;
     private var dayColors as DayColors;
     private var rimMarks as RimMarks;
     private var numerals as RimNumerals;
-    private var secondsHand as SecondsHand;
     private var hourHand as HourHand;
-    private var goalHand as GoalHand;
     private var activityTimer as ActivityTimer;
-    private var activityReading as ActivityReading;
-    private var goalProgress as GoalProgress;
     private var statusBar as StatusBar;
-    private var centerField as ComplicationField;
-    private var fields as Array<ComplicationField>;
+    private var fields as DataFields;
+    private var secondsHand as SecondsHand;
+    private var goalProgress as GoalProgress;
+    private var goalHand as GoalHand;
+    private var faceBuffer as FaceBuffer;
+    private var editor as Editor;
+
+    //! AMOLED: asleep, only the time shows
+    private var needsBurnInProtection as Boolean = false;
+    private var isAwake as Boolean = true;
+
+    //! Whether the system lets the seconds move every second in low power
+    //! mode; no longer once the power budget is exceeded
+    private var partialUpdatesAllowed as Boolean = true;
 
     //! Whether the native watch face editor started the face
     private var editMode as Boolean;
 
-    //! What the editor is pulsing, hidden meanwhile
-    private var pulsed as WatchUi.Drawable?;
-
-    private var isAwake as Boolean = true;
-
-    //! AMOLED: asleep, only the time shows
-    private var needsBurnInProtection as Boolean = false;
-
-    //! Whether the system lets the hand move every second in low power mode
-    private var partialUpdatesAllowed as Boolean;
-
-    //! Asked once: a partial update should not look a symbol up every tick
-    private var canSmooth as Boolean = false;
-
-    //! Made once: a partial update should not allocate a Method every tick
-    private var restoreRimCallback as Method(dc as Dc, second as Number) as Void;
+    //! A data field has a new value the off screen face does not show yet;
+    //! only the row is drawn again for it
+    private var rowStale as Boolean = false;
 
     function initialize(editMode as Boolean) {
         WatchFace.initialize();
@@ -58,33 +51,30 @@ class LucernarioView extends WatchUi.WatchFace {
         self.editMode = editMode;
 
         timeDisplay = new TimeDisplay();
-        daylight = new Daylight();
+        daylight = Sun.daylight();
         dayColors = new DayColors(daylight);
         rimMarks = new RimMarks(dayColors);
         numerals = new RimNumerals(dayColors);
-        secondsHand = new SecondsHand();
         hourHand = new HourHand(dayColors);
         activityTimer = new ActivityTimer();
-        activityReading = new ActivityReading();
-        goalProgress = new GoalProgress();
-        goalHand = new GoalHand(goalProgress);
         statusBar = new StatusBar();
-
-        centerField = new ComplicationField(SlotId.CENTER, Complications.COMPLICATION_TYPE_WEEKDAY_MONTHDAY);
-        fields = [centerField];
-
-        partialUpdatesAllowed = (WatchUi.WatchFace has :onPartialUpdate);
-        restoreRimCallback = method(:restoreRim);
+        fields = new DataFields();
+        secondsHand = new SecondsHand();
+        goalProgress = new GoalProgress();
+        goalHand = new GoalHand();
+        faceBuffer = new FaceBuffer();
+        editor = new Editor(fields);
     }
 
-    //! Size everything for this screen and load the editor's settings
+    //! Size everything for this screen
     function onLayout(dc as Dc) as Void {
-        canSmooth = (dc has :setAntiAlias);
         needsBurnInProtection = Clock.settings().requiresBurnInProtection;
 
         Dial.setup(dc);
         prepareRim(dc);
-        placeFields(dc);
+
+        faceBuffer.prepare(dc);
+        placeFrame(dc);
 
         // The editor shows a snapshot; live updates are not worth the power.
         // Before the settings: a saved pick then swaps the subscription.
@@ -95,27 +85,48 @@ class LucernarioView extends WatchUi.WatchFace {
         loadSettings();
     }
 
-    //! Apply the editor's settings. editedType is null while initializing.
+    //! editedType is null while initializing
     function updateConfiguration(config as WatchFaceConfig.Settings, editedType as WatchFaceConfigType?) as Void {
-        applyStyle(config.styleId);
-        applyAccentColor(config.accentColor);
-        applyDataColor(config.complicationColor);
-        applyComplications(config.complicationSettings);
+        var shown = fields.shownIds();
 
-        // On to another setting: the container is no longer being pulsed.
-        if (editedType != WatchUi.WATCH_FACE_CONFIG_TYPE_COMPLICATION) {
-            pulsed = null;
+        editor.apply(config, editedType);
+
+        // Live updates follow the picks; none in the editor.
+        if (!editMode) {
+            fields.follow(shown);
         }
 
-        WatchUi.requestUpdate();
+        applyStyle();
+        applyColors();
+        redraw();
+    }
+
+    //! The drawable the editor is about to pulse, null for none
+    function getComplication(complication as ComplicationRef) as ComplicationDrawableRef? {
+        var pulsed = editor.pulse(complication);
+
+        if (pulsed != null) {
+            redraw();
+        }
+
+        return pulsed;
+    }
+
+    //! The slot under a tap, or null
+    function getTappedComplication(x as Number, y as Number) as Number? {
+        return editor.tappedSlot(x, y);
+    }
+
+    function onComplicationChange(complicationId as Complications.Id) as Void {
+        if (fields.refreshShowing(complicationId)) {
+            rowStale = true;
+            WatchUi.requestUpdate();
+        }
     }
 
     function onUpdate(dc as Dc) as Void {
         // A partial update may have left a clip behind.
-        if (partialUpdatesAllowed) {
-            dc.clearClip();
-        }
-
+        dc.clearClip();
         Clock.read();
 
         if (isAlwaysOn()) {
@@ -123,84 +134,56 @@ class LucernarioView extends WatchUi.WatchFace {
             return;
         }
 
-        refreshReadings();
-        smooth(dc);
-        paintBackground(dc);
+        var face = currentFace();
 
-        rimMarks.draw(dc);
-        numerals.draw(dc, activityTimer.isRunning());
-        statusBar.draw(dc);
-        timeDisplay.draw(dc);
-        drawEditable(dc);
-        hourHand.draw(dc);
-        drawSecondsHand(dc);
+        if (face != null) {
+            dc.drawBitmap(0, 0, face);
+        } else {
+            drawFace(dc);
+        }
+
+        drawSeconds(dc, face != null);
     }
 
     //! Once a second in low power mode; has to stay within the power budget
     function onPartialUpdate(dc as Dc) as Void {
-        if (!handIsVisible()) {
+        if (isAlwaysOn() || !partialUpdatesAllowed) {
             return;
         }
 
         Clock.readTime();
-        smooth(dc);
-        secondsHand.drawPartial(dc, restoreRimCallback);
-    }
 
-    //! Put the rim back under the hand's old position, already clipped
-    function restoreRim(dc as Dc, second as Number) as Void {
-        paintBackground(dc);
+        // As last drawn, not drawn again: a whole face would eat the budget,
+        // and asleep the next full update is up to a minute off. A new data
+        // field value redraws only the row.
+        var face = faceBuffer.lastDrawn();
 
-        numerals.redraw(dc, second);
-        statusBar.redraw(dc);
-        goalHand.redraw(dc);
-        hourHand.redraw(dc);
-    }
-
-    //! The drawable the editor is about to pulse
-    function getComplication(complication as ComplicationRef) as ComplicationDrawableRef? {
-        var slotId = complication.uniqueIdentifier;
-
-        if (slotId == SlotId.GOAL) {
-            return pulse(goalHand, goalHand.getBoundingBox());
-        }
-
-        var field = fieldAt(slotId);
-
-        if (field == null) {
-            return null;
-        }
-
-        return pulse(field, field.getBoundingBox());
-    }
-
-    //! The slot under a tap, or null
-    function getTappedComplication(x as Number, y as Number) as Number? {
-        for (var i = 0; i < fields.size(); i++) {
-            if (fields[i].containsPoint(x, y)) {
-                return fields[i].getSlotId();
-            }
-        }
-
-        return null;
-    }
-
-    function onComplicationChange(complicationId as Complications.Id) as Void {
-        var field = fieldShowing(complicationId);
-
-        if (field == null) {
+        // Nothing to put back under the old seconds.
+        if (face == null) {
             return;
         }
 
-        field.refresh();
-        WatchUi.requestUpdate();
+        smooth(dc);
+
+        if (rowStale) {
+            copyRow(dc, face);
+        }
+
+        secondsHand.drawPartial(dc, face);
     }
 
-    //! The hand would freeze once the system stops calling onPartialUpdate,
-    //! so it comes off the screen in low power mode instead
+    //! The seconds would freeze once the system stops calling onPartialUpdate,
+    //! so they come off the screen in low power mode instead
     function turnPartialUpdatesOff() as Void {
         partialUpdatesAllowed = false;
         WatchUi.requestUpdate();
+    }
+
+    //! Back from another screen: the off screen face may be from before it,
+    //! and the fields may have missed updates meanwhile
+    function onShow() as Void {
+        fields.refreshAll();
+        redraw();
     }
 
     function onEnterSleep() as Void {
@@ -208,9 +191,12 @@ class LucernarioView extends WatchUi.WatchFace {
         WatchUi.requestUpdate();
     }
 
+    //! The off screen face may be from before the sleep began, and the
+    //! fields may have missed updates meanwhile
     function onExitSleep() as Void {
         isAwake = true;
-        WatchUi.requestUpdate();
+        fields.refreshAll();
+        redraw();
     }
 
     //! The marks size the rest of the rim
@@ -226,14 +212,12 @@ class LucernarioView extends WatchUi.WatchFace {
         goalHand.prepare(markReach, markWidth);
     }
 
-    private function placeFields(dc as Dc) as Void {
+    //! The status row above the time mirrors the line the fields hang from
+    private function placeFrame(dc as Dc) as Void {
         var frame = (Dial.screenHeight * FRAME_RATIO).toNumber();
         var top = frame + (Dial.screenHeight * FIELD_DROP_RATIO).toNumber();
 
-        var fieldHeight = centerField.heightIn(dc);
-
-        centerField.prepare(dc, Dial.centerX, top + (fieldHeight / 2));
-
+        fields.prepare(dc, top);
         statusBar.mirror(frame);
     }
 
@@ -246,211 +230,149 @@ class LucernarioView extends WatchUi.WatchFace {
         }
     }
 
-    //! Everything the draw reads, before anything draws
-    private function refreshReadings() as Void {
-        daylight.refresh();
-        activityTimer.refresh();
-        refreshActivity();
-        dayColors.refresh();
+    //! The layouts differ only in the rim numerals
+    private function applyStyle() as Void {
+        numerals.setEnabled(Styles.hasNumerals(editor.style()));
     }
 
-    //! For the goal hand
-    private function refreshActivity() as Void {
-        var info = activityReading.refresh();
+    //! Accent: the hands. Data: the time, the status row and the data
+    //! fields, and the rim until the sun is known.
+    private function applyColors() as Void {
+        var accent = editor.accentColor();
+        var data = editor.dataColor();
 
-        if (info == null) {
-            return;
-        }
-
-        goalProgress.read(info);
+        secondsHand.setColor(accent);
+        hourHand.setColor(accent);
+        goalHand.setColor(accent);
+        timeDisplay.setColor(data);
+        dayColors.setFallbackColor(data);
+        statusBar.setColor(data);
+        fields.setColor(data);
     }
 
-    //! Once per dc: the dc between two updates is the system's
-    private function smooth(dc as Dc) as Void {
-        if (canSmooth) {
-            dc.setAntiAlias(true);
-        }
+    //! Something on the off screen face has changed
+    private function redraw() as Void {
+        faceBuffer.invalidate();
+        WatchUi.requestUpdate();
     }
 
-    private function paintBackground(dc as Dc) as Void {
-        dc.setColor(BACKGROUND, BACKGROUND);
-        dc.clear();
-    }
-
-    //! Everything but what the editor is pulsing
-    private function drawEditable(dc as Dc) as Void {
-        var pulsing = pulsed;
-
-        if (pulsing != null) {
-            pulsing.setVisible(false);
-        }
-
-        for (var i = 0; i < fields.size(); i++) {
-            fields[i].draw(dc);
-        }
-
-        goalHand.draw(dc);
-
-        // Put it back so the editor can still draw it.
-        if (pulsing != null) {
-            pulsing.setVisible(true);
-        }
-    }
-
-    private function drawSecondsHand(dc as Dc) as Void {
-        if (handIsVisible()) {
-            secondsHand.draw(dc);
-        } else {
-            // Nothing on screen to lift off next tick.
-            secondsHand.forget();
-        }
+    private function subscribeToComplications() as Void {
+        fields.subscribe();
+        Complications.registerComplicationChangeCallback(method(:onComplicationChange));
     }
 
     private function isAlwaysOn() as Boolean {
         return needsBurnInProtection && !isAwake;
     }
 
-    //! Only the time, within the burn-in rules; the rest comes back on waking
+    //! Only the time, straight on screen; the buffer is drawn again on waking
     private function drawAlwaysOn(dc as Dc) as Void {
         smooth(dc);
         paintBackground(dc);
         timeDisplay.draw(dc);
+
+        faceBuffer.invalidate();
         secondsHand.forget();
     }
 
-    //! In low power mode the hand shows only if it can keep moving, and
-    //! never on a screen that needs burn-in protection
-    private function handIsVisible() as Boolean {
-        return isAwake || (partialUpdatesAllowed && !needsBurnInProtection);
-    }
+    //! The off screen face, drawn anew when the minute has moved on; null
+    //! without room for it
+    private function currentFace() as BufferedBitmap? {
+        var face = faceBuffer.bitmap();
 
-    private function pulse(drawable as WatchUi.Drawable, boundingBox as Graphics.BoundingBox) as ComplicationDrawableRef {
-        pulsed = drawable;
-        WatchUi.requestUpdate();
-
-        return new WatchUi.ComplicationDrawableRef({
-            :drawable => drawable,
-            :boundingBox => boundingBox
-        });
-    }
-
-    private function subscribeToComplications() as Void {
-        for (var i = 0; i < fields.size(); i++) {
-            Complications.subscribeToUpdates(fields[i].getComplicationId());
-        }
-
-        Complications.registerComplicationChangeCallback(method(:onComplicationChange));
-    }
-
-    //! The container in a slot, or null if the slot is not ours
-    private function fieldAt(slotId as Object?) as ComplicationField? {
-        if (!(slotId instanceof Lang.Number)) {
+        if (face == null) {
             return null;
         }
 
-        for (var i = 0; i < fields.size(); i++) {
-            if (fields[i].getSlotId() == slotId) {
-                return fields[i];
-            }
+        var minute = Clock.minuteOfDay();
+
+        if (!faceBuffer.isCurrent(minute)) {
+            drawFace(face.getDc());
+            faceBuffer.markDrawn(minute);
+        } else if (rowStale) {
+            redrawRow(face);
         }
 
-        return null;
+        return face;
     }
 
-    //! The container showing a complication, or null
-    private function fieldShowing(complicationId as Complications.Id) as ComplicationField? {
-        for (var i = 0; i < fields.size(); i++) {
-            if (fields[i].shows(complicationId)) {
-                return fields[i];
-            }
-        }
+    //! The data fields alone, drawn again on the off screen face; the box
+    //! that changed, null for none
+    private function redrawRow(face as BufferedBitmap) as Array<Number>? {
+        var faceDc = face.getDc();
 
-        return null;
+        rowStale = false;
+        smooth(faceDc);
+
+        return fields.redraw(faceDc, editor.pulsedSlot(), BACKGROUND);
     }
 
-    private function applyStyle(styleId as Number?) as Void {
-        var style = (styleId != null) ? styleId : Styles.DEFAULT;
+    //! The row drawn again off screen, and copied to the screen
+    private function copyRow(dc as Dc, face as BufferedBitmap) as Void {
+        var box = redrawRow(face);
 
-        numerals.setEnabled(Styles.hasNumerals(style));
-    }
-
-    //! The accent color: what is meant to stand apart from the rest
-    private function applyAccentColor(accentColor as WatchFaceConfig.Color?) as Void {
-        var color = colorOf(accentColor);
-
-        secondsHand.setColor(color);
-        hourHand.setColor(color);
-        goalHand.setColor(color);
-    }
-
-    //! The data color: everything else, and the rim until the sun is known
-    private function applyDataColor(dataColor as WatchFaceConfig.Color?) as Void {
-        var color = colorOf(dataColor);
-
-        timeDisplay.setColor(color);
-        dayColors.setFallbackColor(color);
-        statusBar.setColor(color);
-
-        for (var i = 0; i < fields.size(); i++) {
-            fields[i].setColor(color);
-        }
-    }
-
-    //! An editor color, or the default
-    private function colorOf(chosen as WatchFaceConfig.Color?) as Number {
-        if ((chosen != null) && (chosen.color != null)) {
-            return chosen.color as Number;
-        }
-
-        return DEFAULT_COLOR;
-    }
-
-    private function applyComplications(slots as Array<WatchFaceConfig.ComplicationRef>?) as Void {
-        if (slots == null) {
+        if (box == null) {
             return;
         }
 
-        for (var i = 0; i < slots.size(); i++) {
-            applySlot(slots[i]);
-        }
+        dc.setClip(box[0], box[1], box[2] - box[0], box[3] - box[1]);
+        dc.drawBitmap(0, 0, face);
+        dc.clearClip();
     }
 
-    private function applySlot(slot as WatchFaceConfig.ComplicationRef) as Void {
-        var complicationId = slot.complicationId;
+    //! Everything but the seconds
+    private function drawFace(dc as Dc) as Void {
+        rowStale = false;
+        smooth(dc);
+        paintBackground(dc);
+        refreshReadings();
 
-        if (slot.uniqueIdentifier == SlotId.GOAL) {
-            applyGoal(complicationId);
+        rimMarks.draw(dc);
+        numerals.draw(dc, activityTimer.isRunning());
+        goalHand.draw(dc);
+        hourHand.draw(dc);
+        statusBar.draw(dc);
+        fields.draw(dc, editor.pulsedSlot());
+        timeDisplay.draw(dc);
+    }
+
+    //! Asleep, the hand shows only if a partial update can move it, which
+    //! takes the off screen face to copy back under it.
+    private function drawSeconds(dc as Dc, hasFace as Boolean) as Void {
+        if (!isAwake && !(partialUpdatesAllowed && hasFace)) {
+            // Nothing on screen to lift off next tick.
+            secondsHand.forget();
             return;
         }
 
-        var field = fieldAt(slot.uniqueIdentifier);
-
-        if (field == null) {
-            return;
-        }
-
-        if ((complicationId != null) && !field.shows(complicationId)) {
-            swapSubscription(field.getComplicationId(), complicationId);
-            field.setComplicationId(complicationId);
-        }
-
-        field.refresh();
+        smooth(dc);
+        secondsHand.draw(dc);
     }
 
-    //! Live updates follow the pick; none in the editor
-    private function swapSubscription(from as Complications.Id, to as Complications.Id) as Void {
-        if (editMode) {
-            return;
+    //! Everything the draw reads, before anything draws
+    private function refreshReadings() as Void {
+        if (daylight.refresh()) {
+            dayColors.refresh();
         }
 
-        Complications.unsubscribeFromUpdates(from);
-        Complications.subscribeToUpdates(to);
+        activityTimer.refresh();
+        fields.refreshClocked();
+
+        refreshGoal();
     }
 
-    //! null until picked: steps stand
-    private function applyGoal(complicationId as Complications.Id?) as Void {
-        if (complicationId != null) {
-            goalProgress.setType(complicationId.getType());
-        }
+    private function refreshGoal() as Void {
+        goalProgress.refresh();
+        goalHand.setShare(goalProgress.share());
+    }
+
+    //! Once per dc: the dc between two updates is the system's
+    private function smooth(dc as Dc) as Void {
+        dc.setAntiAlias(true);
+    }
+
+    private function paintBackground(dc as Dc) as Void {
+        dc.setColor(BACKGROUND, BACKGROUND);
+        dc.clear();
     }
 }

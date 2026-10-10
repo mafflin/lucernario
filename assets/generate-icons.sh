@@ -7,12 +7,12 @@
 #
 # The artwork is black on transparent, and the face tints it at draw time, so
 # every path is refilled white on the way through: an untinted icon has to be
-# visible on the black background, and a black one would not be. See
-# Icon.paint.
+# visible on the black background, and a black one would not be. See Icon.draw.
 #
-# Two sizes, 24px in resources/ and 36px in resources-large-icons/, selected
-# by the resourcePath lines in monkey.jungle. The small set is also flattened
-# to hard edges, which the large set is not - see the note above pair().
+# Two sizes, 24px in resources/ and 36px in resources-large-icons/ (the suns
+# and field icons 24px and 32px), selected by the resourcePath lines in
+# monkey.jungle. The small set is also flattened to hard edges, which the
+# large set is not - see the note above pair().
 #
 # Needs rsvg-convert (librsvg) and python3.
 
@@ -71,7 +71,7 @@ pair phone.svg phone/phone.png
 pair recovery.svg recovery/recovery.png
 
 for level in 0 10 20 30 40 50 60 70 80 90 100; do
-    pair "battery-$level.svg" "battery/battery_$level.png"
+    pair "battery/$level.svg" "battery/battery_$level.png"
 done
 
 # The wind: a ring with a wedge in it pointing where the wind goes, one
@@ -107,10 +107,55 @@ pair wind/calm.svg wind/wind_calm.png
 MERIDIEM_SMALL="1 5 22 14"
 MERIDIEM_LARGE="1.684 5.684 20.632 12.632"
 
-render meridiem-am.svg "$SMALL/meridiem/am.png" 33 21 "$MERIDIEM_SMALL" flat
-render meridiem-pm.svg "$SMALL/meridiem/pm.png" 33 21 "$MERIDIEM_SMALL" flat
-render meridiem-am.svg "$LARGE/meridiem/am.png" 49 30 "$MERIDIEM_LARGE"
-render meridiem-pm.svg "$LARGE/meridiem/pm.png" 49 30 "$MERIDIEM_LARGE"
+render meridiem/am.svg "$SMALL/meridiem/am.png" 33 21 "$MERIDIEM_SMALL" flat
+render meridiem/pm.svg "$SMALL/meridiem/pm.png" 33 21 "$MERIDIEM_SMALL" flat
+render meridiem/am.svg "$LARGE/meridiem/am.png" 49 30 "$MERIDIEM_LARGE"
+render meridiem/pm.svg "$LARGE/meridiem/pm.png" 49 30 "$MERIDIEM_LARGE"
+
+# The suns stand beside the digits of the sun field, FONT_TINY: 24px, where
+# a unit of the 24 unit art is a whole pixel, and 32px on the large screens,
+# a touch taller than the digits either way. A half sun on a horizon line
+# for both, over two lines for the sunrise, shown while the sun is down, and
+# an arrow down for the sunset, shown while it is up.
+render sun/sunrise.svg "$SMALL/sun/sunrise.png" 24 24 "$BOX" flat
+render sun/sunrise.svg "$LARGE/sun/sunrise.png" 32 32 "$BOX"
+render sun/sunset.svg "$SMALL/sun/sunset.png" 24 24 "$BOX" flat
+render sun/sunset.svg "$LARGE/sun/sunset.png" 32 32 "$BOX"
+
+# The data fields' icons stand beside the same FONT_TINY digits as the
+# suns, so they take the suns' sizes; the sun field uses the suns
+# themselves. The battery is always the full one.
+#   $1 source svg   $2 name under field/
+field() {
+    render "$1" "$SMALL/field/$2.png" 24 24 "$BOX" flat
+    render "$1" "$LARGE/field/$2.png" 32 32 "$BOX"
+}
+
+field battery/100.svg battery
+field cal.svg calories
+field steps.svg steps
+field timer.svg timer
+field altitude.svg altitude
+field notifications.svg notifications
+field heart.svg heart
+field run.svg run
+field bike.svg bike
+field recovery.svg recovery
+field human.svg human
+field thermometer.svg thermometer
+
+# The weather field's conditions, one icon to a group of them, and a moon or
+# a bare cloud for the ones with a sun at night - WeatherIcon picks. These
+# are Material Design Icons (pictogrammers.com/library/mdi, Apache 2.0),
+# @mdi/svg 7.4.47, renamed without their weather- prefix.
+for name in \
+    sunny night partly-cloudy night-partly-cloudy cloudy \
+    rainy pouring partly-rainy snowy snowy-heavy partly-snowy \
+    snowy-rainy partly-snowy-rainy lightning-rainy lightning partly-lightning \
+    hail windy windy-variant fog hazy dust smoke volcano snowflake \
+    tornado hurricane hurricane-outline cloud-question unknown; do
+    field "weather/$name.svg" "weather/$name"
+done
 
 # The launcher icon is drawn by the system and never tinted, so it is not
 # flattened either: the system scales it to whatever each device asks for, and

@@ -5,8 +5,7 @@ import Toybox.Math;
 //! The hour hand: a rhombus, the seconds hand's arrow made narrower and
 //! mirrored inward across its base, the outer tip on the minor marks' tips.
 //! In the rim's colors inverted - see DayColors - and the accent color until
-//! the sun is known. The seconds hand passes over it, so it is put back
-//! when that clip cuts into it.
+//! the sun is known.
 class HourHand {
 
     //! Across the middle, in degrees at the ring's inner edge
@@ -22,7 +21,6 @@ class HourHand {
 
     //! Until the sun is known
     private var accentColor as Number = Graphics.COLOR_WHITE;
-    private var drawnColor as Number = Graphics.COLOR_WHITE;
 
     //! Resolved in prepare()
     private var tipRadius as Number = 0;
@@ -30,15 +28,12 @@ class HourHand {
     private var innerTipRadius as Float = 0.0;
     private var halfWidth as Float = 0.0;
 
-    //! Where it was last drawn, and the box around it
-    private var position as Float = 0.0;
+    //! Filled in place, once a minute
     private var corners as Array<[Numeric, Numeric]>;
-    private var box as Box;
 
     function initialize(dayColors as DayColors) {
         self.dayColors = dayColors;
         corners = [[0, 0], [0, 0], [0, 0], [0, 0]] as Array<[Numeric, Numeric]>;
-        box = new Box();
     }
 
     //! After the marks are prepared
@@ -58,31 +53,14 @@ class HourHand {
 
     //! After the day colors have refreshed
     function draw(dc as Dc) as Void {
-        position = Dial.positionOfMinute(currentMinute());
-        place();
-
+        var position = Dial.positionOfMinute(Clock.minuteOfDay());
         var inverted = dayColors.invertedColorAt(position);
-        drawnColor = accentColor;
 
-        if (inverted != null) {
-            drawnColor = inverted;
-        }
-
-        paint(dc);
+        place(position);
+        RimPainter.fill(dc, corners, (inverted != null) ? inverted : accentColor);
     }
 
-    //! Put it back if the clip has cut into it
-    function redraw(dc as Dc) as Void {
-        if (ClipRegion.covers(box)) {
-            paint(dc);
-        }
-    }
-
-    private function paint(dc as Dc) as Void {
-        RimPainter.fill(dc, corners, drawnColor);
-    }
-
-    private function place() as Void {
+    private function place(position as Float) as Void {
         var radians = Dial.radiansOf(position);
         var outX = Math.cos(radians);
 
@@ -99,8 +77,6 @@ class HourHand {
         setCorner(LEFT, middleX + acrossX, middleY + acrossY);
         setCorner(INNER_TIP, Dial.centerX + (innerTipRadius * outX), Dial.centerY + (innerTipRadius * outY));
         setCorner(RIGHT, middleX - acrossX, middleY - acrossY);
-
-        box.aroundPoints(corners);
     }
 
     private function setCorner(index as Number, x as Decimal, y as Decimal) as Void {
@@ -108,12 +84,5 @@ class HourHand {
 
         corner[0] = Dial.pixel(x);
         corner[1] = Dial.pixel(y);
-    }
-
-    //! Minutes past midnight: the hand stands between the hour marks
-    private function currentMinute() as Number {
-        var time = Clock.now();
-
-        return (time.hour * Clock.MINUTES_PER_HOUR) + time.min;
     }
 }

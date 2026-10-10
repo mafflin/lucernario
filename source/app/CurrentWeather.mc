@@ -1,7 +1,8 @@
 import Toybox.Lang;
 import Toybox.Weather;
 
-//! The weather the phone last sent, for the wind
+//! The weather the phone last sent, for the weather field, the wind and the
+//! latitude
 module CurrentWeather {
 
     //! The weather reports wind speed in m/s; the face shows km/h

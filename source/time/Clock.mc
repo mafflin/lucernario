@@ -1,16 +1,15 @@
 import Toybox.Lang;
 import Toybox.System;
 
-//! Clock units and the 12 hour rule, and the one place the time and the
-//! device settings are read: once per update, since a partial update pays
-//! for every ask, every second.
+//! Clock units, minutes of the day and the 12 hour rule, and the one place
+//! the time and the device settings are read: once per update.
 module Clock {
 
     const HOURS_PER_HALF_DAY = 12;
+    const HOURS_PER_DAY = 24;
     const MINUTES_PER_HOUR = 60;
-    const MINUTES_PER_DAY = HOURS_PER_HALF_DAY * 2 * MINUTES_PER_HOUR;
+    const MINUTES_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR;
     const SECONDS_PER_MINUTE = 60;
-    const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR;
 
     //! As of the last read(), null before the first
     var time as System.ClockTime? = null;
@@ -44,6 +43,18 @@ module Clock {
         return deviceSettings as System.DeviceSettings;
     }
 
+    //! Minutes past midnight, as of the last read
+    function minuteOfDay() as Number {
+        var clockTime = now();
+
+        return (clockTime.hour * MINUTES_PER_HOUR) + clockTime.min;
+    }
+
+    //! Into a day's minutes, from a day either side
+    function wrapMinutes(minutes as Number) as Number {
+        return (minutes + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+    }
+
     //! The hour as the wearer reads it, by the 12/24 hour setting
     function displayHour(hour as Number) as Number {
         if (settings().is24Hour) {
@@ -53,14 +64,14 @@ module Clock {
         return twelveHour(hour);
     }
 
+    function isMorning(hour as Number) as Boolean {
+        return hour < HOURS_PER_HALF_DAY;
+    }
+
     //! Midnight and noon read as 12, not 0
     function twelveHour(hour as Number) as Number {
         var onFace = hour % HOURS_PER_HALF_DAY;
 
         return (onFace == 0) ? HOURS_PER_HALF_DAY : onFace;
-    }
-
-    function isMorning(hour as Number) as Boolean {
-        return hour < HOURS_PER_HALF_DAY;
     }
 }

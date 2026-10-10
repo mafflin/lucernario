@@ -1,10 +1,10 @@
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.WatchUi;
 
-//! A dot going round once to the goal, a few pixels inside the hour marks.
-//! A ring until the goal is done, solid once it is, back at the 12.
-class GoalHand extends WatchUi.Drawable {
+//! Progress to the day's steps goal: a dot going round once from the 12, a
+//! few pixels inside the hour marks, and back at the 12 once the goal is
+//! done. A ring until then, solid once it is.
+class GoalHand {
 
     //! Air between the dot and the hour marks' pen ends
     private const MARK_GAP = 4;
@@ -14,7 +14,6 @@ class GoalHand extends WatchUi.Drawable {
     private const RING_DIVISOR = 2;
     private const MIN_RING = 2;
 
-    private var progress as GoalProgress;
     private var color as Number = Graphics.COLOR_WHITE;
 
     //! Resolved in prepare(): the dot's size, and the circle its center runs on
@@ -22,17 +21,10 @@ class GoalHand extends WatchUi.Drawable {
     private var ringWidth as Number = MIN_RING;
     private var orbitRadius as Number = 0;
 
-    //! As last drawn; empty when not shown
-    private var dotX as Number = 0;
-    private var dotY as Number = 0;
-    private var isDone as Boolean = false;
-    private var box as Box;
+    //! 0 to 1, null for none
+    private var share as Float? = null;
 
-    function initialize(progress as GoalProgress) {
-        Drawable.initialize({ :identifier => SlotId.GOAL });
-
-        self.progress = progress;
-        box = new Box();
+    function initialize() {
     }
 
     //! After the marks are prepared
@@ -46,70 +38,31 @@ class GoalHand extends WatchUi.Drawable {
         self.color = color;
     }
 
-    function draw(dc as Dc) as Void {
-        var share = progress.share();
+    //! 0 to 1; null without a goal, which shows nothing
+    function setShare(share as Float?) as Void {
+        self.share = share;
+    }
 
-        if (share == null) {
-            box.clear();
+    function draw(dc as Dc) as Void {
+        var done = share;
+
+        if (done == null) {
             return;
         }
 
-        place(share);
+        var radians = Dial.radiansOf(done * Dial.DEGREES_PER_CIRCLE);
+        var x = Dial.pointX(radians, orbitRadius);
+        var y = Dial.pointY(radians, orbitRadius);
 
-        if (isVisible) {
-            paint(dc);
-        }
-    }
-
-    //! Put it back if the clip has cut into it
-    function redraw(dc as Dc) as Void {
-        if (ClipRegion.covers(box)) {
-            paint(dc);
-        }
-    }
-
-    //! A box of its own at the 12 when not shown, so redraw() finds nothing
-    function getBoundingBox() as Graphics.BoundingBox {
-        var outline = box;
-
-        if (outline.isEmpty()) {
-            var radians = Dial.radiansOf(0);
-
-            outline = new Box();
-            surround(outline, Dial.pointX(radians, orbitRadius), Dial.pointY(radians, orbitRadius));
-        }
-
-        var boundingBox = new Graphics.BoundingBox();
-        boundingBox.addRectangle(outline.left, outline.top, outline.width, outline.height);
-
-        return boundingBox;
-    }
-
-    private function place(share as Float) as Void {
-        var radians = Dial.radiansOf(share * Dial.DEGREES_PER_CIRCLE);
-
-        dotX = Dial.pointX(radians, orbitRadius);
-        dotY = Dial.pointY(radians, orbitRadius);
-        isDone = (share >= 1.0);
-        surround(box, dotX, dotY);
-    }
-
-    private function surround(outline as Box, x as Number, y as Number) as Void {
-        var across = (2 * dotRadius) + 1;
-
-        outline.aroundCenter(x, y, across, across);
-    }
-
-    private function paint(dc as Dc) as Void {
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
 
-        if (isDone) {
-            dc.fillCircle(dotX, dotY, dotRadius);
+        if (done >= 1.0) {
+            dc.fillCircle(x, y, dotRadius);
             return;
         }
 
         // The pen reaches half its width either side of the radius.
         dc.setPenWidth(ringWidth);
-        dc.drawCircle(dotX, dotY, dotRadius - (ringWidth / 2));
+        dc.drawCircle(x, y, dotRadius - (ringWidth / 2));
     }
 }
