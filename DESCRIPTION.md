@@ -1,7 +1,7 @@
 Lucernario is a digital watch face built around one idea: the time, centered, in
 the largest font the watch has. Everything else keeps out of its way.
 
-**The rim** carries a 24-hour dial, noon at the top and midnight at the bottom,
+**The rim** carries a 24-hour dial, midnight at the top and noon at the bottom,
 numbered every four hours, with a fine mark every quarter hour. The marks and
 numerals are amber from sunrise to sunset and sky blue through the night, so a
 glance at the dial tells you how much daylight is left. The mark nearest solar
@@ -23,7 +23,7 @@ fields are all set in Garmin's native watch face editor — no phone, no
 settings menus.
 
 - Numerals or Plain: Plain leaves the rim numerals off
-- A goal hand glides round from the 12 as your steps goal is done, a ring
+- A goal hand glides round from the top as your steps goal is done, a ring
   until it is done and solid once it is
 - 29 accent colors for the hands and 29 for the time, status row and data
   fields, chosen to stay clean on MIP displays

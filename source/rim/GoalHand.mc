@@ -1,8 +1,8 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! Progress to the day's steps goal: a dot going round once from the 12, a
-//! few pixels inside the hour marks, and back at the 12 once the goal is
+//! Progress to the day's steps goal: a dot going round once from the top, a
+//! few pixels inside the hour marks, and back at the top once the goal is
 //! done. A ring until then, solid once it is.
 class GoalHand {
 

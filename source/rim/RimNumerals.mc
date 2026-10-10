@@ -1,8 +1,8 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-//! 12, 16, 20, 24, 4 and 8 clockwise from the top, against the inner ends of
-//! their marks, colored with the day. Turned to follow the marks, 20 through 4
+//! 24, 4, 8, 12, 16 and 20 clockwise from the top, against the inner ends of
+//! their marks, colored with the day. Turned to follow the marks, 8 through 16
 //! flipped so they do not read upside down; a watch without vector fonts gets
 //! them upright. Left off on Plain.
 class RimNumerals {
@@ -10,8 +10,8 @@ class RimNumerals {
     private const COUNT = 6;
     private const HOURS_APART = Dial.HOUR_MARKS / COUNT;
 
-    //! Noon, half the dial round from midnight - see Dial.MIDNIGHT_DEGREES
-    private const TOP_HOUR = Dial.HOUR_MARKS / 2;
+    //! Midnight - see Dial.MIDNIGHT_DEGREES
+    private const TOP_HOUR = 0;
 
     //! Air between the marks and the digits, as a share of the ring
     private const GAP_DIVISOR = 5;
@@ -40,7 +40,7 @@ class RimNumerals {
     private var dayColors as DayColors;
     private var enabled as Boolean = true;
 
-    //! The 12 is left off while the system's activity indicator sits over it
+    //! The 24 is left off while the system's activity indicator sits over it
     private var topHidden as Boolean = false;
 
     function initialize(dayColors as DayColors) {

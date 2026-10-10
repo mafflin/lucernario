@@ -13,8 +13,8 @@ module Dial {
     //! Dial zero is at the top; screen zero is at three o'clock, counterclockwise
     const TOP_DEGREES = 90;
 
-    //! Midnight at the bottom, noon at the top: the sun crosses the upper half
-    const MIDNIGHT_DEGREES = HALF_TURN;
+    //! Midnight at the top, noon at the bottom: the sun crosses the lower half
+    const MIDNIGHT_DEGREES = 0;
 
     const SECONDS_PER_TURN = 60;
     const DEGREES_PER_SECOND = DEGREES_PER_CIRCLE / SECONDS_PER_TURN;

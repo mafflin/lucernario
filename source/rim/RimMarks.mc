@@ -2,7 +2,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-//! 24 hour marks, noon at the top, all the same size, with three minor
+//! 24 hour marks, midnight at the top, all the same size, with three minor
 //! marks between each pair. Colored with the day - see DayColors - the mark
 //! nearest solar noon in the night's color and, if minor, twice as wide.
 class RimMarks {
@@ -87,7 +87,7 @@ class RimMarks {
     }
 
     //! In the day's color, or the night's nearest solar noon, a minor mark
-    //! twice as wide there. index counts every mark clockwise from the 12,
+    //! twice as wide there. index counts every mark clockwise from the top,
     //! hour marks on every fourth.
     private function drawMark(dc as Dc, index as Number, degrees as Float) as Void {
         var isHour = (index % STEPS_PER_HOUR) == 0;

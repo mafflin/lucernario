@@ -40,7 +40,7 @@ serve it) is shared with Cerchio and kept the same.
 | `source/time/Clock.mc` | Clock units, minutes of the day and the 12/24 hour rule |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
 | `source/time/GoalProgress.mc` | Progress to the day's steps goal |
-| `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 12 |
+| `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 24 |
 | `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/sun/Sun.mc` | The one shared `Daylight` |
 | `source/sun/Daylight.mc` | Sunrise and sunset off the complications, solar noon, dawn and dusk |
@@ -50,7 +50,7 @@ serve it) is shared with Cerchio and kept the same.
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after |
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
-| `source/rim/RimNumerals.mc` | 12, 16, 20, 24, 4 and 8, turned like the marks, against their inner ends; off on Plain |
+| `source/rim/RimNumerals.mc` | 24, 4, 8, 12, 16 and 20, turned like the marks, against their inner ends; off on Plain |
 | `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 5° across to its 8° and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
 | `source/rim/GoalHand.mc` | The goal hand, a ring just inside the hour marks, solid once the goal is done |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out inside the marks |
@@ -121,20 +121,20 @@ small. The pen is round, so a line runs half its width past each end; every
 clearance counts that in.
 
 The rim is 24 hour marks with three thin minor marks between each pair, one
-every quarter hour, and the numerals 12, 16, 20, 24, 4 and 8 against the
-inner ends of their marks - left off on `Plain`. Noon is at the top and
-midnight at the bottom, so the sun travels the upper half.
+every quarter hour, and the numerals 24, 4, 8, 12, 16 and 20 against the
+inner ends of their marks - left off on `Plain`. Midnight is at the top and
+noon at the bottom, so the sun travels the lower half.
 
 While an activity is under way the system draws its own indicator at the top
-of the screen, over the 12, so the 12 is left off then. `ActivityTimer` reads
+of the screen, over the 24, so the 24 is left off then. `ActivityTimer` reads
 that off `Activity.Info.timerState` once a minute, which not every watch
-hands a watch face; where it does not, the 12 stays. The stopwatch has no API
+hands a watch face; where it does not, the 24 stays. The stopwatch has no API
 at all and is not covered.
 
 The goal hand is an accent colored dot, as wide across as two hour marks,
 four pixels inside the hour marks' inner ends, passing under the hour hand.
-It goes round once from the 12 as the day's steps goal (`steps` over
-`stepGoal`, read once a minute) is done, and stays at the 12 past it. It is
+It goes round once from the top as the day's steps goal (`steps` over
+`stepGoal`, read once a minute) is done, and stays at the top past it. It is
 a ring while the goal is in progress - its line half the dot's radius, at
 least 2px - and solid once the goal is done. With no goal to read, it stays
 off.
