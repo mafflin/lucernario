@@ -50,11 +50,6 @@ class StatusBar {
         mirrorY = y;
     }
 
-    //! false while the dial shows the bearing instead
-    function setWindShown(shown as Boolean) as Void {
-        wind.setEnabled(shown);
-    }
-
     function setColor(color as Number) as Void {
         for (var i = 0; i < icons.size(); i++) {
             icons[i].setTint(color);

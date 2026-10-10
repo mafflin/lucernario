@@ -21,7 +21,6 @@ class Wind extends Icon {
     private const WING_Y = 20;
 
     private var windReading as WindReading;
-    private var enabled as Boolean = true;
 
     //! The square the row gives this icon
     private var square as Number = 0;
@@ -35,13 +34,8 @@ class Wind extends Icon {
         self.windReading = windReading;
     }
 
-    //! false while the dial shows the bearing instead
-    function setEnabled(enabled as Boolean) as Void {
-        self.enabled = enabled;
-    }
-
     function isReporting(settings as System.DeviceSettings) as Boolean {
-        return enabled && (windReading.bearing() != null);
+        return windReading.bearing() != null;
     }
 
     //! No bitmap to measure: the size is the build's, 24px or 36px

@@ -7,23 +7,18 @@ import Toybox.WatchUi;
 //! The watch face: owns the elements and applies the configuration.
 class LucernarioView extends WatchUi.WatchFace {
 
-    //! Shares of the screen height: the line the status row mirrors, the
-    //! data container's drop below it, and the sun field's below that
+    //! Shares of the screen height: the line the status row mirrors and the
+    //! data container's drop below it
     private const FRAME_RATIO = 0.66;
     private const FIELD_DROP_RATIO = 0.02;
-    private const SUN_DROP_RATIO = 0.02;
 
     private const BACKGROUND = Graphics.COLOR_BLACK;
 
     //! Until the editor has picked a color
     private const DEFAULT_COLOR = Graphics.COLOR_WHITE;
 
-    //! Gates the activity read
-    private var activityShown as Boolean = false;
-
     private var timeDisplay as TimeDisplay;
     private var daylight as Daylight;
-    private var sunField as SunField;
     private var dayColors as DayColors;
     private var rimMarks as RimMarks;
     private var numerals as RimNumerals;
@@ -31,10 +26,8 @@ class LucernarioView extends WatchUi.WatchFace {
     private var hourHand as HourHand;
     private var goalHand as GoalHand;
     private var windReading as WindReading;
-    private var windBearing as WindBearing;
     private var activityTimer as ActivityTimer;
     private var activityReading as ActivityReading;
-    private var recovery as Recovery;
     private var goalProgress as GoalProgress;
     private var statusBar as StatusBar;
     private var centerField as ComplicationField;
@@ -67,17 +60,14 @@ class LucernarioView extends WatchUi.WatchFace {
 
         timeDisplay = new TimeDisplay();
         daylight = new Daylight();
-        sunField = new SunField(daylight);
         dayColors = new DayColors(daylight);
         rimMarks = new RimMarks(dayColors);
         numerals = new RimNumerals(dayColors);
         secondsHand = new SecondsHand();
         hourHand = new HourHand(dayColors);
         windReading = new WindReading();
-        windBearing = new WindBearing(windReading);
         activityTimer = new ActivityTimer();
         activityReading = new ActivityReading();
-        recovery = new Recovery();
         goalProgress = new GoalProgress();
         goalHand = new GoalHand(goalProgress);
         statusBar = new StatusBar(windReading);
@@ -141,10 +131,8 @@ class LucernarioView extends WatchUi.WatchFace {
 
         rimMarks.draw(dc);
         numerals.draw(dc, activityTimer.isRunning());
-        windBearing.draw(dc);
         statusBar.draw(dc);
         timeDisplay.draw(dc);
-        sunField.draw(dc);
         drawEditable(dc);
         hourHand.draw(dc);
         drawSecondsHand(dc);
@@ -167,8 +155,6 @@ class LucernarioView extends WatchUi.WatchFace {
 
         numerals.redraw(dc, second);
         statusBar.redraw(dc);
-        sunField.redraw(dc);
-        windBearing.redraw(dc);
         goalHand.redraw(dc);
         hourHand.redraw(dc);
     }
@@ -177,9 +163,8 @@ class LucernarioView extends WatchUi.WatchFace {
     function getComplication(complication as ComplicationRef) as ComplicationDrawableRef? {
         var slotId = complication.uniqueIdentifier;
 
-        // Not on the face: nothing to pulse.
         if (slotId == SlotId.GOAL) {
-            return goalHand.isEnabled() ? pulse(goalHand, goalHand.getBoundingBox()) : null;
+            return pulse(goalHand, goalHand.getBoundingBox());
         }
 
         var field = fieldAt(slotId);
@@ -239,7 +224,6 @@ class LucernarioView extends WatchUi.WatchFace {
 
         numerals.prepare(dc, markReach);
         secondsHand.prepare(markReach, markWidth);
-        windBearing.prepare(secondsHand.baseWidth());
         hourHand.prepare(rimMarks.minorReach());
         goalHand.prepare(markReach, markWidth);
     }
@@ -249,10 +233,8 @@ class LucernarioView extends WatchUi.WatchFace {
         var top = frame + (Dial.screenHeight * FIELD_DROP_RATIO).toNumber();
 
         var fieldHeight = centerField.heightIn(dc);
-        var sunTop = top + fieldHeight + (Dial.screenHeight * SUN_DROP_RATIO).toNumber();
 
         centerField.prepare(dc, Dial.centerX, top + (fieldHeight / 2));
-        sunField.prepare(dc, Dial.centerX, sunTop);
 
         statusBar.mirror(frame);
     }
@@ -269,27 +251,20 @@ class LucernarioView extends WatchUi.WatchFace {
     //! Everything the draw reads, before anything draws
     private function refreshReadings() as Void {
         daylight.refresh();
-        sunField.refresh();
         windReading.refresh();
         activityTimer.refresh();
         refreshActivity();
         dayColors.refresh();
-        rimMarks.setRecoveryHours(recovery.hoursLeft());
     }
 
-    //! Shared by recovery and the goal hand
+    //! For the goal hand
     private function refreshActivity() as Void {
-        if (!activityShown) {
-            return;
-        }
-
         var info = activityReading.refresh();
 
         if (info == null) {
             return;
         }
 
-        recovery.read(info);
         goalProgress.read(info);
     }
 
@@ -399,16 +374,7 @@ class LucernarioView extends WatchUi.WatchFace {
     private function applyStyle(styleId as Number?) as Void {
         var style = (styleId != null) ? styleId : Styles.DEFAULT;
 
-        var windBearingShown = Styles.hasWindBearing(style);
-
-        activityShown = Styles.hasActivity(style);
-
         numerals.setEnabled(Styles.hasNumerals(style));
-        sunField.setEnabled(Styles.hasSunField(style));
-        windBearing.setEnabled(windBearingShown);
-        statusBar.setWindShown(!windBearingShown);
-        rimMarks.setRecoveryShown(activityShown);
-        goalHand.setEnabled(activityShown);
     }
 
     //! The accent color: what is meant to stand apart from the rest
@@ -418,7 +384,6 @@ class LucernarioView extends WatchUi.WatchFace {
         secondsHand.setColor(color);
         hourHand.setColor(color);
         goalHand.setColor(color);
-        windBearing.setColor(color);
     }
 
     //! The data color: everything else, and the rim until the sun is known
@@ -426,9 +391,7 @@ class LucernarioView extends WatchUi.WatchFace {
         var color = colorOf(dataColor);
 
         timeDisplay.setColor(color);
-        sunField.setColor(color);
         dayColors.setFallbackColor(color);
-        rimMarks.setRecoveryColor(color);
         statusBar.setColor(color);
 
         for (var i = 0; i < fields.size(); i++) {

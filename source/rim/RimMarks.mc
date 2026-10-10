@@ -5,9 +5,6 @@ import Toybox.Math;
 //! 24 hour marks, noon at the top, all the same size, with three minor
 //! marks between each pair. Colored with the day - see DayColors - the mark
 //! nearest solar noon in the night's color and, if minor, twice as wide.
-//! On every style but Numerals the hours left to recover take the data color
-//! instead, the minor marks among them twice as wide: the 12, then one mark
-//! per hour clockwise, hour and minor alike. The whole dial is 95 hours.
 class RimMarks {
 
     //! Width as a share of the radius, in pixels - see RimPainter.drawRadial
@@ -46,12 +43,6 @@ class RimMarks {
     //! The mark nearest solar noon, null until the sun is known
     private var zenithIndex as Number? = null;
 
-    private var recoveryShown as Boolean = false;
-
-    //! Marks in the recovery color, clockwise from the 12; none at zero
-    private var recoveryMarks as Number = 0;
-    private var recoveryColor as Number = Graphics.COLOR_WHITE;
-
     function initialize(dayColors as DayColors) {
         self.dayColors = dayColors;
     }
@@ -85,25 +76,6 @@ class RimMarks {
         return hourWidth;
     }
 
-    function setRecoveryShown(shown as Boolean) as Void {
-        recoveryShown = shown;
-    }
-
-    //! Once per full update; null when there are none
-    function setRecoveryHours(hours as Number?) as Void {
-        if (!recoveryShown || (hours == null)) {
-            recoveryMarks = 0;
-            return;
-        }
-
-        // The 12 starts the count; each hour adds the mark after it.
-        recoveryMarks = hours + 1;
-    }
-
-    function setRecoveryColor(color as Number) as Void {
-        recoveryColor = color;
-    }
-
     function draw(dc as Dc) as Void {
         var degreesPerStep = Dial.DEGREES_PER_HOUR_MARK.toFloat() / STEPS_PER_HOUR;
 
@@ -114,16 +86,12 @@ class RimMarks {
         }
     }
 
-    //! In the day's color, the night's nearest solar noon, or the recovery color
-    //! among the hours left, minor marks twice as wide at noon and among the
-    //! hours left. index counts every mark clockwise from the 12, hour marks
-    //! on every fourth.
+    //! In the day's color, or the night's nearest solar noon, a minor mark
+    //! twice as wide there. index counts every mark clockwise from the 12,
+    //! hour marks on every fourth.
     private function drawMark(dc as Dc, index as Number, degrees as Float) as Void {
         var isHour = (index % STEPS_PER_HOUR) == 0;
-        var recovering = index < recoveryMarks;
-        var color = recovering ? recoveryColor : colorOf(index, degrees);
-
-        RimPainter.setPen(dc, color, isHour ? hourWidth : minorWidth(index));
+        RimPainter.setPen(dc, colorOf(index, degrees), isHour ? hourWidth : minorWidth(index));
         RimPainter.drawRadial(dc, degrees, isHour ? hourLength : minorLength);
     }
 
@@ -141,8 +109,6 @@ class RimMarks {
     }
 
     private function minorWidth(index as Number) as Number {
-        var isWide = (index < recoveryMarks) || (index == zenithIndex);
-
-        return isWide ? WIDE_MINOR_WIDTH : MINOR_WIDTH;
+        return (index == zenithIndex) ? WIDE_MINOR_WIDTH : MINOR_WIDTH;
     }
 }

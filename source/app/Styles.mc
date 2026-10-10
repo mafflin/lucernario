@@ -5,29 +5,12 @@ import Toybox.Lang;
 module Styles {
     enum Value {
         NUMERALS = 1,
-        NUMERALS_AND_DATA = 2,
-        DATA = 3,
-        DATA_LITE = 4
+        PLAIN = 2
     }
 
     const DEFAULT = NUMERALS;
 
     function hasNumerals(style as Number) as Boolean {
-        return (style == NUMERALS) || (style == NUMERALS_AND_DATA);
-    }
-
-    //! Recovery marks and the goal hand, both off the activity monitor
-    function hasActivity(style as Number) as Boolean {
-        return style != NUMERALS;
-    }
-
-    //! The sun field below the data field
-    function hasSunField(style as Number) as Boolean {
-        return style == DATA;
-    }
-
-    //! The wind on the dial rather than in the status row
-    function hasWindBearing(style as Number) as Boolean {
-        return (style == NUMERALS_AND_DATA) || (style == DATA);
+        return style == NUMERALS;
     }
 }

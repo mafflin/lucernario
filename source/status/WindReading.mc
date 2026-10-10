@@ -3,7 +3,7 @@ import Toybox.Lang;
 import Toybox.Weather;
 
 //! The wind off the weather: bearing, strength in three steps, and the color
-//! for each step. Shared by the row's arrow and the dial's bearing.
+//! for each step, for the row's arrow.
 class WindReading {
 
     //! The API reports m/s; the limits read as km/h

@@ -3,9 +3,7 @@
         <!-- Ids must match the Styles module in source/app/Styles.mc -->
         <styles>
             <style id="1" label="@Strings.styleNumerals" default="true"/>
-            <style id="2" label="@Strings.styleNumeralsAndData"/>
-            <style id="3" label="@Strings.styleData"/>
-            <style id="4" label="@Strings.styleDataLite"/>
+            <style id="2" label="@Strings.stylePlain"/>
         </styles>
         <!-- An explicit palette rather than allowAny: the editor wants a
              label per color, and with allowAny the fenix 8 Solar filled its

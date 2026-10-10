@@ -34,27 +34,22 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 | `source/time/Clock.mc` | Clock units and the 12/24 hour rule, shared by everything that shows a time |
 | `source/time/Fonts.mc` | Measures the ink height of a font |
 | `source/time/MinuteGate.mc` | Lets a reading refresh once a minute |
-| `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications, solar noon between them, and dawn and dusk |
-| `source/time/Twilight.mc` | Civil dawn and dusk (the sun 6° down), from the latitude and the date |
-| `source/time/Latitude.mc` | The latitude, from the weather's location or the last fix |
-| `source/time/SunField.mc` | The sun below the data field on Data: countdown, twilight and solar noon |
-| `source/time/ActivityReading.mc` | The activity monitor, read once a minute for the recovery hours and the goal hand |
-| `source/time/Recovery.mc` | Hours left to recover, off the activity monitor |
+| `source/time/Daylight.mc` | Today's sunrise and sunset, off the complications, and solar noon between them |
+| `source/time/ActivityReading.mc` | The activity monitor, read once a minute for the goal hand |
 | `source/time/GoalProgress.mc` | Progress to the goal hand's goal, off the activity monitor |
 | `source/time/ActivityTimer.mc` | Whether an activity is under way, for the system indicator over the 12 |
 | `source/rim/Dial.mc` | Ring geometry: where a value lands on the glass |
 | `source/rim/RimPainter.mc` | Draws the shapes on the rim |
 | `source/rim/DayColors.mc` | The rim's colors: amber from sunrise to sunset, sky blue after |
 | `source/rim/RimMarks.mc` | The hour marks and three minor marks between each |
-| `source/rim/RimNumerals.mc` | 12, 16, 20, 24, 4 and 8, turned like the marks, against their inner ends; off on Data and Data Lite |
+| `source/rim/RimNumerals.mc` | 12, 16, 20, 24, 4 and 8, turned like the marks, against their inner ends; off on Plain |
 | `source/rim/HourHand.mc` | The hour hand, a rhombus: the seconds hand's arrow at 5° across to its 8° and mirrored inward, the outer tip on the minor marks' tips, in the rim's colors inverted |
-| `source/rim/WindBearing.mc` | The wind as a triangle standing on the rim at its bearing, on Numerals & Data and Data |
-| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour marks, on every style but Numerals |
+| `source/rim/GoalHand.mc` | The goal hand, a dot just inside the hour marks |
 | `source/rim/SecondsHand.mc` | The seconds hand, an arrow pointing out, clear of the marks |
 | `source/rim/ClipRegion.mc` | The box a partial update may touch, and the test against it |
 | `source/rim/Box.mc` | The box around a shape, for that test |
 | `source/status/StatusBar.mc` | The row of status icons above the time |
-| `source/status/WindReading.mc` | The wind's bearing and strength, shared by the row's arrow and the dial |
+| `source/status/WindReading.mc` | The wind's bearing and strength, for the row's arrow |
 | `source/status/Icon.mc` | One status icon; `Battery`/`Phone`/`Alarm`/`Wind`/`Meridiem` extend it |
 | `source/complications/ComplicationField.mc` | The data container; a Drawable so the editor can pulse it |
 | `source/complications/SlotId.mc` | The editor's slot ids, mirroring `watchface.xml` |
@@ -67,18 +62,15 @@ every `.mc` under `source/`, so a new file goes in whichever folder fits.
 Settings use the native watch face editor (`Application.WatchFaceConfig`),
 not Connect IQ app settings. Currently configurable:
 
-- **Style** — `Numerals` (default), `Numerals & Data`, `Data` or `Data
-  Lite`, named for what the rim carries. All but `Numerals` show the hours
-  left to recover on the rim and add the goal hand. `Numerals & Data` and
-  `Data` also move the wind out of the status row and onto the dial. `Data`
-  and `Data Lite` leave the rim numerals off. The background is always
-  black. `source/app/Styles.mc` decodes the id. Ids must stay in step with
+- **Style** — `Numerals` (default) or `Plain`, named for what the rim
+  carries. The only difference is the rim numerals: `Numerals` has them,
+  `Plain` leaves them off. The background is always black.
+  `source/app/Styles.mc` decodes the id. Ids must stay in step with
   `watchface.xml`.
-- **Accent color** — the seconds and goal hands, the wind bearing in a light
-  wind, and the hour hand until the sun is known: the things meant to stand
-  apart.
-- **Data color** — the time, the status icons, the data container and the
-  recovery hours, and the rim marks and numerals until the sun is known.
+- **Accent color** — the seconds and goal hands, and the hour hand until
+  the sun is known: the things meant to stand apart.
+- **Data color** — the time, the status icons and the data container, and
+  the rim marks and numerals until the sun is known.
 - **Data container** — one complication slot centered below the time. The
   types it offers are listed one by one in `watchface.xml` rather than opened
   up with `allowAny`, which keeps the picker to what reads well in a slot this
@@ -90,10 +82,8 @@ not Connect IQ app settings. Currently configurable:
   holds until the editor has said anything at all. Requires the
   `ComplicationSubscriber` permission.
 - **Goal** — a second complication slot, used only to pick the goal hand's
-  goal on every style but `Numerals`: steps (default), floors climbed or
-  intensity minutes. The editor shows it on every style, since a slot cannot
-  be tied to one, and it does nothing on `Numerals`. There is no "none"
-  entry either; the style is what turns the hand off.
+  goal: steps (default), floors climbed or intensity minutes. There is no
+  "none" entry; the hand is always on.
 
 Both colors offer the same 29 named colors, declared explicitly in
 `watchface.xml` rather than with `allowAny`: the editor wants a label per
@@ -110,9 +100,8 @@ exact minute the sun rises to the minute it sets and sky blue the rest of the
 day, from the sunrise and sunset complications, the same numbers the data
 container shows. Each mark and numeral takes the color of the moment it
 stands for. The one mark nearest solar noon, halfway from sunrise to sunset,
-is sky blue, the night's color, to stand out among the amber; a recovery
-mark keeps the data color. Until the sun is known they are drawn in the data
-color.
+is sky blue, the night's color, to stand out among the amber. Until the sun
+is known they are drawn in the data color.
 
 The hour hand takes the same two colors the other way round: sky blue by day
 and amber through the night, so it stands out from the marks it sits among.
@@ -166,9 +155,8 @@ The seconds hand keeps sweeping in low power mode through
 puts the rim back there, then clips to where it is going and draws it. The
 hand is an arrow set in far enough that even the corners of its clip box
 stay off the marks, round pen ends included, so a tick never repaints
-them: only the numeral nearest the hand's last position, the status row, the
-wind bearing, which reaches past the marks, the hour hand, which it passes
-over, and the steps hand, and only when the box has cut into them. If that
+them: only the numeral nearest the hand's last position, the status row,
+the hour hand, which it passes over, and the goal hand, and only when the box has cut into them. If that
 costs more than the system allows, `onPowerBudgetExceeded` fires on the
 delegate, partial updates are switched off, and the hand comes off the screen
 while asleep rather than standing still.
@@ -188,17 +176,8 @@ end; every clearance and clip box counts that in.
 
 The rim is 24 hour marks with three thin minor marks between each pair, one
 every quarter hour, and the numerals 12, 16, 20, 24, 4 and 8 against the
-inner ends of their marks - left off on `Data` and `Data Lite`. Noon is at
+inner ends of their marks - left off on `Plain`. Noon is at
 the top and midnight at the bottom, so the sun travels the upper half.
-
-On every style but `Numerals` the hours left to recover
-(`ActivityMonitor.Info.timeToRecovery`) take the data color in place of the
-day's, the minor marks among them twice as wide, not the numerals: the 12, and
-one more mark for each hour, hour and minor marks alike, clockwise from it - 1
-hour colors the 12 and the minor mark after it, 16 hours the marks from the 12
-through the 16. The whole dial is 95 hours, and more than that colors every
-mark. With none left, none are colored. Read once a minute; the marks are
-never touched by a partial one.
 
 While an activity is under way the system draws its own indicator at the top
 of the screen, over the 12, so the 12 is left off then. `ActivityTimer` reads
@@ -206,53 +185,20 @@ that off `Activity.Info.timerState` once a minute, which not every watch
 hands a watch face; where it does not, the 12 stays. The stopwatch has no API
 at all and is not covered.
 
-On `Data` a sun field sits below the data container, in `FONT_XTINY`: a
-ringed sun for the sunrise, a solid one for the sunset.
-
-- Through the hour before sunrise or sunset, the sun and the minutes left to
-  it - 46 with 46 minutes to go - in the data color, and gone once the event
-  comes. Before sunrise it turns orange (`Palette.ORANGE`, 0xFF5500) once
-  dawn has come.
-- From sunset to dusk, the solid sun alone, orange. From dawn, the ringed sun
-  alone, orange, when dawn comes more than an hour before sunrise.
-- Within 30 minutes either side of solar noon, the solid sun alone, in the
-  data color.
-
-Sunrise and sunset come off the same complications as the rim colors, solar
-noon is halfway between them. Garmin gives no dawn or dusk, so they are
-civil twilight, the sun 6° below the horizon, worked out in
-`source/time/Twilight.mc` from the date and the latitude: the weather's
-observation location, or the last fix, with no positioning permission. With
-neither, the latitude comes from the day's length - except within about five
-days of an equinox, when every latitude has a twelve hour day; then there is
-no twilight to show.
-
-The suns are 18px and 24px, smaller than the status row's, to stand beside
-the digits. The field lies in the seconds hand's path on the smaller screens,
-so a partial update puts it back when the clip cuts into it.
-
 The status row carries battery, phone, alarm, wind and AM/PM. The wind is one
 arrow in the row, pointing downwind (the bearing is where the wind comes from,
 so a southerly, 180, points up), with the strength said in color: the
 data color up to 20 km/h, orange above that, red above 40. None of them have
 a setting: each icon shows whenever the thing it reports is worth reporting.
 
-On `Numerals & Data` and `Data` the wind leaves the row for the dial: an
-equilateral triangle the size of the seconds hand, standing on the rim at
-the bearing the wind blows from and pointing the way it blows, north at the
-top. It takes the accent color in a light wind and the same orange and red
-above that. It reaches past the marks, so a partial update puts it back when
-the seconds hand's clip cuts into it, as it does the hour hand.
-
-The same styles also carry the goal hand: an accent colored dot, as
+Both styles carry the goal hand: an accent colored dot, as
 wide across as two hour marks, four pixels inside the hour marks' inner
 ends, passing under the hour hand. It goes round once from the 12 to the
 goal picked in the goal slot and stays at the 12 past it. Each goal comes off
 `ActivityMonitor.Info` rather than the complication, which carries no goal:
 `steps` over `stepGoal`, `floorsClimbed` over `floorsClimbedGoal`, and
 `activeMinutesWeek.total` over `activeMinutesWeekGoal` (a weekly goal). With no goal to read, the dot stays
-off. The activity monitor is read once a minute, one read shared with the
-recovery hours and skipped on the styles that show neither; a new goal shows
+off. The activity monitor is read once a minute; a new goal shows
 at once, off the last read. It lies in the seconds hand's path, so a partial
 update puts it back when the clip cuts into it.
 

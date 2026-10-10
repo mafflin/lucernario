@@ -2,16 +2,12 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 //! Today's sunrise and sunset, off the complications - the same numbers the
-//! data container shows - solar noon halfway between, and dawn and dusk
-//! either side of noon. Read once a minute; the twilight, which asks the
-//! weather and the activity for the latitude, only when the sun has moved.
+//! data container shows - and solar noon halfway between. Read once a minute.
 class Daylight {
 
     //! Minutes past midnight, null when not known
     private var sunriseMinute as Number? = null;
     private var sunsetMinute as Number? = null;
-    private var dawnMinute as Number? = null;
-    private var duskMinute as Number? = null;
 
     private var sunriseId as Complications.Id;
     private var sunsetId as Complications.Id;
@@ -28,16 +24,8 @@ class Daylight {
             return;
         }
 
-        var sunrise = minutesOf(sunriseId);
-        var sunset = minutesOf(sunsetId);
-
-        if ((sunrise == sunriseMinute) && (sunset == sunsetMinute)) {
-            return;
-        }
-
-        sunriseMinute = sunrise;
-        sunsetMinute = sunset;
-        refreshTwilight();
+        sunriseMinute = minutesOf(sunriseId);
+        sunsetMinute = minutesOf(sunsetId);
     }
 
     function sunrise() as Number? {
@@ -46,14 +34,6 @@ class Daylight {
 
     function sunset() as Number? {
         return sunsetMinute;
-    }
-
-    function dawn() as Number? {
-        return dawnMinute;
-    }
-
-    function dusk() as Number? {
-        return duskMinute;
     }
 
     //! Solar noon, halfway from sunrise to sunset; null with either unknown
@@ -78,28 +58,6 @@ class Daylight {
         }
 
         return wrap(set - rise);
-    }
-
-    //! Twilight has to reach past sunrise and sunset, or the latitude is off
-    private function refreshTwilight() as Void {
-        dawnMinute = null;
-        duskMinute = null;
-
-        var noon = zenith();
-        var length = dayLength();
-
-        if ((noon == null) || (length == null)) {
-            return;
-        }
-
-        var fromNoon = Twilight.minutesFromNoon(length);
-
-        if ((fromNoon == null) || ((fromNoon * 2) <= length)) {
-            return;
-        }
-
-        dawnMinute = wrap(noon - fromNoon);
-        duskMinute = wrap(noon + fromNoon);
     }
 
     //! Into a day's minutes, from a turn either side

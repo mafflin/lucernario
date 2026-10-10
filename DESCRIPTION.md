@@ -19,16 +19,13 @@ battery, steps, heart rate, body battery, stress, calories, floors, intensity
 minutes, date, weekday and date, sunrise, sunset, altitude, pressure,
 notifications, weekly run and bike distance, recovery time, run and bike VO2
 max, training status, pulse ox, respiration, solar input, temperature and
-today's high and low. On Data, a sun below it counts down the last hour
-before sunrise or sunset, glows orange through twilight and marks solar noon.
+today's high and low.
 
 **Configured on the watch.** Style, accent color, data color and the data field
 are all set in Garmin's native watch face editor — no phone, no settings menus.
 
-- Numerals, Numerals & Data, Data or Data Lite: all but Numerals mark the
-  hours left to recover on the rim and add a goal hand for steps, floors or
-  intensity minutes; Numerals & Data and Data put the wind as a bearing on
-  the dial; Data and Data Lite leave the rim numerals off
+- Numerals or Plain: Plain leaves the rim numerals off
+- A goal hand for steps, floors or intensity minutes
 - 29 accent colors for the seconds and goal hands and 29 for the time,
   status row and data field, chosen to stay clean on MIP displays
 - Always-on seconds hand on MIP watches where the power budget allows;

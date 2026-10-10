@@ -2,9 +2,7 @@
     <string id="AppName">Lucernario</string>
 
     <string id="styleNumerals">Numerals</string>
-    <string id="styleNumeralsAndData">Numerals &amp; Data</string>
-    <string id="styleData">Data</string>
-    <string id="styleDataLite">Data Lite</string>
+    <string id="stylePlain">Plain</string>
 
     <string id="ColorWhite">White</string>
     <string id="ColorGray">Gray</string>

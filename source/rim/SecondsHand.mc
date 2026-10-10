@@ -48,10 +48,6 @@ class SecondsHand {
         drawnSecond = null;
     }
 
-    function baseWidth() as Float {
-        return halfWidth * 2;
-    }
-
     function setColor(color as Number) as Void {
         self.color = color;
     }

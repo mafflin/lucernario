@@ -10,7 +10,6 @@ class GoalHand extends WatchUi.Drawable {
     private const MIN_RADIUS = 2;
 
     private var progress as GoalProgress;
-    private var enabled as Boolean = false;
     private var color as Number = Graphics.COLOR_WHITE;
 
     //! Resolved in prepare(): the dot's size, and the circle its center runs on
@@ -35,14 +34,6 @@ class GoalHand extends WatchUi.Drawable {
         orbitRadius = Dial.rim - markReach - RimPainter.penRadius(markWidth) - MARK_GAP - dotRadius;
     }
 
-    function setEnabled(enabled as Boolean) as Void {
-        self.enabled = enabled;
-    }
-
-    function isEnabled() as Boolean {
-        return enabled;
-    }
-
     function setColor(color as Number) as Void {
         self.color = color;
     }
@@ -50,7 +41,7 @@ class GoalHand extends WatchUi.Drawable {
     function draw(dc as Dc) as Void {
         var share = progress.share();
 
-        if (!enabled || (share == null)) {
+        if (share == null) {
             box.clear();
             return;
         }
